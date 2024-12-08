@@ -15,6 +15,7 @@
         <junit.version>5.11.3</junit.version>
         <fastutil.version>8.5.13</fastutil.version>
         <opencsv.version>5.9</opencsv.version>
+        <lombok.version>1.18.30</lombok.version>
     </properties>
 
     <dependencies>
@@ -35,6 +36,17 @@
             <artifactId>opencsv</artifactId>
             <version>${opencsv.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+            <version>8.5.13</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
         </dependency>
 
     </dependencies>
