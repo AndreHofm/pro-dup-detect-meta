@@ -60,16 +60,6 @@ public class PositionListIndex {
     private List<IntArrayList> intersect(List<IntArrayList> clusters, int[] invertedClusters) {
         List<IntArrayList> clustersIntersection = new ArrayList<>();
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //                                      DATA INTEGRATION ASSIGNMENT                                           //
-        // Calculate the intersection of one PLI's clusters and another PLI's (conveniently already inverted)         //
-        // invertedClusters. The clustersIntersection is a new list that stores the intersection result. Note that    //
-        // the clusters are "Stripped Partitions", which means that only clusters of size >1 are part of the result.  //
-
-
-        //                                                                                                            //
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
         Map<Integer, IntArrayList> tempClusters = new HashMap<>();
 
         for (IntArrayList cluster : clusters) {
