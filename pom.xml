@@ -48,6 +48,20 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.metanome.algorithms.hyfd</groupId>
+            <artifactId>hyfd</artifactId>
+            <version>1.2-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/HyFD-1.2-SNAPSHOT.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>de.metanome.algorithms.hyucc</groupId>
+            <artifactId>hyucc</artifactId>
+            <version>1.2-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/HyUCC-1.2-SNAPSHOT.jar</systemPath>
+        </dependency>
 
     </dependencies>
 
