@@ -4,5 +4,5 @@ public abstract class Record {
     public int Id;
     public String blockingKey;
     public char typeSet;
-
+    public String[] values;
 }
