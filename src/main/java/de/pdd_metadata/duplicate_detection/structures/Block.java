@@ -2,7 +2,7 @@ package de.pdd_metadata.duplicate_detection.structures;
 
 import java.util.ArrayList;
 
-public class Blocks {
+public class Block {
     public String blockId;
     public int size;
     public ArrayList<Record> recordA = new ArrayList<>();
