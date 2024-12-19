@@ -1,10 +1,15 @@
 package de.pdd_metadata.duplicate_detection.structures;
 
-import java.util.ArrayList;
+import lombok.AllArgsConstructor;
 
+import java.util.HashMap;
+import java.util.List;
+
+@AllArgsConstructor
 public class Block {
-    public String blockId;
+    public int blockId;
     public int size;
-    public ArrayList<Record> recordA = new ArrayList<>();
-    public ArrayList<Record> recordB = new ArrayList<>();
+    public List<Record> recordA;
+    public List<Record> recordB;
+    public HashMap<Integer, Record> records;
 }

@@ -1,5 +1,4 @@
 package de.pdd_metadata.duplicate_detection;
 
-public class ProgressiveBlocking
-{
+public class ProgressiveBlocking {
 }
