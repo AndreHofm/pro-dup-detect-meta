@@ -71,7 +71,6 @@ public class DataReader {
         return blocks;
     }
 
-
     private static CSVReader buildFileReader(String filePath, char attributeSeparator, boolean hasHeadline) throws IOException {
         return new CSVReaderBuilder(new FileReader(filePath))
                 .withCSVParser(new CSVParserBuilder().withSeparator(attributeSeparator).build())
