@@ -19,7 +19,7 @@ public class Main {
         }
 
         HashMap<Integer, Block> data = dataReader.readBlocks(ar, 0, 30,5);
-        // System.out.println(Arrays.toString(data.get(1).records));
-        // System.out.println(Arrays.toString(data.get(0).records.get(4).values));
+        System.out.println(Arrays.toString(data.get(29).records.get(147).values));
+        System.out.println(data.get(29).blockId);
     }
 }
