@@ -5,6 +5,8 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import de.pdd_metadata.duplicate_detection.structures.Block;
 import de.pdd_metadata.duplicate_detection.structures.Record;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
 import java.nio.file.*;
@@ -73,6 +75,44 @@ public class DataReader {
         return blocks;
     }
 
+    public HashMap<Integer, HashMap<Integer, Block>> readBlocks(int[][] orders, Set<Pair<Integer, Integer>> blocksToLoad, int blockSize) throws IOException {
+        Set<Integer> lineIndices = new HashSet<>(orders[0].length);
+
+        for(Pair<Integer, Integer> blockToLoad : blocksToLoad) {
+            int keyId = blockToLoad.getRight();
+            int startIndex = blockToLoad.getLeft() * blockSize;
+            int endIndex = Math.min((blockToLoad.getLeft() + 1) * blockSize, orders[keyId].length);
+
+            for(int index = startIndex; index < endIndex; ++index) {
+                lineIndices.add(orders[keyId][index]);
+            }
+        }
+
+        List<Record> records = this.readLines(lineIndices);
+        HashMap<Integer, HashMap<Integer, Block>> blocksPerKey = new HashMap<>(orders.length);
+
+        for(int keyId = 0; keyId < orders.length; ++keyId) {
+            blocksPerKey.put(keyId, new HashMap<>());
+        }
+
+        for(Pair<Integer, Integer> blockToLoad : blocksToLoad) {
+            int blockId = blockToLoad.getLeft();
+            int keyId = blockToLoad.getRight();
+            Block block = new Block();
+            int blockStartIndex = blockId * blockSize;
+            int blockEndIndex = Math.min((blockId + 1) * blockSize, orders[keyId].length);
+
+            for(int blockIndex = blockStartIndex; blockIndex < blockEndIndex; ++blockIndex) {
+                int lineId = orders[keyId][blockIndex];
+                block.records.put(lineId, records.get(lineId));
+            }
+
+            blocksPerKey.get(keyId).put(blockId, block);
+        }
+
+        return blocksPerKey;
+    }
+
     /*
     public HashMap<Integer, Block> transformToNCVR() {
         Map<Integer, Block> blocking = new HashMap<>();
@@ -89,19 +129,48 @@ public class DataReader {
      }
      */
 
-    private static CSVReader buildFileReader(String filePath, char attributeSeparator, boolean hasHeadline) throws IOException {
-        return new CSVReaderBuilder(new FileReader(filePath))
-                .withCSVParser(new CSVParserBuilder().withSeparator(attributeSeparator).build())
-                .withSkipLines(hasHeadline ? 1 : 0)
-                .build();
-    }
-
-    private int getNumRecords() throws IOException {
+    public int getNumRecords() throws IOException {
         if (this.numLines == 0) {
             this.numLines = countLines(this.filePath);
         }
 
         return this.hasHeadline ? this.numLines - 1 : this.numLines;
+    }
+
+    public List<Record> readLines(Collection<Integer> lineIndices) throws IOException {
+        List<Integer> sortedLineIndices = new ArrayList<>(lineIndices);
+        Collections.sort(sortedLineIndices);
+        CSVReader reader = buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline);
+        List<Record> resultRecords = new ArrayList<>();
+
+        try {
+            int resultLineIndex = 0;
+
+            for(int i = 0; i < this.getNumRecords(); ++i) {
+                String[] line = reader.readNext();
+                Record record = new Record(line);
+
+                if (i == sortedLineIndices.get(resultLineIndex)) {
+                    resultRecords.add(i, this.fitToMaxSize(record));
+                    ++resultLineIndex;
+                    if (resultLineIndex == sortedLineIndices.size()) {
+                        break;
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error reading lines.", e);
+        }
+
+        return resultRecords;
+    }
+
+    private static CSVReader buildFileReader(String filePath, char attributeSeparator, boolean hasHeadline) throws IOException {
+        return new CSVReaderBuilder(new FileReader(filePath))
+                .withCSVParser(new CSVParserBuilder().withSeparator(attributeSeparator).build())
+                .withSkipLines(hasHeadline ? 1 : 0)
+                .build();
     }
 
     private static int countLines(String filePath) throws IOException {

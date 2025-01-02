@@ -5,7 +5,6 @@ import de.pdd_metadata.duplicate_detection.structures.multi_block.BlockingStruct
 import de.pdd_metadata.duplicate_detection.structures.multi_block.NCVR_Record;
 import de.pdd_metadata.duplicate_detection.structures.multi_block.RecordPair;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
