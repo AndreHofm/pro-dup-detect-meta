@@ -26,13 +26,14 @@ public class DataReader {
     }
 
     public HashMap<Integer, Block> readBlocks(int[] order, int startBlock, int endBlock, int blockSize) {
+        System.out.println("Starting to read blocks...");
         if (startBlock >= endBlock) {
             return new HashMap<>();
         }
 
         HashMap<Integer, Block> blocks = new HashMap<>();
         for (int blockId = startBlock; blockId < endBlock; ++blockId) {
-            blocks.put(blockId, new Block(blockId, blockSize, new ArrayList<>(), new ArrayList<>(), new HashMap<>()));
+            blocks.put(blockId, new Block(blockId, blockSize, new HashMap<>()));
         }
 
         int startIndex = startBlock * blockSize;
@@ -68,8 +69,25 @@ public class DataReader {
             throw new RuntimeException("Error reading blocks from file", e);
         }
 
+        System.out.println("Finished reading blocks.");
         return blocks;
     }
+
+    /*
+    public HashMap<Integer, Block> transformToNCVR() {
+        Map<Integer, Block> blocking = new HashMap<>();
+        for (String[] record : records) {
+            Integer key = calculateBlockingKeyFor(record);
+
+            if (blocking.get(key) == null) {
+                blocking.put(new ArrayList<>());
+            }
+            blocking.get(key).add(record);
+        }
+
+        return blocking;
+     }
+     */
 
     private static CSVReader buildFileReader(String filePath, char attributeSeparator, boolean hasHeadline) throws IOException {
         return new CSVReaderBuilder(new FileReader(filePath))
