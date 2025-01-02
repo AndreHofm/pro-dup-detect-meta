@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 @Getter
 public class Levenshtein {
-    private int[] similarityAttributes;
+    private int[] similarityAttributes = new int[]{0, 1, 2};
 
     public double calculate(final String string1, final String string2) {
         double levenshteinSimilarity = 0;

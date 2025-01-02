@@ -3,6 +3,7 @@ package de.pdd_metadata.duplicate_detection.io;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvValidationException;
 import de.pdd_metadata.duplicate_detection.structures.Block;
 import de.pdd_metadata.duplicate_detection.structures.Record;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -28,6 +29,8 @@ public class DataReader {
     }
 
     public HashMap<Integer, Block> readBlocks(int[] order, int startBlock, int endBlock, int blockSize) {
+        assert order.length > 0;
+
         System.out.println("Starting to read blocks...");
         if (startBlock >= endBlock) {
             return new HashMap<>();
@@ -78,31 +81,34 @@ public class DataReader {
     public HashMap<Integer, HashMap<Integer, Block>> readBlocks(int[][] orders, Set<Pair<Integer, Integer>> blocksToLoad, int blockSize) throws IOException {
         Set<Integer> lineIndices = new HashSet<>(orders[0].length);
 
-        for(Pair<Integer, Integer> blockToLoad : blocksToLoad) {
+        for (Pair<Integer, Integer> blockToLoad : blocksToLoad) {
             int keyId = blockToLoad.getRight();
             int startIndex = blockToLoad.getLeft() * blockSize;
             int endIndex = Math.min((blockToLoad.getLeft() + 1) * blockSize, orders[keyId].length);
 
-            for(int index = startIndex; index < endIndex; ++index) {
+            for (int index = startIndex; index < endIndex; ++index) {
                 lineIndices.add(orders[keyId][index]);
             }
         }
 
+        System.out.println(lineIndices);
+
         List<Record> records = this.readLines(lineIndices);
         HashMap<Integer, HashMap<Integer, Block>> blocksPerKey = new HashMap<>(orders.length);
 
-        for(int keyId = 0; keyId < orders.length; ++keyId) {
+        for (int keyId = 0; keyId < orders.length; ++keyId) {
             blocksPerKey.put(keyId, new HashMap<>());
         }
 
-        for(Pair<Integer, Integer> blockToLoad : blocksToLoad) {
+        for (Pair<Integer, Integer> blockToLoad : blocksToLoad) {
             int blockId = blockToLoad.getLeft();
             int keyId = blockToLoad.getRight();
             Block block = new Block();
+            block.records = new HashMap<>();
             int blockStartIndex = blockId * blockSize;
             int blockEndIndex = Math.min((blockId + 1) * blockSize, orders[keyId].length);
 
-            for(int blockIndex = blockStartIndex; blockIndex < blockEndIndex; ++blockIndex) {
+            for (int blockIndex = blockStartIndex; blockIndex < blockEndIndex; ++blockIndex) {
                 int lineId = orders[keyId][blockIndex];
                 block.records.put(lineId, records.get(lineId));
             }
@@ -140,13 +146,12 @@ public class DataReader {
     public List<Record> readLines(Collection<Integer> lineIndices) throws IOException {
         List<Integer> sortedLineIndices = new ArrayList<>(lineIndices);
         Collections.sort(sortedLineIndices);
-        CSVReader reader = buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline);
         List<Record> resultRecords = new ArrayList<>();
 
-        try {
+        try (CSVReader reader = buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)) {
             int resultLineIndex = 0;
 
-            for(int i = 0; i < this.getNumRecords(); ++i) {
+            for (int i = 0; i < this.getNumRecords(); ++i) {
                 String[] line = reader.readNext();
                 Record record = new Record(line);
 
@@ -159,8 +164,8 @@ public class DataReader {
                 }
             }
 
-        } catch (Exception e) {
-            throw new RuntimeException("Error reading lines.", e);
+        } catch (CsvValidationException e) {
+            throw new RuntimeException(e);
         }
 
         return resultRecords;

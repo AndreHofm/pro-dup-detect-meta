@@ -6,6 +6,7 @@ import de.pdd_metadata.duplicate_detection.structures.progressive_blocking.Block
 import de.pdd_metadata.duplicate_detection.structures.Record;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.*;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -18,10 +19,20 @@ public class Blocking {
     private int maxBlockRange;
     private int numLoadableBlocks;
     private DataReader dataReader;
-    private double threshold = 0.9;
+    private double threshold;
     private int blockSize;
-    private final Levenshtein levenshtein = new Levenshtein();
-    private Set<Pair<Record, Record>> duplicates;
+    private Levenshtein levenshtein = new Levenshtein();
+    private Set<Pair<Record, Record>> duplicates = new HashSet<>();
+    private int partitionSize;
+
+    public Blocking(int maxBlockRange, DataReader dataReader, double threshold, int blockSize, int partitionSize) {
+        this.maxBlockRange = maxBlockRange;
+        this.blockSize = blockSize;
+        this.partitionSize = partitionSize;
+        this.numLoadableBlocks = (int) Math.ceil((double) this.partitionSize / (double) this.blockSize);
+        this.dataReader = dataReader;
+        this.threshold = threshold;
+    }
 
     protected void findDuplicatesUsingMultipleKeysConcurrently() throws IOException {
         int numRecords = this.dataReader.getNumRecords();
@@ -44,8 +55,21 @@ public class Blocking {
 
             while (blocksToLoad.size() <= this.numLoadableBlocks - 4 && !blockResults.isEmpty()) {
                 BlockResult blockResult = blockResults.remove();
+
                 Triple<Integer, Integer, Integer> leftPair = new ImmutableTriple<>(blockResult.getFirstBlockId() - 1, blockResult.getSecondBlockId(), blockResult.getKeyId());
                 Triple<Integer, Integer, Integer> rightPair = new ImmutableTriple<>(blockResult.getFirstBlockId(), blockResult.getSecondBlockId() + 1, blockResult.getKeyId());
+
+                System.out.println(leftPair);
+                System.out.println(rightPair);
+
+                /*
+                System.out.println("!completedBlockPairs.contains(leftPair): " + !completedBlockPairs.contains(leftPair));
+                System.out.println("leftPair.getLeft() >= 0: " + leftPair.getLeft());
+                System.out.println("!completedBlockPairs.contains(rightPair): " + !completedBlockPairs.contains(rightPair));
+                System.out.println("rightPair.getMiddle() < numBlocks: " + rightPair.getMiddle());
+
+                 */
+
                 if (!completedBlockPairs.contains(leftPair) && leftPair.getLeft() >= 0) {
                     completedBlockPairs.add(leftPair);
                     mostPromisingBlockPairs.add(leftPair);
@@ -61,12 +85,19 @@ public class Blocking {
                 }
             }
 
+            //TODO ändert das Logik?
+            if (blocksToLoad.isEmpty()) {
+                System.out.println("No blocks to load!");
+                break;
+            }
+
             HashMap<Integer, HashMap<Integer, Block>> blocksPerKey = this.dataReader.readBlocks(orders, blocksToLoad, this.blockSize);
 
             for (Triple<Integer, Integer, Integer> pair : mostPromisingBlockPairs) {
                 Block leftBlock = blocksPerKey.get(pair.getRight()).get(pair.getLeft());
                 Block rightBlock = blocksPerKey.get(pair.getRight()).get(pair.getMiddle());
                 int numDuplicates = this.compare(leftBlock, rightBlock);
+
                 if (this.maxBlockRange > pair.getMiddle() - pair.getLeft()) {
                     blockResults.add(new BlockResult(pair.getLeft(), pair.getMiddle(), numDuplicates, pair.getRight()));
                 }
@@ -78,6 +109,8 @@ public class Blocking {
         this.resultCollector.log("Number of Results: " + this.resultCollector.getDuplicates().size());
         this.resultCollector.collectEvent("End: Blocking - " + this.method.name(), 1);
          */
+
+        this.duplicates.stream().map(x -> Arrays.toString(x.getLeft().values) + " " + Arrays.toString(x.getRight().values)).forEach(System.out::println);
 
         System.out.println("Number of Duplicates: " + this.duplicates.size());
     }
@@ -150,17 +183,17 @@ public class Blocking {
 
     private int[] calculateOrderRandom() throws IOException {
         int numRecords = this.dataReader.getNumRecords();
-        List<Integer> order = new ArrayList(numRecords);
+        List<Integer> order = new ArrayList<>(numRecords);
 
-        for(int i = 0; i < numRecords; ++i) {
+        for (int i = 0; i < numRecords; ++i) {
             order.add(i);
         }
 
         Collections.shuffle(order);
         int[] result = new int[numRecords];
 
-        for(int i = 0; i < numRecords; ++i) {
-            result[i] = (Integer)order.get(i);
+        for (int i = 0; i < numRecords; ++i) {
+            result[i] = order.get(i);
         }
 
         return result;
