@@ -56,13 +56,13 @@ public class DataReader {
             int resultLineIndex = 0;
             for (int i = 0; i < this.getNumRecords(); ++i) {
                 String[] line = reader.readNext();
-                Record record = new Record(line);
 
                 if (i == sortedLineIndices[resultLineIndex]) {
+                    Record record = new Record(i ,line);
                     record = this.fitToMaxSize(record);
                     int blockId = linePositions.get(i) / blockSize;
                     blocks.get(blockId).records.put(i, record);
-                    blocks.get(blockId).blockId = blockId;
+                    // blocks.get(blockId).blockId = blockId;
                     ++resultLineIndex;
 
                     if (resultLineIndex == sortedLineIndices.length) {
@@ -90,8 +90,6 @@ public class DataReader {
                 lineIndices.add(orders[keyId][index]);
             }
         }
-
-        System.out.println(lineIndices);
 
         List<Record> records = this.readLines(lineIndices);
         HashMap<Integer, HashMap<Integer, Block>> blocksPerKey = new HashMap<>(orders.length);
@@ -153,9 +151,9 @@ public class DataReader {
 
             for (int i = 0; i < this.getNumRecords(); ++i) {
                 String[] line = reader.readNext();
-                Record record = new Record(line);
 
                 if (i == sortedLineIndices.get(resultLineIndex)) {
+                    Record record = new Record(i, line);
                     resultRecords.add(i, this.fitToMaxSize(record));
                     ++resultLineIndex;
                     if (resultLineIndex == sortedLineIndices.size()) {
@@ -185,6 +183,6 @@ public class DataReader {
     }
 
     private Record fitToMaxSize(Record record) {
-        return record.size <= this.maxAttributes ? record : new Record(Arrays.copyOfRange(record.values, 0, this.maxAttributes));
+        return record.size <= this.maxAttributes ? record : new Record(record.id, Arrays.copyOfRange(record.values, 0, this.maxAttributes));
     }
 }

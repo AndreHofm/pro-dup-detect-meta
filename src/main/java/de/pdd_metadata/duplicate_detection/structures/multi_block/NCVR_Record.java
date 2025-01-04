@@ -19,7 +19,7 @@ public class NCVR_Record extends Record {
     public String city;
 
     public NCVR_Record(String[] values) {
-        super(values);
+        super(0, values);
     }
 
     public static boolean eval(NCVR_Record a, NCVR_Record b) {
