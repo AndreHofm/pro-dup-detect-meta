@@ -13,7 +13,7 @@ public class Block {
     public int size;
     public List<Record> recordsA;
     public List<Record> recordsB;
-    public HashMap<Integer, Record> records;
+    public HashMap<Integer, Record> records = new HashMap<>();
     public double score;
     public int evaluations;
     public int noMatchingPairs;

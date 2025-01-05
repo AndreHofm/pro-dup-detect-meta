@@ -4,7 +4,10 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
+import de.pdd_metadata.duplicate_detection.Magpie;
 import de.pdd_metadata.duplicate_detection.structures.Block;
+import de.pdd_metadata.duplicate_detection.structures.Duplicate;
+import de.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
 import de.pdd_metadata.duplicate_detection.structures.Record;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,6 +22,7 @@ public class DataReader {
     public char attributeSeparator;
     public int numLines;
     public int maxAttributes;
+    private int numAttributes;
 
     public DataReader(String filePath, boolean hasHeadline, char attributeSeparator, int numLines, int maxAttributes) {
         this.filePath = filePath;
@@ -52,7 +56,7 @@ public class DataReader {
             linePositions.put(order[index], index);
         }
 
-        try (CSVReader reader = buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)) {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)) {
             int resultLineIndex = 0;
             for (int i = 0; i < this.getNumRecords(); ++i) {
                 String[] line = reader.readNext();
@@ -133,20 +137,12 @@ public class DataReader {
      }
      */
 
-    public int getNumRecords() throws IOException {
-        if (this.numLines == 0) {
-            this.numLines = countLines(this.filePath);
-        }
-
-        return this.hasHeadline ? this.numLines - 1 : this.numLines;
-    }
-
     public List<Record> readLines(Collection<Integer> lineIndices) throws IOException {
         List<Integer> sortedLineIndices = new ArrayList<>(lineIndices);
         Collections.sort(sortedLineIndices);
         List<Record> resultRecords = new ArrayList<>();
 
-        try (CSVReader reader = buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)) {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)) {
             int resultLineIndex = 0;
 
             for (int i = 0; i < this.getNumRecords(); ++i) {
@@ -169,14 +165,85 @@ public class DataReader {
         return resultRecords;
     }
 
-    private static CSVReader buildFileReader(String filePath, char attributeSeparator, boolean hasHeadline) throws IOException {
+    public void readKeyAndLinesInto(Magpie magpie, KeyElementFactory keyElementFactory, int[] keyAttributeNumbers) throws IOException {
+        assert keyAttributeNumbers.length > 0;
+
+        assert keyAttributeNumbers.length <= this.getNumAttributes();
+
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)){
+            for(int i = 0; i < this.getNumRecords(); ++i) {
+                Record record = new Record(reader.readNext());
+                record = this.fitToMaxSize(record);
+                String[] attributeValues = this.extractFields(record.values, keyAttributeNumbers);
+                magpie.collectProgressive(keyElementFactory.create(i, attributeValues), record);
+            }
+        } catch (CsvValidationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Set<Duplicate> readResultDuplicates() {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)){
+            Set<Duplicate> resultDuplicates = new HashSet<>();
+
+            String[] ids;
+            while ((ids = reader.readNext()) != null) {
+                resultDuplicates.add(new Duplicate(Integer.parseInt(ids[0]), Integer.parseInt(ids[1])));
+            }
+
+            return resultDuplicates;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getNumRecords() throws IOException {
+        if (this.numLines == 0) {
+            this.numLines = this.countLines(this.filePath);
+        }
+
+        return this.hasHeadline ? this.numLines - 1 : this.numLines;
+    }
+
+    public int getNumAttributes() {
+        if (this.numAttributes == 0) {
+            this.numAttributes = this.countAttributes();
+        }
+
+        return Math.min(this.numAttributes, this.maxAttributes);
+    }
+
+    protected String[] extractFields(String[] fields, int[] indices) {
+        String[] extractedFields = new String[indices.length];
+
+        for(int i = 0; i < indices.length; ++i) {
+            extractedFields[i] = indices[i] < fields.length ? fields[indices[i]] : "";
+        }
+
+        return extractedFields;
+    }
+
+    protected int countAttributes() {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)) {
+            String[] line;
+            if ((line = reader.readNext()) == null) {
+                throw new IOException("Failed to count the number of attributes while reading data: File is empty!");
+            }
+
+            return line.length;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private CSVReader buildFileReader(String filePath, char attributeSeparator, boolean hasHeadline) throws IOException {
         return new CSVReaderBuilder(new FileReader(filePath))
-                .withCSVParser(new CSVParserBuilder().withSeparator(attributeSeparator).build())
+                .withCSVParser(new CSVParserBuilder().withSeparator(attributeSeparator).withEscapeChar((char) 0).build())
                 .withSkipLines(hasHeadline ? 1 : 0)
                 .build();
     }
 
-    private static int countLines(String filePath) throws IOException {
+    private int countLines(String filePath) throws IOException {
         try (var lines = Files.lines(Path.of(filePath))) {
             return (int) lines.count();
         }

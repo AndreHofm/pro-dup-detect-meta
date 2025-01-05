@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 @Getter
 public class Levenshtein {
-    private int[] similarityAttributes = new int[]{1, 2, 3, 4, 5};
+    private int[] similarityAttributes = new int[]{0, 3, 4};
     private int maxAttributeLength = 200;
 
     public double calculate(final String string1, final String string2) {
@@ -112,13 +112,27 @@ public class Levenshtein {
             float recordSimilarity = 0.0F;
             float attributeSimilarity = 0.0F;
 
-            int[] var9;
-            for (int attributeIndex : var9 = this.similarityAttributes) {
+            for (int attributeIndex : this.similarityAttributes) {
                 if (r1.length > attributeIndex || r2.length > attributeIndex) {
-                    if (r1.length > attributeIndex && r2.length > attributeIndex) {
-                        attributeSimilarity = this.calculateSimilarityOf(r1[attributeIndex].toLowerCase(), r2[attributeIndex].toLowerCase());
+                    //Für Datensatz von CD
+                    if (attributeIndex == 4) {
+                        String[] r3 = r1[attributeIndex].split("\\|", -1);
+                        String[] r4 = r2[attributeIndex].split("\\|", -1);
+
+                        System.out.println(Arrays.toString(r3));
+                        System.out.println(Arrays.toString(r4));
+                        System.out.println(Arrays.toString(r2));
+
+                        attributeSimilarity = this.calculateSimilarityOf(r3[0].toLowerCase(), r4[0].toLowerCase());
+                        attributeSimilarity += this.calculateSimilarityOf(r3[1].toLowerCase(), r4[1].toLowerCase());
+
+                        ++numComparisons;
                     } else {
-                        attributeSimilarity = 0.0F;
+                        if (r1.length > attributeIndex && r2.length > attributeIndex) {
+                            attributeSimilarity = this.calculateSimilarityOf(r1[attributeIndex].toLowerCase(), r2[attributeIndex].toLowerCase());
+                        } else {
+                            attributeSimilarity = 0.0F;
+                        }
                     }
 
                     if (!Float.isNaN(attributeSimilarity)) {
@@ -126,6 +140,11 @@ public class Levenshtein {
                         ++numComparisons;
                     }
                 }
+            }
+
+            if (r1[r1.length - 1].equals("8640") && r2[r2.length - 1].equals("10314")){
+                System.out.println(recordSimilarity);
+                System.out.println(numComparisons);
             }
 
             return recordSimilarity / (float) numComparisons;
