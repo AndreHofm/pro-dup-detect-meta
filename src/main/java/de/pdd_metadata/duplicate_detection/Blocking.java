@@ -9,8 +9,8 @@ import de.pdd_metadata.duplicate_detection.structures.Record;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
+import de.pdd_metadata.similarity_measures.Levenshtein;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -88,24 +88,12 @@ public class Blocking {
         PriorityQueue<BlockResult> blockResults = new PriorityQueue<>();
         int[][] orders = new int[numAttributes][];
 
+
         for (int i = 0; i < this.levenshtein.getSimilarityAttributes().length; i++) {
-            // int[] keyAttributeNumbers = new int[]{i};
-            //order[i] = this.sort(this.levenshtein.getSimilarityAttributes()[i])
-            orders[i] = this.sorter.calculateOrderRandom(this.dataReader);
+            int[] keyAttributeNumbers = new int[]{i};
+            orders[i] = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, keyAttributeNumbers, this.dataReader, this.partitionSize, this);
             blockResults.addAll(this.runBasicBlocking(this.blockSize, numBlocks, this.numLoadableBlocks, orders[i], i));
         }
-
-        // blockResults.stream().map(x -> x.getFirstBlockId() + " " + x.getSecondBlockId()).forEach(System.out::println);
-
-        /*
-        for (int keyAttributeNumber : this.levenshtein.getSimilarityAttributes()) {
-            System.out.println(keyAttributeNumber);
-            // int[] keyAttributeNumbers = new int[]{keyAttributeNumber};
-            orders[keyAttributeNumber] = this.calculateOrderRandom();
-            blockResults.addAll(this.runBasicBlocking(this.blockSize, numBlocks, this.numLoadableBlocks, orders[keyAttributeNumber], keyAttributeNumber));
-        }
-
-         */
 
         HashSet<Triple<Integer, Integer, Integer>> completedBlockPairs = new HashSet<>();
 
@@ -118,13 +106,6 @@ public class Blocking {
 
                 Triple<Integer, Integer, Integer> leftPair = new ImmutableTriple<>(blockResult.getFirstBlockId() - 1, blockResult.getSecondBlockId(), blockResult.getKeyId());
                 Triple<Integer, Integer, Integer> rightPair = new ImmutableTriple<>(blockResult.getFirstBlockId(), blockResult.getSecondBlockId() + 1, blockResult.getKeyId());
-
-                /*
-                System.out.println("!completedBlockPairs.contains(leftPair): " + !completedBlockPairs.contains(leftPair));
-                System.out.println("leftPair.getLeft() >= 0: " + leftPair.getLeft());
-                System.out.println("!completedBlockPairs.contains(rightPair): " + !completedBlockPairs.contains(rightPair));
-                System.out.println("rightPair.getMiddle() < numBlocks: " + rightPair.getMiddle());
-                */
 
                 if (!completedBlockPairs.contains(leftPair) && leftPair.getLeft() >= 0) {
                     completedBlockPairs.add(leftPair);
@@ -159,22 +140,12 @@ public class Blocking {
                 }
             }
         }
-
-        /*
-        this.resultCollector.log(".................................... done! (Time: " + System.currentTimeMillis() + ")");
-        this.resultCollector.log("Number of Results: " + this.resultCollector.getDuplicates().size());
-        this.resultCollector.collectEvent("End: Blocking - " + this.method.name(), 1);
-         */
-
-        // this.duplicates.stream().map(x ->  x.getRecordId1() + " " + x.getRecordId2()).forEach(System.out::println);
-
-        System.out.println("Number of Duplicates: " + this.duplicates.size());
     }
 
     private void runStandard(int[] order) {
         int numBlocks = (int) Math.ceil((double) order.length / (double) this.blockSize);
         int numLoadableBlocks = (int) Math.ceil((double) this.partitionSize / (double) this.blockSize);
-        var test = this.runBasicBlocking(this.blockSize, numBlocks, numLoadableBlocks, order, -1);
+        this.runBasicBlocking(this.blockSize, numBlocks, numLoadableBlocks, order, -1);
     }
 
     private Set<BlockResult> runBasicBlocking(int blockSize, int numBlocks, int numLoadableBlocks, int[] order, int keyId) {
@@ -210,12 +181,7 @@ public class Blocking {
                         || x.getRecordId1() == record2.id && x.getRecordId2() == record1.id);
 
                 if (value >= threshold && newDuplicate) {
-                    if (record1.values[0].equals("107667") && record2.values[0].equals("101414")) {
-                        System.out.println(value);
-                    }
-
-                    this.duplicates.add(new Duplicate(record1.id, record2.id, Integer.parseInt(record1.values[record1.values.length - 1]), Integer.parseInt(record2.values[record2.values.length - 1])));
-                    // this.duplicates.add(new Duplicate(record1.id, record2.id));
+                    this.duplicates.add(new Duplicate(record1.id, record2.id, Integer.parseInt(record1.values[0]), Integer.parseInt(record2.values[0])));
                     ++numDuplicates;
                 }
             }
@@ -248,11 +214,4 @@ public class Blocking {
 
         return numDuplicates;
     }
-
-    /*
-    protected int[] sort(int[] keyAttributeNumbers) throws IOException {
-        return this.sorter.calculateOrder(this.keyElementFactory, keyAttributeNumbers, this.sorterMethod);
-    }
-
-     */
 }

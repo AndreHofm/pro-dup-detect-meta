@@ -1,5 +1,6 @@
 package de.pdd_metadata.duplicate_detection;
 
+import de.pdd_metadata.similarity_measures.Levenshtein;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

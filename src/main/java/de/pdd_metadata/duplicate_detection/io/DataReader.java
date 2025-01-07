@@ -3,16 +3,18 @@ package de.pdd_metadata.duplicate_detection.io;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import com.opencsv.enums.CSVReaderNullFieldIndicator;
 import com.opencsv.exceptions.CsvValidationException;
+import de.pdd_metadata.similarity_measures.Levenshtein;
 import de.pdd_metadata.duplicate_detection.Magpie;
 import de.pdd_metadata.duplicate_detection.structures.Block;
 import de.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
 import de.pdd_metadata.duplicate_detection.structures.Record;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.util.*;
 
@@ -23,13 +25,15 @@ public class DataReader {
     public int numLines;
     public int maxAttributes;
     private int numAttributes;
+    private Charset charset;
 
-    public DataReader(String filePath, boolean hasHeadline, char attributeSeparator, int numLines, int maxAttributes) {
+    public DataReader(String filePath, boolean hasHeadline, char attributeSeparator, int numLines, int maxAttributes, Charset charset) {
         this.filePath = filePath;
         this.hasHeadline = hasHeadline;
         this.attributeSeparator = attributeSeparator;
         this.numLines = numLines;
         this.maxAttributes = maxAttributes;
+        this.charset = charset;
     }
 
     public HashMap<Integer, Block> readBlocks(int[] order, int startBlock, int endBlock, int blockSize) {
@@ -56,13 +60,13 @@ public class DataReader {
             linePositions.put(order[index], index);
         }
 
-        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)) {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
             int resultLineIndex = 0;
             for (int i = 0; i < this.getNumRecords(); ++i) {
                 String[] line = reader.readNext();
 
                 if (i == sortedLineIndices[resultLineIndex]) {
-                    Record record = new Record(i ,line);
+                    Record record = new Record(i, line);
                     record = this.fitToMaxSize(record);
                     int blockId = linePositions.get(i) / blockSize;
                     blocks.get(blockId).records.put(i, record);
@@ -142,7 +146,7 @@ public class DataReader {
         Collections.sort(sortedLineIndices);
         List<Record> resultRecords = new ArrayList<>();
 
-        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)) {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
             int resultLineIndex = 0;
 
             for (int i = 0; i < this.getNumRecords(); ++i) {
@@ -170,8 +174,8 @@ public class DataReader {
 
         assert keyAttributeNumbers.length <= this.getNumAttributes();
 
-        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)){
-            for(int i = 0; i < this.getNumRecords(); ++i) {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
+            for (int i = 0; i < this.getNumRecords(); ++i) {
                 Record record = new Record(reader.readNext());
                 record = this.fitToMaxSize(record);
                 String[] attributeValues = this.extractFields(record.values, keyAttributeNumbers);
@@ -183,7 +187,7 @@ public class DataReader {
     }
 
     public Set<Duplicate> readResultDuplicates() {
-        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)){
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
             Set<Duplicate> resultDuplicates = new HashSet<>();
 
             String[] ids;
@@ -197,9 +201,39 @@ public class DataReader {
         }
     }
 
+    public Set<Duplicate> simpleDuDe(Levenshtein levenshtein, float threshold) {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
+            Set<Duplicate> resultDuplicates = new HashSet<>();
+            List<Record> records = new ArrayList<>();
+
+            String[] strings;
+            while ((strings = reader.readNext()) != null) {
+                records.add(new Record(Integer.parseInt(strings[0]), strings));
+            }
+
+            System.out.println(records.size());
+
+            for (int i = 0; i < records.size(); i++) {
+                System.out.println(i);
+                for (int j = i; j < records.size(); j++) {
+                    if (records.get(i).id != records.get(j).id) {
+                        double sim = levenshtein.calculateSimilarityOf(records.get(i).values, records.get(j).values);
+                        if (sim >= threshold){
+                            resultDuplicates.add(new Duplicate(records.get(i).id, records.get(j).id, Integer.parseInt(records.get(i).values[0]), Integer.parseInt(records.get(j).values[0])));
+                        }
+                    }
+                }
+            }
+
+            return resultDuplicates;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public int getNumRecords() throws IOException {
         if (this.numLines == 0) {
-            this.numLines = this.countLines(this.filePath);
+            this.numLines = this.countLines(this.filePath, this.charset);
         }
 
         return this.hasHeadline ? this.numLines - 1 : this.numLines;
@@ -216,7 +250,7 @@ public class DataReader {
     protected String[] extractFields(String[] fields, int[] indices) {
         String[] extractedFields = new String[indices.length];
 
-        for(int i = 0; i < indices.length; ++i) {
+        for (int i = 0; i < indices.length; ++i) {
             extractedFields[i] = indices[i] < fields.length ? fields[indices[i]] : "";
         }
 
@@ -224,7 +258,7 @@ public class DataReader {
     }
 
     protected int countAttributes() {
-        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline)) {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
             String[] line;
             if ((line = reader.readNext()) == null) {
                 throw new IOException("Failed to count the number of attributes while reading data: File is empty!");
@@ -236,15 +270,25 @@ public class DataReader {
         }
     }
 
-    private CSVReader buildFileReader(String filePath, char attributeSeparator, boolean hasHeadline) throws IOException {
-        return new CSVReaderBuilder(new FileReader(filePath))
-                .withCSVParser(new CSVParserBuilder().withSeparator(attributeSeparator).withEscapeChar((char) 0).build())
+    private CSVReader buildFileReader(String filePath, char attributeSeparator, boolean hasHeadline, Charset charset) throws IOException {
+        Path path = Paths.get(filePath);
+
+        BufferedReader buffer = Files.newBufferedReader(path, charset);
+        return new CSVReaderBuilder(buffer)
+                .withCSVParser(new CSVParserBuilder()
+                        .withSeparator(attributeSeparator)
+                        .withQuoteChar('"')
+                        .withEscapeChar('\\')
+                        .withStrictQuotes(false)
+                        .withIgnoreLeadingWhiteSpace(false)
+                        .withFieldAsNull(CSVReaderNullFieldIndicator.EMPTY_QUOTES)
+                        .build())
                 .withSkipLines(hasHeadline ? 1 : 0)
                 .build();
     }
 
-    private int countLines(String filePath) throws IOException {
-        try (var lines = Files.lines(Path.of(filePath))) {
+    private int countLines(String filePath, Charset charset) throws IOException {
+        try (var lines = Files.lines(Path.of(filePath), charset)) {
             return (int) lines.count();
         }
     }

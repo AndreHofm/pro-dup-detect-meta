@@ -90,7 +90,7 @@ public class Magpie {
 
     private void discardLastKeys() {
         for (int i = 0; i < this.numDiscardKeys; ++i) {
-            KeyElement highestKey = (KeyElement) this.keys.last();
+            KeyElement highestKey = this.keys.last();
             this.keys.remove(highestKey);
         }
 
@@ -98,7 +98,7 @@ public class Magpie {
 
     private void discardLastKeysProgressive() {
         for (int i = 0; i < this.numDiscardKeys; ++i) {
-            KeyElement highestKey = (KeyElement) this.keys.last();
+            KeyElement highestKey = this.keys.last();
             this.keys.remove(highestKey);
             this.records.remove(highestKey.getId());
         }
@@ -107,7 +107,7 @@ public class Magpie {
 
     private void discardLastKeysProgressiveToMultipleOf(int blockSize) {
         while (this.keys.size() % blockSize != 0) {
-            KeyElement highestKey = (KeyElement) this.keys.last();
+            KeyElement highestKey = this.keys.last();
             this.keys.remove(highestKey);
             this.records.remove(highestKey.getId());
         }
