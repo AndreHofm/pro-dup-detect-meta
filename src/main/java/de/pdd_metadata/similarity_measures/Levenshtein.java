@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 
 @Getter
 public class Levenshtein {
-    private int[] similarityAttributes = new int[]{2, 3, 8, 9};
+    private int[] similarityAttributes = new int[]{8 ,2, 3, 9};
     private int maxAttributeLength = 200;
 
     public double calculate(final String string1, final String string2) {

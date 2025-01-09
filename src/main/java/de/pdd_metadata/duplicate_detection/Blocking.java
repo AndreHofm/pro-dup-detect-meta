@@ -71,12 +71,23 @@ public class Blocking {
         return blockResults;
     }
 
+    protected void findDuplicatesUsingSingleKey() throws IOException {
+        int[] order = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, new int[]{8, 2, 3}, this.dataReader, this.partitionSize, this);
+        this.runPriority(order);
+    }
+
     protected void findDuplicatesUsingMultipleKeysSequential() throws IOException {
+        double startTime = System.currentTimeMillis();
+
         for (int keyAttributeNumber : this.levenshtein.getSimilarityAttributes()) {
             int[] keyAttributeNumbers = new int[]{keyAttributeNumber};
             int[] order = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, keyAttributeNumbers, this.dataReader, this.partitionSize, this);
-            this.runStandard(order);
+            this.runPriority(order);
         }
+
+        double endTime = System.currentTimeMillis();
+
+        System.out.println((endTime - startTime) / 1000 + "s");
 
         System.out.println("Number of Duplicates: " + this.duplicates.size());
     }
@@ -146,6 +157,51 @@ public class Blocking {
         int numBlocks = (int) Math.ceil((double) order.length / (double) this.blockSize);
         int numLoadableBlocks = (int) Math.ceil((double) this.partitionSize / (double) this.blockSize);
         this.runBasicBlocking(this.blockSize, numBlocks, numLoadableBlocks, order, -1);
+    }
+
+    private void runPriority(int[] order) throws IOException {
+        int numBlocks = (int)Math.ceil((double)order.length / (double)this.blockSize);
+        PriorityQueue<BlockResult> blockResults = new PriorityQueue<>(this.runBasicBlocking(this.blockSize, numBlocks, this.numLoadableBlocks, order, -1));
+        HashSet<Pair<Integer, Integer>> completedBlockPairs = new HashSet<>();
+
+        while(!blockResults.isEmpty()) {
+            List<Pair<Integer, Integer>> mostPromisingBlockPairs = new ArrayList<>();
+            Set<Integer> blocksToLoad = new HashSet<>();
+
+            while(blocksToLoad.size() <= this.numLoadableBlocks - 4 && !blockResults.isEmpty()) {
+                BlockResult blockResult = blockResults.remove();
+                Pair<Integer, Integer> leftPair = new ImmutablePair<>(blockResult.getFirstBlockId() - 1, blockResult.getSecondBlockId());
+                Pair<Integer, Integer> rightPair = new ImmutablePair<>(blockResult.getFirstBlockId(), blockResult.getSecondBlockId() + 1);
+                if (!completedBlockPairs.contains(leftPair) && leftPair.getLeft() >= 0) {
+                    completedBlockPairs.add(leftPair);
+                    mostPromisingBlockPairs.add(leftPair);
+                    blocksToLoad.add(leftPair.getLeft());
+                    blocksToLoad.add(leftPair.getRight());
+                }
+
+                if (!completedBlockPairs.contains(rightPair) && rightPair.getRight() < numBlocks) {
+                    completedBlockPairs.add(rightPair);
+                    mostPromisingBlockPairs.add(rightPair);
+                    blocksToLoad.add(rightPair.getLeft());
+                    blocksToLoad.add(rightPair.getRight());
+                }
+            }
+
+            if (numBlocks > this.numLoadableBlocks) {
+                this.blocks = null;
+                this.blocks = this.dataReader.readBlocks(order, blocksToLoad, this.blockSize);
+            }
+
+            for(Pair<Integer, Integer> pair : mostPromisingBlockPairs) {
+                Block leftBlock = this.blocks.get(pair.getLeft());
+                Block rightBlock = this.blocks.get(pair.getRight());
+                int numDuplicates = this.compare(leftBlock, rightBlock);
+                if (this.maxBlockRange > pair.getRight() - pair.getLeft()) {
+                    blockResults.add(new BlockResult(pair.getLeft(), pair.getRight(), numDuplicates, -1));
+                }
+            }
+        }
+
     }
 
     private Set<BlockResult> runBasicBlocking(int blockSize, int numBlocks, int numLoadableBlocks, int[] order, int keyId) {

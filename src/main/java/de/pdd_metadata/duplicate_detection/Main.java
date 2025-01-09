@@ -25,8 +25,9 @@ public class Main {
 
 
         try {
-            blocking.findDuplicatesUsingMultipleKeysConcurrently();
-            // blocking.findDuplicatesUsingMultipleKeysSequential();
+            // blocking.findDuplicatesUsingMultipleKeysConcurrently();
+            blocking.findDuplicatesUsingMultipleKeysSequential();
+            // blocking.findDuplicatesUsingSingleKey();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -63,7 +64,7 @@ public class Main {
         System.out.println("False Negative: " + fn);
         System.out.println("Precession: " + (double) tp / (double) (tp + fp));
         System.out.println("Recall: " + (double) tp / (double) (tp + fn));
-        System.out.println("F1: " +  (double) (2 * tp) / (double) (2 * tp + fn + fp));
+        System.out.println("F1-Score: " +  (double) (2 * tp) / (double) (2 * tp + fn + fp));
 
     }
 }

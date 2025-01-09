@@ -70,7 +70,6 @@ public class DataReader {
                     record = this.fitToMaxSize(record);
                     int blockId = linePositions.get(i) / blockSize;
                     blocks.get(blockId).records.put(i, record);
-                    // blocks.get(blockId).blockId = blockId;
                     ++resultLineIndex;
 
                     if (resultLineIndex == sortedLineIndices.length) {
@@ -123,6 +122,58 @@ public class DataReader {
         }
 
         return blocksPerKey;
+    }
+
+    public HashMap<Integer, Block>  readBlocks(int[] order, Set<Integer> blocksToLoad, int blockSize) throws IOException {
+        assert order.length > 0;
+
+        HashMap<Integer, Block>  blocks = new HashMap<>();
+
+        for(int blockId : blocksToLoad) {
+            blocks.put(blockId, new Block());
+        }
+
+        if (blocksToLoad.isEmpty()) {
+            return blocks;
+        } else {
+            List<Integer> sortedLineIndices = new ArrayList<>();
+            HashMap<Integer, Integer> linePositions = new HashMap<>();
+
+            for(int blockToLoad : blocksToLoad) {
+                int startIndex = blockToLoad * blockSize;
+                int endIndex = Math.min((blockToLoad + 1) * blockSize, order.length);
+
+                for(int index = startIndex; index < endIndex; ++index) {
+                    sortedLineIndices.add(order[index]);
+                    linePositions.put(order[index], index);
+                }
+            }
+
+            Collections.sort(sortedLineIndices);
+
+            try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)){
+                int resultLineIndex = 0;
+
+                for(int i = 0; i < this.getNumRecords(); ++i) {
+                    String[] line = reader.readNext();
+                    if (i == sortedLineIndices.get(resultLineIndex)) {
+                        Record record = new Record(i, line);
+                        record = this.fitToMaxSize(record);
+                        int blockId = linePositions.get(i) / blockSize;
+                        blocks.get(blockId).records.put(i, record);
+                        ++resultLineIndex;
+
+                        if (resultLineIndex == sortedLineIndices.size()) {
+                            break;
+                        }
+                    }
+                }
+            } catch (CsvValidationException e) {
+                throw new RuntimeException(e);
+            }
+
+            return blocks;
+        }
     }
 
     /*
