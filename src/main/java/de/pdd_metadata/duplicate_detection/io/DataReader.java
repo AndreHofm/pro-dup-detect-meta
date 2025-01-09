@@ -26,6 +26,9 @@ public class DataReader {
     public int maxAttributes;
     private int numAttributes;
     private Charset charset;
+    private boolean enablePartitionCaching = false;
+    private String tempPath;
+    private DataWriter dataWriter = new DataWriter();
 
     public DataReader(String filePath, boolean hasHeadline, char attributeSeparator, int numLines, int maxAttributes, Charset charset) {
         this.filePath = filePath;
@@ -34,6 +37,44 @@ public class DataReader {
         this.numLines = numLines;
         this.maxAttributes = maxAttributes;
         this.charset = charset;
+    }
+
+    public HashMap<Integer, Record> readLines(int[] lineIndices) throws IOException {
+        int[] sortedLineIndices = Arrays.copyOf(lineIndices, lineIndices.length);
+        Arrays.sort(sortedLineIndices);
+        String partitionKey = null;
+        if (this.enablePartitionCaching) {
+            partitionKey = this.getPartitionKeyFrom(sortedLineIndices);
+            File cacheFile = new File(this.tempPath + partitionKey);
+            if (cacheFile.exists()) {
+                return this.readTemp(partitionKey, 0, lineIndices.length);
+            }
+        }
+
+        HashMap<Integer, Record> records = new HashMap<>();
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
+            int resultLineIndex = 0;
+
+            for (int i = 0; i < this.getNumRecords(); ++i) {
+                String[] line = reader.readNext();
+                if (i == sortedLineIndices[resultLineIndex]) {
+                    Record record = new Record(i, line);
+                    records.put(i, this.fitToMaxSize(record));
+                    ++resultLineIndex;
+                    if (resultLineIndex == sortedLineIndices.length) {
+                        break;
+                    }
+                }
+            }
+
+            if (this.enablePartitionCaching) {
+                this.dataWriter.writeTemp(partitionKey, records);
+            }
+        } catch (CsvValidationException e) {
+            throw new RuntimeException(e);
+        }
+
+        return records;
     }
 
     public HashMap<Integer, Block> readBlocks(int[] order, int startBlock, int endBlock, int blockSize) {
@@ -124,12 +165,12 @@ public class DataReader {
         return blocksPerKey;
     }
 
-    public HashMap<Integer, Block>  readBlocks(int[] order, Set<Integer> blocksToLoad, int blockSize) throws IOException {
+    public HashMap<Integer, Block> readBlocks(int[] order, Set<Integer> blocksToLoad, int blockSize) throws IOException {
         assert order.length > 0;
 
-        HashMap<Integer, Block>  blocks = new HashMap<>();
+        HashMap<Integer, Block> blocks = new HashMap<>();
 
-        for(int blockId : blocksToLoad) {
+        for (int blockId : blocksToLoad) {
             blocks.put(blockId, new Block());
         }
 
@@ -139,11 +180,11 @@ public class DataReader {
             List<Integer> sortedLineIndices = new ArrayList<>();
             HashMap<Integer, Integer> linePositions = new HashMap<>();
 
-            for(int blockToLoad : blocksToLoad) {
+            for (int blockToLoad : blocksToLoad) {
                 int startIndex = blockToLoad * blockSize;
                 int endIndex = Math.min((blockToLoad + 1) * blockSize, order.length);
 
-                for(int index = startIndex; index < endIndex; ++index) {
+                for (int index = startIndex; index < endIndex; ++index) {
                     sortedLineIndices.add(order[index]);
                     linePositions.put(order[index], index);
                 }
@@ -151,10 +192,10 @@ public class DataReader {
 
             Collections.sort(sortedLineIndices);
 
-            try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)){
+            try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
                 int resultLineIndex = 0;
 
-                for(int i = 0; i < this.getNumRecords(); ++i) {
+                for (int i = 0; i < this.getNumRecords(); ++i) {
                     String[] line = reader.readNext();
                     if (i == sortedLineIndices.get(resultLineIndex)) {
                         Record record = new Record(i, line);
@@ -262,14 +303,11 @@ public class DataReader {
                 records.add(new Record(Integer.parseInt(strings[0]), strings));
             }
 
-            System.out.println(records.size());
-
             for (int i = 0; i < records.size(); i++) {
-                System.out.println(i);
                 for (int j = i; j < records.size(); j++) {
                     if (records.get(i).id != records.get(j).id) {
                         double sim = levenshtein.calculateSimilarityOf(records.get(i).values, records.get(j).values);
-                        if (sim >= threshold){
+                        if (sim >= threshold) {
                             resultDuplicates.add(new Duplicate(records.get(i).id, records.get(j).id, Integer.parseInt(records.get(i).values[0]), Integer.parseInt(records.get(j).values[0])));
                         }
                     }
@@ -319,6 +357,36 @@ public class DataReader {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private HashMap<Integer, Record> readTemp(String fileName, int startIndex, int endIndex) {
+        HashMap<Integer, Record> records = new HashMap<>();
+        try (CSVReader reader = this.buildFileReader(this.tempPath + fileName, ';', false, this.charset)) {
+            for (int i = 0; i < startIndex; ++i) {
+                reader.readNext();
+            }
+
+            for (int i = 0; i < endIndex - startIndex; ++i) {
+                String[] line = reader.readNext();
+                records.put(Integer.parseInt((line[0])), new Record(Arrays.copyOfRange(line, 1, line.length)));
+            }
+        } catch (CsvValidationException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return records;
+    }
+
+    private String getPartitionKeyFrom(int[] sortedLineIndices) {
+        int lenght = Math.min(sortedLineIndices.length, 5);
+        StringBuilder buffer = new StringBuilder("SNM_Partition");
+
+        for (int i = 0; i < lenght; ++i) {
+            buffer.append("-").append(sortedLineIndices[i]);
+        }
+
+        buffer.append("-(").append(sortedLineIndices.length).append(")");
+        return buffer.toString();
     }
 
     private CSVReader buildFileReader(String filePath, char attributeSeparator, boolean hasHeadline, Charset charset) throws IOException {

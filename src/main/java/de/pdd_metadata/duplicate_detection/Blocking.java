@@ -72,7 +72,7 @@ public class Blocking {
     }
 
     protected void findDuplicatesUsingSingleKey() throws IOException {
-        int[] order = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, new int[]{8, 2, 3}, this.dataReader, this.partitionSize, this);
+        int[] order = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, new int[]{8, 2, 3}, this.dataReader, this.partitionSize, this, null);
         this.runPriority(order);
     }
 
@@ -81,7 +81,7 @@ public class Blocking {
 
         for (int keyAttributeNumber : this.levenshtein.getSimilarityAttributes()) {
             int[] keyAttributeNumbers = new int[]{keyAttributeNumber};
-            int[] order = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, keyAttributeNumbers, this.dataReader, this.partitionSize, this);
+            int[] order = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, keyAttributeNumbers, this.dataReader, this.partitionSize, this, null);
             this.runPriority(order);
         }
 
@@ -102,7 +102,7 @@ public class Blocking {
 
         for (int i = 0; i < this.levenshtein.getSimilarityAttributes().length; i++) {
             int[] keyAttributeNumbers = new int[]{i};
-            orders[i] = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, keyAttributeNumbers, this.dataReader, this.partitionSize, this);
+            orders[i] = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, keyAttributeNumbers, this.dataReader, this.partitionSize, this, null);
             blockResults.addAll(this.runBasicBlocking(this.blockSize, numBlocks, this.numLoadableBlocks, orders[i], i));
         }
 
@@ -160,15 +160,15 @@ public class Blocking {
     }
 
     private void runPriority(int[] order) throws IOException {
-        int numBlocks = (int)Math.ceil((double)order.length / (double)this.blockSize);
+        int numBlocks = (int) Math.ceil((double) order.length / (double) this.blockSize);
         PriorityQueue<BlockResult> blockResults = new PriorityQueue<>(this.runBasicBlocking(this.blockSize, numBlocks, this.numLoadableBlocks, order, -1));
         HashSet<Pair<Integer, Integer>> completedBlockPairs = new HashSet<>();
 
-        while(!blockResults.isEmpty()) {
+        while (!blockResults.isEmpty()) {
             List<Pair<Integer, Integer>> mostPromisingBlockPairs = new ArrayList<>();
             Set<Integer> blocksToLoad = new HashSet<>();
 
-            while(blocksToLoad.size() <= this.numLoadableBlocks - 4 && !blockResults.isEmpty()) {
+            while (blocksToLoad.size() <= this.numLoadableBlocks - 4 && !blockResults.isEmpty()) {
                 BlockResult blockResult = blockResults.remove();
                 Pair<Integer, Integer> leftPair = new ImmutablePair<>(blockResult.getFirstBlockId() - 1, blockResult.getSecondBlockId());
                 Pair<Integer, Integer> rightPair = new ImmutablePair<>(blockResult.getFirstBlockId(), blockResult.getSecondBlockId() + 1);
@@ -192,7 +192,7 @@ public class Blocking {
                 this.blocks = this.dataReader.readBlocks(order, blocksToLoad, this.blockSize);
             }
 
-            for(Pair<Integer, Integer> pair : mostPromisingBlockPairs) {
+            for (Pair<Integer, Integer> pair : mostPromisingBlockPairs) {
                 Block leftBlock = this.blocks.get(pair.getLeft());
                 Block rightBlock = this.blocks.get(pair.getRight());
                 int numDuplicates = this.compare(leftBlock, rightBlock);
@@ -233,11 +233,12 @@ public class Blocking {
 
                 double value = this.levenshtein.calculateSimilarityOf(record1.values, record2.values);
 
-                boolean newDuplicate = this.duplicates.stream().noneMatch(x -> x.getRecordId1() == record1.id && x.getRecordId2() == record2.id
-                        || x.getRecordId1() == record2.id && x.getRecordId2() == record1.id);
+                Duplicate duplicate = new Duplicate(record1.id, record2.id, Integer.parseInt(record1.values[0]), Integer.parseInt(record2.values[0]));
+
+                boolean newDuplicate = !this.duplicates.contains(duplicate);
 
                 if (value >= threshold && newDuplicate) {
-                    this.duplicates.add(new Duplicate(record1.id, record2.id, Integer.parseInt(record1.values[0]), Integer.parseInt(record2.values[0])));
+                    this.duplicates.add(duplicate);
                     ++numDuplicates;
                 }
             }
@@ -258,11 +259,12 @@ public class Blocking {
 
                 double value = this.levenshtein.calculateSimilarityOf(record1.values, record2.values);
 
-                boolean newDuplicate = this.duplicates.stream().noneMatch(x -> x.getRecordId1() == record1.id && x.getRecordId2() == record2.id
-                        || x.getRecordId1() == record2.id && x.getRecordId2() == record1.id);
+                Duplicate duplicate = new Duplicate(record1.id, record2.id, Integer.parseInt(record1.values[0]), Integer.parseInt(record2.values[0]));
+
+                boolean newDuplicate = !this.duplicates.contains(duplicate);
 
                 if (value >= threshold && newDuplicate) {
-                    this.duplicates.add(new Duplicate(record1.id, record2.id, Integer.parseInt(record1.values[0]), Integer.parseInt(record2.values[0])));
+                    this.duplicates.add(duplicate);
                     ++numDuplicates;
                 }
             }

@@ -84,6 +84,23 @@ public class Magpie {
 
     }
 
+    public void placeProgressive(SortedNeighbourhood sortedNeighborhood) {
+        if (this.orderPointer + this.keys.size() < this.numKeys) {
+            this.discardLastKeysProgressive();
+        }
+
+        int placedKeys = this.placeKeys();
+        if (!this.records.isEmpty()) {
+            this.numDuplicates += sortedNeighborhood.findDuplicatesIn(this.records, Arrays.copyOfRange(this.order, this.orderPointer - placedKeys, this.orderPointer));
+            this.records.clear();
+        }
+
+        if (!this.isFull()) {
+            this.tossLast();
+        }
+
+    }
+
     public boolean isFull() {
         return this.orderPointer == this.numKeys;
     }

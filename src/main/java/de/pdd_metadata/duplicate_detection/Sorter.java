@@ -15,37 +15,24 @@ public class Sorter {
     private Set<BlockResult> recentBlockResults;
     private int magpieNumDiscardKeys = 100;
 
-    public int[] calculateOrderMagpieProgressive(KeyElementFactory keyElementFactory, int[] keyAttributeNumbers, DataReader dataReader, int partitionSize, Blocking blocking) throws IOException {
+    public int[] calculateOrderMagpieProgressive(KeyElementFactory keyElementFactory, int[] keyAttributeNumbers, DataReader dataReader, int partitionSize, Blocking blocking, SortedNeighbourhood sortedNeighbourhood) throws IOException {
         int numRecords = dataReader.getNumRecords();
         Magpie magpie = new Magpie(numRecords, partitionSize, this.magpieNumDiscardKeys);
 
         do {
             dataReader.readKeyAndLinesInto(magpie, keyElementFactory, keyAttributeNumbers);
 
-            magpie.placeProgressive(blocking, keyAttributeNumbers[0]);
+            if (blocking != null) {
+                magpie.placeProgressive(blocking, keyAttributeNumbers[0]);
+            } else {
+                magpie.placeProgressive(sortedNeighbourhood);
+            }
+
 
         } while (!magpie.isFull());
 
         this.numRecentDuplicates = magpie.getNumDuplicates();
         this.recentBlockResults = magpie.getBlockResults();
         return magpie.getOrder();
-    }
-
-    public int[] calculateOrderRandom(DataReader dataReader) throws IOException {
-        int numRecords = dataReader.getNumRecords();
-        List<Integer> order = new ArrayList<>(numRecords);
-
-        for (int i = 0; i < numRecords; ++i) {
-            order.add(i);
-        }
-
-        Collections.shuffle(order);
-        int[] result = new int[numRecords];
-
-        for (int i = 0; i < numRecords; ++i) {
-            result[i] = order.get(i);
-        }
-
-        return result;
     }
 }
