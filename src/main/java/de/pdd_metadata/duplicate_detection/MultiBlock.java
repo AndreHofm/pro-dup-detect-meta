@@ -1,16 +1,20 @@
 package de.pdd_metadata.duplicate_detection;
 
 import de.pdd_metadata.duplicate_detection.structures.Block;
+import de.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.pdd_metadata.duplicate_detection.structures.multi_block.BlockingStructure;
-import de.pdd_metadata.duplicate_detection.structures.multi_block.NCVR_Record;
+import de.pdd_metadata.duplicate_detection.structures.Record;
 import de.pdd_metadata.duplicate_detection.structures.multi_block.RecordPair;
+import de.pdd_metadata.similarity_measures.Levenshtein;
+import org.apache.hadoop.util.bloom.BloomFilter;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class MultiBlock {
+    public Levenshtein levenshtein = new Levenshtein();
+    public Set<Duplicate> duplicates = new HashSet<>();
 
-    public static void execute(BlockingStructure H) {
+    public void execute(BlockingStructure H) {
         // BlockingStructure H = new BlockingStructure();
         double ratio = 33.0;
         double delta = 0.1;
@@ -19,19 +23,52 @@ public class MultiBlock {
         HashSet<RecordPair> matchingPairs = new HashSet<>();
 
         for (int i = 1; i <= s; i++) {
-            // Arrays.sort(H.pq.toArray());
             for (Block block : H.pq) {
                 Set<RecordPair> set = block.sample(ratio);
                 for (RecordPair rp : set) {
-                    NCVR_Record rA = (NCVR_Record) rp.rA;
-                    NCVR_Record rB = (NCVR_Record) rp.rA;
+                    Record rA =  rp.rA;
+                    Record rB =  rp.rB;
                     block.evaluations++;
-                    if (NCVR_Record.eval(rA, rB)) {
+
+                    Duplicate duplicate = new Duplicate(rA.id, rB.id);
+
+                    if (levenshtein.calculateSimilarityOf(rA.values, rB.values) >= 0.7) {
                         matchingPairs.add(rp);
                         block.noMatchingPairs++;
+                        duplicates.add(duplicate);
                     }
-                    block.calcScore();
-                    H.pq.add(block);
+                }
+            }
+        }
+    }
+
+    public void execute2(BlockingStructure b) {
+        double ratio = 33.0;
+        double delta = 0.1;
+        int s = b.calcS(delta, ratio);
+
+        Set<RecordPair> evaluated = new HashSet<>();
+        b.init();
+        PriorityQueue<Block> pq = b.pq;
+
+        for (int i = 1; i <= s; i++) {
+            for (Block block : pq) {
+                Set<RecordPair> recordPairs = block.sample(ratio);
+
+                for (RecordPair recordPair : recordPairs) {
+                    if (!evaluated.contains(recordPair)) {
+                        evaluated.add(recordPair);
+
+                        Record recordA = recordPair.rA;
+                        Record recordB = recordPair.rB;
+
+                        if (levenshtein.calculateSimilarityOf(recordA.values, recordB.values) >= 0.7) {
+                            block.noMatchingPairs++;
+                            duplicates.add(new Duplicate(recordA.id, recordB.id));
+                        }
+
+                        block.calcScore();
+                    }
                 }
             }
         }

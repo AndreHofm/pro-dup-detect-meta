@@ -1,6 +1,5 @@
 package de.pdd_metadata.similarity_measures;
 
-import de.pdd_metadata.similarity_measures.helper.Tokenizer;
 import lombok.Getter;
 
 import java.util.Arrays;
@@ -79,7 +78,6 @@ public class Levenshtein {
         if (s1 != null && s2 != null && (!s1.isEmpty() || !s2.isEmpty())) {
             int matrixWidth = Math.min(s1.length(), this.maxAttributeLength);
             int matrixHeight = Math.min(s2.length(), this.maxAttributeLength);
-            // int[] line1 = new int[matrixWidth + 1];
             int[] line1 = IntStream.rangeClosed(0, matrixWidth).toArray();
             int[] line2 = new int[matrixWidth + 1];
             int[] line3;

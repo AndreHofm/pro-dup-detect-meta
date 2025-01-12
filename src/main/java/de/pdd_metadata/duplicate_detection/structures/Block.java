@@ -11,8 +11,8 @@ import java.util.*;
 public class Block {
     public int blockId;
     public int size;
-    public List<Record> recordsA;
-    public List<Record> recordsB;
+    public List<Record> recordsA = new ArrayList<>();
+    public List<Record> recordsB = new ArrayList<>();
     public HashMap<Integer, Record> records = new HashMap<>();
     public double score;
     public int evaluations;

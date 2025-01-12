@@ -17,17 +17,15 @@ import de.pdd_metadata.duplicate_detection.structures.Record;
  */
 public class BlockingStructure {
 
-    public HashMap<Integer, Block> blocks = new HashMap<>();
+    public HashMap<String, Block> blocks = new HashMap<>();
 
     public PriorityQueue<Block> pq = new PriorityQueue<>(10, new ScoreComparator());
 
     public void init() {
-        for (int i = 0; i < blocks.size(); i++) {
-            pq.add(blocks.get(i));
-        }
+        pq.addAll(blocks.values());
     }
 
-    static class ScoreComparator implements Comparator<Block> {
+    public static class ScoreComparator implements Comparator<Block> {
 
         // Overriding compare()method of Comparator
         // for descending order of cgpa
@@ -41,6 +39,7 @@ public class BlockingStructure {
         }
     }
 
+    /*
     public void populate(Record r) {
         if (blocks.containsKey(r.blockingKey)) {
             Block b = blocks.get(r.blockingKey);
@@ -51,6 +50,8 @@ public class BlockingStructure {
             blocks.put(r.blockingKey, b);
         }
     }
+
+     */
 
     public int calcS(double delta, double ratio) {
         int s = (int) Math.round(Math.log(1 / delta) * ratio);

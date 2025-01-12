@@ -11,6 +11,7 @@ import de.pdd_metadata.duplicate_detection.structures.Block;
 import de.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
 import de.pdd_metadata.duplicate_detection.structures.Record;
+import org.apache.commons.codec.language.Metaphone;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
@@ -34,6 +35,52 @@ public class DataReader {
         this.numLines = numLines;
         this.maxAttributes = maxAttributes;
         this.charset = charset;
+    }
+
+    public String[] getAttributeNames() {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, false, this.charset)) {
+            return reader.readNext();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public HashMap<Integer, Record> readLines(int[] lineIndices) throws IOException {
+        int[] sortedLineIndices = Arrays.copyOf(lineIndices, lineIndices.length);
+        Arrays.sort(sortedLineIndices);
+        String partitionKey = null;
+        if (this.enablePartitionCaching) {
+            partitionKey = this.getPartitionKeyFrom(sortedLineIndices);
+            File cacheFile = new File(this.tempPath + partitionKey);
+            if (cacheFile.exists()) {
+                return this.readTemp(partitionKey, 0, lineIndices.length);
+            }
+        }
+
+        HashMap<Integer, Record> records = new HashMap<>();
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
+            int resultLineIndex = 0;
+
+            for (int i = 0; i < this.getNumRecords(); ++i) {
+                String[] line = reader.readNext();
+                if (i == sortedLineIndices[resultLineIndex]) {
+                    Record record = new Record(i, line);
+                    records.put(i, this.fitToMaxSize(record));
+                    ++resultLineIndex;
+                    if (resultLineIndex == sortedLineIndices.length) {
+                        break;
+                    }
+                }
+            }
+
+            if (this.enablePartitionCaching) {
+                this.dataWriter.writeTemp(partitionKey, records);
+            }
+        } catch (CsvValidationException e) {
+            throw new RuntimeException(e);
+        }
+
+        return records;
     }
 
     public HashMap<Integer, Block> readBlocks(int[] order, int startBlock, int endBlock, int blockSize) {
@@ -176,22 +223,6 @@ public class DataReader {
         }
     }
 
-    /*
-    public HashMap<Integer, Block> transformToNCVR() {
-        Map<Integer, Block> blocking = new HashMap<>();
-        for (String[] record : records) {
-            Integer key = calculateBlockingKeyFor(record);
-
-            if (blocking.get(key) == null) {
-                blocking.put(new ArrayList<>());
-            }
-            blocking.get(key).add(record);
-        }
-
-        return blocking;
-     }
-     */
-
     public List<Record> readLines(Collection<Integer> lineIndices) throws IOException {
         List<Integer> sortedLineIndices = new ArrayList<>(lineIndices);
         Collections.sort(sortedLineIndices);
@@ -280,6 +311,45 @@ public class DataReader {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public HashMap<String, Block> readBlockForMulti(int order[]) {
+        System.out.println("Starting to read blocks...");
+        HashMap<String, Block> blocks = new HashMap<>();
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
+            Metaphone metaphone = new Metaphone();
+            metaphone.setMaxCodeLen(4);
+
+            for (int i = 0; i < this.getNumRecords(); ++i) {
+                String[] line = reader.readNext();
+                StringBuilder blockingKey = new StringBuilder();
+
+                for (int key : order) {
+                    String tempKey = metaphone.encode(line[key]);
+                    String blockKey = tempKey.length() >= 2 ? tempKey.substring(0, 2) : tempKey;
+                    blockingKey.append(blockKey);
+                }
+
+                String finalKey = blockingKey.toString();
+
+                if (blocks.get(finalKey) == null) {
+                    blocks.put(finalKey, new Block());
+                }
+
+                Record record = new Record(Integer.parseInt(line[0]), line);
+                record = this.fitToMaxSize(record);
+                if (blocks.get(finalKey).recordsA.size() <= blocks.get(finalKey).recordsB.size()) {
+                    blocks.get(finalKey).recordsA.add(record);
+                } else {
+                    blocks.get(finalKey).recordsB.add(record);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error reading blocks from file", e);
+        }
+
+        System.out.println("Finished reading blocks.");
+        return blocks;
     }
 
     public int getNumRecords() throws IOException {
