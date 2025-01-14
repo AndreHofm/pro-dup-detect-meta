@@ -86,15 +86,6 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-
-        String resultInput = dataPath + "cd_gold.csv";
-
-        DataReader resultDataReader = new DataReader(resultInput, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
-
-        Set<Duplicate> goldResults = resultDataReader.readResultDuplicates();
-
-        Set<Duplicate> results = sortedNeighbourhood.getDuplicates();
-
         /*
         Set<Duplicate> missing = goldResults.stream()
                 .filter(duplicate -> results.stream().noneMatch(x -> x.getPosRecordId1() == duplicate.getRecordId1() && x.getPosRecordId2() == duplicate.getRecordId2() ||
@@ -109,8 +100,6 @@ public class Main {
 
         Set<Duplicate> results = sortedNeighbourhood.getDuplicates();
 
-
-         */
 
         Set<Duplicate> missing = new HashSet<>(goldResults);
         missing.removeAll(results);
