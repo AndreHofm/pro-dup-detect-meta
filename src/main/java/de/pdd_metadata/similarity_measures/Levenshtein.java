@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 
 @Getter
 public class Levenshtein {
-    private int[] similarityAttributes = new int[]{8 ,2, 3, 9};
+    private int[] similarityAttributes = new int[]{2, 3, 8, 9};
     private int maxAttributeLength = 200;
 
     public double calculate(final String string1, final String string2) {
@@ -81,7 +81,7 @@ public class Levenshtein {
             int[] line1 = IntStream.rangeClosed(0, matrixWidth).toArray();
             int[] line2 = new int[matrixWidth + 1];
             int[] line3;
-            
+
             for (int i = 0; i < matrixHeight; ++i) {
                 line2[0] = i + 1;
 
