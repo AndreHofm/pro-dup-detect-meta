@@ -1,4 +1,4 @@
-package de.pdd_metadata.duplicate_detection.io;
+package de.pdd_metadata.io;
 
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;

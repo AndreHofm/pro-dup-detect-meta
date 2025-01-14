@@ -1,7 +1,6 @@
-package de.pdd_metadata.duplicate_detection;
+package de.pdd_metadata;
 
 import de.hpi.isg.pyro.algorithms.Pyro;
-import de.hpi.isg.pyro.model.Column;
 import de.hpi.isg.pyro.model.PartialFD;
 import de.hpi.isg.pyro.model.PartialKey;
 import de.metanome.algorithm_integration.AlgorithmConfigurationException;
@@ -13,7 +12,6 @@ import de.metanome.algorithm_integration.input.FileInputGenerator;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.RelationalInput;
 import de.metanome.algorithm_integration.input.RelationalInputGenerator;
-import de.metanome.algorithm_integration.result_receiver.UniqueColumnCombinationResultReceiver;
 import de.metanome.algorithm_integration.results.FunctionalDependency;
 import de.metanome.algorithm_integration.results.Result;
 import de.metanome.algorithm_integration.results.UniqueColumnCombination;
@@ -21,8 +19,10 @@ import de.metanome.algorithms.hyfd.HyFD;
 import de.metanome.algorithms.hyucc.HyUCC;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.metanome.backend.result_receiver.ResultCache;
-import de.metanome.backend.result_receiver.ResultReceiver;
-import de.pdd_metadata.duplicate_detection.io.DataReader;
+import de.pdd_metadata.data_profiling.INDProfiler;
+import de.pdd_metadata.duplicate_detection.SortedNeighbourhood;
+import de.pdd_metadata.duplicate_detection.Sorter;
+import de.pdd_metadata.io.DataReader;
 import de.pdd_metadata.duplicate_detection.structures.AttributeKeyElementFactory;
 import de.pdd_metadata.duplicate_detection.structures.Block;
 import de.pdd_metadata.duplicate_detection.structures.Duplicate;
@@ -41,7 +41,7 @@ public class Main {
 
         DataReader dataReader = new DataReader(input, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
 
-        getBestAttributes(input, dataReader);
+        // getBestAttributes(input, dataReader);
 
         String resultInput = dataPath + "cd_gold.csv";
 
@@ -52,6 +52,15 @@ public class Main {
         Sorter sorter = new Sorter();
 
         AttributeKeyElementFactory attributeKeyElementFactory = new AttributeKeyElementFactory();
+
+        String input2 = "file:" + "/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/data/persons.tsv";
+        String input3 = "file:" + "/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/data/planets.tsv";
+
+        INDProfiler indProfiler = new INDProfiler(input2, input3);
+
+        indProfiler.executePartialINDProfiler();
+
+        indProfiler.getPartialINDS().forEach(System.out::println);
 
         // Blocking blocking = new Blocking(4, dataReader, 0.7, 4, 2000000, sorter, attributeKeyElementFactory);
 
@@ -74,7 +83,7 @@ public class Main {
         System.out.println(goldResults.size());
 
          */
-
+/*
         SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, 2000000, attributeKeyElementFactory, 20, 1, 0.7, sorter);
 
         try {
@@ -86,20 +95,7 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        /*
-        Set<Duplicate> missing = goldResults.stream()
-                .filter(duplicate -> results.stream().noneMatch(x -> x.getPosRecordId1() == duplicate.getRecordId1() && x.getPosRecordId2() == duplicate.getRecordId2() ||
-                        x.getPosRecordId1() == duplicate.getRecordId2() && x.getPosRecordId2() == duplicate.getRecordId1()))
-                .collect(Collectors.toSet());
-
-        Set<Duplicate> solltenNichtDrinSein = results.stream()
-                .filter(d -> goldResults.stream().noneMatch(x -> d.getPosRecordId1() == x.getRecordId1() && d.getPosRecordId2() == x.getRecordId2() ||
-                        d.getPosRecordId1() == x.getRecordId2() && d.getPosRecordId2() == x.getRecordId1()))
-                .collect(Collectors.toSet());
-         */
-
         Set<Duplicate> results = sortedNeighbourhood.getDuplicates();
-
 
         Set<Duplicate> missing = new HashSet<>(goldResults);
         missing.removeAll(results);
@@ -121,7 +117,13 @@ public class Main {
         System.out.println("Recall: " + (double) tp / (double) (tp + fn));
         System.out.println("F1-Score: " + (double) (2 * tp) / (double) (2 * tp + fn + fp));
 
+ */
 
+
+    }
+
+    public static String getUrl(String testFile) {
+        return "file:" + Thread.currentThread().getContextClassLoader().getResource(testFile).getPath();
     }
 
     private static HashMap<String, Block> runBlocking(DataReader dataReader) throws IOException {
@@ -153,7 +155,7 @@ public class Main {
     };
 
     private static void getHyUCC(FileInputGenerator input) throws AlgorithmExecutionException, FileNotFoundException {
-        HyUCC hyUCC= new HyUCC();
+        HyUCC hyUCC = new HyUCC();
 
         hyUCC.setRelationalInputConfigurationValue(HyUCC.Identifier.INPUT_GENERATOR.name(), input);
         hyUCC.setBooleanConfigurationValue(HyUCC.Identifier.NULL_EQUALS_NULL.name(), Parameters.NULL_EQUALS_NULL);

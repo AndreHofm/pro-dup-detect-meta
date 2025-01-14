@@ -1,13 +1,10 @@
 package de.pdd_metadata.duplicate_detection;
 
-import de.pdd_metadata.duplicate_detection.io.DataReader;
+import de.pdd_metadata.io.DataReader;
 import de.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
 import de.pdd_metadata.duplicate_detection.structures.progressive_blocking.BlockResult;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 public class Sorter {

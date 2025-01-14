@@ -1,6 +1,6 @@
 package de.pdd_metadata.duplicate_detection;
 
-import de.pdd_metadata.duplicate_detection.io.DataReader;
+import de.pdd_metadata.io.DataReader;
 import de.pdd_metadata.duplicate_detection.structures.Block;
 import de.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
