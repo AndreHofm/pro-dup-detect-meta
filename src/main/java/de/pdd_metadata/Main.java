@@ -34,7 +34,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, AlgorithmConfigurationException {
         String dataPath = "./data/";
 
         String input = dataPath + "cd.csv";
@@ -56,11 +56,29 @@ public class Main {
         String input2 = "file:" + "/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/data/persons.tsv";
         String input3 = "file:" + "/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/data/planets.tsv";
 
-        INDProfiler indProfiler = new INDProfiler(input2, input3);
+        ConfigurationSettingFileInput config = new ConfigurationSettingFileInput(input,
+                false,
+                ';',
+                '"',
+                '\\',
+                false,
+                true,
+                0,
+                true,
+                false,
+                "");
 
-        indProfiler.executePartialINDProfiler();
+        FileInputGenerator fileInputGenerator = new DefaultFileInputGenerator(config);
 
-        indProfiler.getPartialINDS().forEach(System.out::println);
+        INDProfiler indProfiler = new INDProfiler(fileInputGenerator);
+
+        try {
+            indProfiler.executeFullINDProfiler();
+        } catch (AlgorithmExecutionException e) {
+            throw new RuntimeException(e);
+        }
+
+        indProfiler.getInds().forEach(System.out::println);
 
         // Blocking blocking = new Blocking(4, dataReader, 0.7, 4, 2000000, sorter, attributeKeyElementFactory);
 

@@ -60,16 +60,25 @@
             <groupId>de.hpi.isg.algorithms.pyro</groupId>
             <artifactId>pyro</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/pyro-distro-1.0-SNAPSHOT-distro.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>de.hpi.isg.algorithms.sindy</groupId>
             <artifactId>sindy</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/sindy-metanome_2.11-1.0-SNAPSHOT-sindy-metanome.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.9</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metanome.algorithms.faida</groupId>
+            <artifactId>faida</artifactId>
+            <version>1.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
