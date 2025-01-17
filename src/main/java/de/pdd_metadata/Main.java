@@ -1,37 +1,20 @@
 package de.pdd_metadata;
 
-import de.hpi.isg.pyro.algorithms.Pyro;
-import de.hpi.isg.pyro.model.PartialFD;
-import de.hpi.isg.pyro.model.PartialKey;
 import de.metanome.algorithm_integration.AlgorithmConfigurationException;
 import de.metanome.algorithm_integration.AlgorithmExecutionException;
-import de.metanome.algorithm_integration.ColumnCombination;
-import de.metanome.algorithm_integration.ColumnIdentifier;
 import de.metanome.algorithm_integration.configuration.ConfigurationSettingFileInput;
 import de.metanome.algorithm_integration.input.FileInputGenerator;
-import de.metanome.algorithm_integration.input.InputGenerationException;
-import de.metanome.algorithm_integration.input.RelationalInput;
-import de.metanome.algorithm_integration.input.RelationalInputGenerator;
-import de.metanome.algorithm_integration.results.FunctionalDependency;
-import de.metanome.algorithm_integration.results.Result;
-import de.metanome.algorithm_integration.results.UniqueColumnCombination;
-import de.metanome.algorithms.hyfd.HyFD;
-import de.metanome.algorithms.hyucc.HyUCC;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
-import de.metanome.backend.result_receiver.ResultCache;
 import de.pdd_metadata.data_profiling.INDProfiler;
-import de.pdd_metadata.duplicate_detection.SortedNeighbourhood;
 import de.pdd_metadata.duplicate_detection.Sorter;
 import de.pdd_metadata.io.DataReader;
 import de.pdd_metadata.duplicate_detection.structures.AttributeKeyElementFactory;
 import de.pdd_metadata.duplicate_detection.structures.Block;
 import de.pdd_metadata.duplicate_detection.structures.Duplicate;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws IOException, AlgorithmConfigurationException {
@@ -40,6 +23,14 @@ public class Main {
         String input = dataPath + "cd.csv";
 
         DataReader dataReader = new DataReader(input, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
+
+        var test = dataReader.countNullValues();
+
+        System.out.println(test);
+
+        var test2 = dataReader.detectColumnTypes();
+
+        System.out.println(test2);
 
         // getBestAttributes(input, dataReader);
 
@@ -140,130 +131,9 @@ public class Main {
 
     }
 
-    public static String getUrl(String testFile) {
-        return "file:" + Thread.currentThread().getContextClassLoader().getResource(testFile).getPath();
-    }
-
     private static HashMap<String, Block> runBlocking(DataReader dataReader) throws IOException {
         HashMap<String, Block> blocks = new HashMap<>();
         blocks = dataReader.readBlockForMulti(new int[]{2});
         return blocks;
-    }
-
-    private static void getBestAttributes (String path, DataReader dataReader) {
-        try {
-            ConfigurationSettingFileInput config = new ConfigurationSettingFileInput(path, false, ';', '"', '\\', false, true, 0, true, false, "");
-
-            FileInputGenerator fileInputGenerator = new DefaultFileInputGenerator(config);
-
-            getPyroUCCAndFD(path, fileInputGenerator);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    static class Parameters {
-        private static final boolean NULL_EQUALS_NULL = true;
-        private static final boolean VALIDATE_PARALLEL = true;
-        private static final boolean ENABLE_MEMORY_GUARDIAN = true;
-        private static final boolean DETECT_NARY = true;
-        private static final int MAX_SEARCH_SPACE_LEVEL = -1;
-        private static final int FILE_MAX_ROWS = -1;
-    };
-
-    private static void getHyUCC(FileInputGenerator input) throws AlgorithmExecutionException, FileNotFoundException {
-        HyUCC hyUCC = new HyUCC();
-
-        hyUCC.setRelationalInputConfigurationValue(HyUCC.Identifier.INPUT_GENERATOR.name(), input);
-        hyUCC.setBooleanConfigurationValue(HyUCC.Identifier.NULL_EQUALS_NULL.name(), Parameters.NULL_EQUALS_NULL);
-        hyUCC.setBooleanConfigurationValue(HyUCC.Identifier.VALIDATE_PARALLEL.name(), Parameters.VALIDATE_PARALLEL);
-        hyUCC.setBooleanConfigurationValue(HyUCC.Identifier.ENABLE_MEMORY_GUARDIAN.name(), Parameters.ENABLE_MEMORY_GUARDIAN);
-        hyUCC.setIntegerConfigurationValue(HyUCC.Identifier.MAX_UCC_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
-        hyUCC.setIntegerConfigurationValue(HyUCC.Identifier.INPUT_ROW_LIMIT.name(), Parameters.FILE_MAX_ROWS);
-
-        ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(input));
-
-        hyUCC.setResultReceiver(resultReceiver);
-
-        hyUCC.execute();
-
-        List<Result> results = resultReceiver.fetchNewResults();
-
-        System.out.println(results.size());
-
-        results.stream().map(x -> (UniqueColumnCombination) x).map(UniqueColumnCombination::toString).forEach(System.out::println);
-    }
-
-    private static void getHyFD(FileInputGenerator fileInputGenerator, DataReader dataReader) throws AlgorithmExecutionException, FileNotFoundException {
-        HyFD hyFD = new HyFD();
-
-        hyFD.setRelationalInputConfigurationValue("INPUT_GENERATOR", fileInputGenerator);
-
-        ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(fileInputGenerator));
-
-        hyFD.setResultReceiver(resultReceiver);
-
-        hyFD.execute();
-
-        List<Result> results = resultReceiver.fetchNewResults();
-
-        Set<String> filteredKeys = results.stream().map(x -> (FunctionalDependency) x).map(FunctionalDependency::getDeterminant).map(ColumnCombination::toString).map(x -> x.replace("cd.csv.", "")).collect(Collectors.toSet());
-
-        filteredKeys.forEach(System.out::println);
-
-        String[] attributes = dataReader.getAttributeNames();
-
-        List<String> result = Arrays.stream(attributes).filter(x -> filteredKeys.stream().noneMatch(y -> y.equals(x))).toList();
-
-        //result.forEach(System.out::println);
-    }
-
-    private static void getPyroUCCAndFD(String path, FileInputGenerator input) throws AlgorithmExecutionException, FileNotFoundException {
-        Pyro pyro = new Pyro();
-
-        System.out.println(pyro.getPropertyLedger().getProperties().keySet());
-        System.out.println(pyro.getPropertyLedger().getProperties().get("tableIdentifier"));
-
-        pyro.setRelationalInputConfigurationValue("inputFile", input);
-        pyro.setBooleanConfigurationValue("isNullEqualNull", true);
-
-        List<PartialFD> partialFds = new ArrayList<>();
-
-        List<PartialKey> partialUCCs = new ArrayList<>();
-
-        pyro.setFdConsumer(partialFds::add);
-
-        pyro.setUccConsumer(partialUCCs::add);
-
-        pyro.execute();
-
-        List<PartialFD> filteredList = partialFds.stream()
-                .filter(fd -> fd.lhs.getColumns().length != 0)
-                .toList();
-
-        DataReader dataReader = new DataReader(path, false, ';', 0, 100, StandardCharsets.ISO_8859_1);
-
-        String[] attributes = dataReader.getAttributeNames();
-
-        List<String> filteredKeys = partialUCCs.stream().map(x -> x.vertical.getColumns()).filter(x -> x.length <= 1).map(x -> x[0].getName()).toList();
-        //.filter(x -> Arrays.stream(attributes).noneMatch(y -> y.equals(x))).toList();
-
-        List<Double> filteredKeys2 = partialUCCs.stream().map(x -> x.score).toList();
-
-        // filteredKeys2.forEach(System.out::println);
-
-        filteredKeys.forEach(System.out::println);
-
-        List<String> result = Arrays.stream(attributes).filter(x -> filteredKeys.stream().noneMatch(y -> y.equals(x))).toList();
-    }
-
-    private static List<ColumnIdentifier> getAcceptedColumns(RelationalInputGenerator relationalInputGenerator) throws InputGenerationException, AlgorithmConfigurationException {
-        RelationalInput relationalInput = relationalInputGenerator.generateNewCopy();
-        String tableName = relationalInput.relationName();
-
-        return relationalInput.columnNames().stream()
-                .map(columnName -> new ColumnIdentifier(tableName, columnName))
-                .toList();
     }
 }

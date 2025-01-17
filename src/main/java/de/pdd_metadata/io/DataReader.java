@@ -12,6 +12,7 @@ import de.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
 import de.pdd_metadata.duplicate_detection.structures.Record;
 import org.apache.commons.codec.language.Metaphone;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
@@ -291,9 +292,9 @@ public class DataReader {
             Set<Duplicate> resultDuplicates = new HashSet<>();
             List<Record> records = new ArrayList<>();
 
-            String[] strings;
-            while ((strings = reader.readNext()) != null) {
-                records.add(new Record(Integer.parseInt(strings[0]), strings));
+            String[] values;
+            while ((values = reader.readNext()) != null) {
+                records.add(new Record(Integer.parseInt(values[0]), values));
             }
 
             for (int i = 0; i < records.size(); i++) {
@@ -351,6 +352,62 @@ public class DataReader {
         System.out.println("Finished reading blocks.");
         return blocks;
     }
+
+
+    public Map<String, Integer> countNullValues() {
+        Map<String, Integer> nullCounts = new HashMap<>();
+
+
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
+            String[] attributes = this.getAttributeNames();
+
+            for (String attribute : attributes) {
+                nullCounts.put(attribute.trim(), 0);
+            }
+
+            String[] values;
+            while ((values = reader.readNext()) != null) {
+                for (int i = 0; i < values.length && i < attributes.length; i++) {
+                    if (values[i].trim().isEmpty()) {
+                        nullCounts.put(attributes[i].trim(), nullCounts.get(attributes[i].trim()) + 1);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return nullCounts;
+    }
+
+    public Map<String, ClassName> detectColumnTypes() {
+        Map<String, ClassName> columnTypes = new HashMap<>();
+
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
+            String[] firstRow = reader.readNext();
+            String[] attributes = this.getAttributeNames();
+
+            for (int i = 0; i < attributes.length; i++) {
+                try {
+                    Integer.parseInt(firstRow[i]);
+                    columnTypes.put(attributes[i], ClassName.Integer);
+                } catch (NumberFormatException e) {
+                    try {
+                        Double.parseDouble(firstRow[i]);
+                        columnTypes.put(attributes[i], ClassName.Double);
+                    } catch (NumberFormatException e2) {
+                        columnTypes.put(attributes[i], ClassName.String);
+                    }
+                }
+            }
+        } catch (IOException | CsvValidationException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        return columnTypes;
+    }
+
 
     public int getNumRecords() throws IOException {
         if (this.numLines == 0) {
@@ -446,5 +503,23 @@ public class DataReader {
 
     private Record fitToMaxSize(Record record) {
         return record.size <= this.maxAttributes ? record : new Record(record.id, Arrays.copyOfRange(record.values, 0, this.maxAttributes));
+    }
+
+    private Class<?> detectType(String value) {
+        if (value == null || value.isEmpty()) {
+            return String.class;
+        }
+
+        try {
+            return ClassUtils.getClass(value);
+        } catch (ClassNotFoundException e) {
+            return String.class;
+        }
+    }
+
+    public enum ClassName {
+        String,
+        Integer,
+        Double
     }
 }
