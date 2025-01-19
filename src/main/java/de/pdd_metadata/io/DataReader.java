@@ -354,8 +354,8 @@ public class DataReader {
     }
 
 
-    public Map<String, Integer> countNullValues() {
-        Map<String, Integer> nullCounts = new HashMap<>();
+    public HashMap<String, Integer> countNullValues() {
+        HashMap<String, Integer> nullCounts = new HashMap<>();
 
 
         try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {

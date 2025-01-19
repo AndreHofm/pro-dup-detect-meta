@@ -2,6 +2,7 @@ package de.pdd_metadata.data_profiling;
 
 import de.hpi.isg.pyro.algorithms.Pyro;
 import de.hpi.isg.pyro.model.PartialFD;
+import de.hpi.isg.pyro.model.Vertical;
 import de.metanome.algorithm_integration.AlgorithmConfigurationException;
 import de.metanome.algorithm_integration.ColumnIdentifier;
 import de.metanome.algorithm_integration.input.FileInputGenerator;
@@ -12,7 +13,6 @@ import de.metanome.algorithm_integration.results.FunctionalDependency;
 import de.metanome.algorithm_integration.results.Result;
 import de.metanome.algorithms.hyfd.HyFD;
 import de.metanome.backend.result_receiver.ResultCache;
-import de.pdd_metadata.io.DataReader;
 import lombok.Getter;
 
 import java.util.*;
@@ -23,17 +23,23 @@ public class FDProfiler {
     private final Pyro pyro = new Pyro();
     private final HyFD hyFD = new HyFD();
     private FileInputGenerator fileInputGenerator;
-    private DataReader dataReader;
-    private Set<PartialFD> partialFDs = new HashSet<>();
+    private List<PartialFD> partialFDs = new ArrayList<>();
     private Set<FunctionalDependency> fullFDs = new HashSet<>();
 
-    public void executePartialFDProfiler() throws Exception {
+    public FDProfiler(FileInputGenerator fileInputGenerator) {
+        this.fileInputGenerator = fileInputGenerator;
+    }
+
+    public HashMap<Vertical, Long> executePartialFDProfiler() throws Exception {
         pyro.setRelationalInputConfigurationValue("inputFile", fileInputGenerator);
         pyro.setBooleanConfigurationValue("isNullEqualNull", true);
+        pyro.setBooleanConfigurationValue("isFindKeys", false);
 
         pyro.setFdConsumer(partialFDs::add);
 
         pyro.execute();
+
+        return (HashMap<Vertical, Long>) partialFDs.stream().collect(Collectors.groupingBy(key -> key.lhs, Collectors.counting()));
     }
 
     public void executeFullFDProfiler() throws Exception {

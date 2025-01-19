@@ -1,11 +1,14 @@
 package de.pdd_metadata;
 
+import de.hpi.isg.pyro.akka.algorithms.Pyro;
 import de.metanome.algorithm_integration.AlgorithmConfigurationException;
 import de.metanome.algorithm_integration.AlgorithmExecutionException;
 import de.metanome.algorithm_integration.configuration.ConfigurationSettingFileInput;
 import de.metanome.algorithm_integration.input.FileInputGenerator;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
+import de.pdd_metadata.data_profiling.AttributeScoringProfiler;
 import de.pdd_metadata.data_profiling.INDProfiler;
+import de.pdd_metadata.data_profiling.UCCProfiler;
 import de.pdd_metadata.duplicate_detection.Sorter;
 import de.pdd_metadata.io.DataReader;
 import de.pdd_metadata.duplicate_detection.structures.AttributeKeyElementFactory;
@@ -17,20 +20,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Main {
-    public static void main(String[] args) throws IOException, AlgorithmConfigurationException {
+    public static void main(String[] args) throws Exception {
         String dataPath = "./data/";
 
         String input = dataPath + "cd.csv";
 
         DataReader dataReader = new DataReader(input, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
-
-        var test = dataReader.countNullValues();
-
-        System.out.println(test);
-
-        var test2 = dataReader.detectColumnTypes();
-
-        System.out.println(test2);
 
         // getBestAttributes(input, dataReader);
 
@@ -47,6 +42,7 @@ public class Main {
         String input2 = "file:" + "/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/data/persons.tsv";
         String input3 = "file:" + "/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/data/planets.tsv";
 
+
         ConfigurationSettingFileInput config = new ConfigurationSettingFileInput(input,
                 false,
                 ';',
@@ -61,6 +57,13 @@ public class Main {
 
         FileInputGenerator fileInputGenerator = new DefaultFileInputGenerator(config);
 
+        // uccProfiler.executeFullUCCProfiler();
+
+        AttributeScoringProfiler profiler = new AttributeScoringProfiler(dataReader, fileInputGenerator);
+
+        profiler.execute();
+
+        /*
         INDProfiler indProfiler = new INDProfiler(fileInputGenerator);
 
         try {
@@ -70,6 +73,8 @@ public class Main {
         }
 
         indProfiler.getInds().forEach(System.out::println);
+
+         */
 
         // Blocking blocking = new Blocking(4, dataReader, 0.7, 4, 2000000, sorter, attributeKeyElementFactory);
 

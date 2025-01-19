@@ -1,7 +1,9 @@
 package de.pdd_metadata.data_profiling;
 
 import de.hpi.isg.pyro.algorithms.Pyro;
+import de.hpi.isg.pyro.model.PartialFD;
 import de.hpi.isg.pyro.model.PartialKey;
+import de.hpi.isg.pyro.model.Vertical;
 import de.metanome.algorithm_integration.AlgorithmConfigurationException;
 import de.metanome.algorithm_integration.ColumnIdentifier;
 import de.metanome.algorithm_integration.input.FileInputGenerator;
@@ -12,12 +14,9 @@ import de.metanome.algorithm_integration.results.Result;
 import de.metanome.algorithm_integration.results.UniqueColumnCombination;
 import de.metanome.algorithms.hyucc.HyUCC;
 import de.metanome.backend.result_receiver.ResultCache;
-import de.pdd_metadata.io.DataReader;
 import lombok.Getter;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
@@ -25,9 +24,13 @@ public class UCCProfiler {
     private final Pyro pyro = new Pyro();
     private final HyUCC hyUCC = new HyUCC();
     private FileInputGenerator fileInputGenerator;
-    private DataReader dataReader;
-    private Set<PartialKey> partialUCCs = new HashSet<>();
+    private List<PartialKey> partialUCCs = new ArrayList<>();
+    private List<PartialFD> FD = new ArrayList<>();
     private Set<UniqueColumnCombination> fullUCCs = new HashSet<>();
+
+    public UCCProfiler(FileInputGenerator fileInputGenerator) {
+        this.fileInputGenerator = fileInputGenerator;
+    }
 
     static class Parameters {
         private static final boolean NULL_EQUALS_NULL = true;
@@ -36,15 +39,22 @@ public class UCCProfiler {
         private static final boolean DETECT_NARY = true;
         private static final int MAX_SEARCH_SPACE_LEVEL = -1;
         private static final int FILE_MAX_ROWS = -1;
-    };
+    }
 
-    public void executePartialUCCProfiler() throws Exception {
+    ;
+
+    public HashMap<Vertical, Long> executePartialUCCProfiler() throws Exception {
         pyro.setRelationalInputConfigurationValue("inputFile", fileInputGenerator);
         pyro.setBooleanConfigurationValue("isNullEqualNull", true);
+        pyro.setBooleanConfigurationValue("isFindFds", false);
 
         pyro.setUccConsumer(partialUCCs::add);
 
         pyro.execute();
+
+        // System.out.println(FD.stream().filter(x -> x.score >= 0.7).collect(Collectors.toSet()));
+
+        return (HashMap<Vertical, Long>) partialUCCs.stream().collect(Collectors.groupingBy(key -> key.vertical, Collectors.counting()));
     }
 
     public void executeFullUCCProfiler() throws Exception {
@@ -64,6 +74,8 @@ public class UCCProfiler {
         List<Result> results = resultReceiver.fetchNewResults();
 
         fullUCCs = results.stream().map(x -> (UniqueColumnCombination) x).collect(Collectors.toSet());
+
+        System.out.println(fullUCCs);
     }
 
     private static List<ColumnIdentifier> getAcceptedColumns(RelationalInputGenerator relationalInputGenerator) throws InputGenerationException, AlgorithmConfigurationException {
