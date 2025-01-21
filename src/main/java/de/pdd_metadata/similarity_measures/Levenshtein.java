@@ -1,13 +1,15 @@
 package de.pdd_metadata.similarity_measures;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
 @Getter
+@Setter
 public class Levenshtein {
-    private int[] similarityAttributes = new int[]{2, 3, 8, 9};
+    private int[] similarityAttributes; // = new int[]{2, 3, 8, 9};
     private int maxAttributeLength = 200;
 
     public double calculate(final String string1, final String string2) {

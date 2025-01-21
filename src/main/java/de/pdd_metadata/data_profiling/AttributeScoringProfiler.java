@@ -1,20 +1,14 @@
 package de.pdd_metadata.data_profiling;
 
 import de.hpi.isg.pyro.model.Vertical;
-import de.metanome.algorithm_integration.input.FileInputGenerator;
+import de.metanome.algorithm_integration.results.UniqueColumnCombination;
+import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.pdd_metadata.data_profiling.structures.AttributeScore;
 import de.pdd_metadata.io.DataReader;
 import lombok.Getter;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 public class AttributeScoringProfiler {
@@ -24,7 +18,7 @@ public class AttributeScoringProfiler {
     private DataReader dataReader;
     private List<AttributeScore> attributeScores;
 
-    public AttributeScoringProfiler(DataReader dataReader, FileInputGenerator fileInputGenerator) {
+    public AttributeScoringProfiler(DataReader dataReader, DefaultFileInputGenerator fileInputGenerator) {
         this.dataReader = dataReader;
         this.uccProfiler = new UCCProfiler(fileInputGenerator);
         this.fdProfiler = new FDProfiler(fileInputGenerator);
@@ -32,10 +26,9 @@ public class AttributeScoringProfiler {
     }
 
     public void execute() throws Exception {
-        //initializeAttributeScoreList();
+        initializeAttributeScoreList();
 
-        System.out.println(attributeScores);
-
+        Set<String> filterAttributesByNullValues = filterAttributesByNullValues();
 
         System.out.println("Starte uccProfiler...");
         HashMap<Vertical, Long> numberAttributePartialUCC = uccProfiler.executePartialUCCProfiler();
@@ -45,8 +38,23 @@ public class AttributeScoringProfiler {
         HashMap<Vertical, Long> numberAttributePartialFD = fdProfiler.executePartialFDProfiler();
         System.out.println("fdProfiler fertig!");
 
-        System.out.println(numberAttributePartialUCC);
-        System.out.println(numberAttributePartialFD);
+        //fdProfiler.executeFullFDProfiler();
+
+        uccProfiler.executeFullUCCProfiler();
+
+        Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
+
+        Set<String> filteredUCCs = fullUCCs.stream()
+                .flatMap(x -> x.getColumnCombination().getColumnIdentifiers().stream())
+                .map(x -> x.toString().replace("cd.csv.", "")).collect(Collectors.toSet());
+
+        this.attributeScores.removeIf(attributeScore -> filteredUCCs.contains(attributeScore.getAttribute()) || !filterAttributesByNullValues.contains(attributeScore.getAttribute()));
+
+        //System.out.println(numberAttributePartialUCC);
+        //System.out.println(numberAttributePartialFD);
+
+        // Currently Pyro doesnt stop all threads?!
+        //System.exit(0);
     }
 
     private void initializeAttributeScoreList() {
@@ -58,9 +66,12 @@ public class AttributeScoringProfiler {
         }
     }
 
-    public void filterAttributesByNullValues() {
+    public Set<String> filterAttributesByNullValues() {
         HashMap<String, Integer> attributesNull = this.dataReader.countNullValues();
 
-        attributesNull.entrySet().stream().filter(x -> !(((double) x.getValue() / 9763) >= 0.01)).forEach(System.out::println);
+        return attributesNull.entrySet().stream()
+                .filter(x -> !(((double) x.getValue() / 9763) >= 0.01))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 }

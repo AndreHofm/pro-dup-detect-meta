@@ -9,6 +9,8 @@ import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.pdd_metadata.data_profiling.AttributeScoringProfiler;
 import de.pdd_metadata.data_profiling.INDProfiler;
 import de.pdd_metadata.data_profiling.UCCProfiler;
+import de.pdd_metadata.data_profiling.structures.AttributeScore;
+import de.pdd_metadata.duplicate_detection.SortedNeighbourhood;
 import de.pdd_metadata.duplicate_detection.Sorter;
 import de.pdd_metadata.io.DataReader;
 import de.pdd_metadata.duplicate_detection.structures.AttributeKeyElementFactory;
@@ -26,8 +28,6 @@ public class Main {
         String input = dataPath + "cd.csv";
 
         DataReader dataReader = new DataReader(input, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
-
-        // getBestAttributes(input, dataReader);
 
         String resultInput = dataPath + "cd_gold.csv";
 
@@ -55,26 +55,12 @@ public class Main {
                 false,
                 "");
 
-        FileInputGenerator fileInputGenerator = new DefaultFileInputGenerator(config);
-
-        // uccProfiler.executeFullUCCProfiler();
+        DefaultFileInputGenerator fileInputGenerator = new DefaultFileInputGenerator(config);
 
         AttributeScoringProfiler profiler = new AttributeScoringProfiler(dataReader, fileInputGenerator);
 
         profiler.execute();
 
-        /*
-        INDProfiler indProfiler = new INDProfiler(fileInputGenerator);
-
-        try {
-            indProfiler.executeFullINDProfiler();
-        } catch (AlgorithmExecutionException e) {
-            throw new RuntimeException(e);
-        }
-
-        indProfiler.getInds().forEach(System.out::println);
-
-         */
 
         // Blocking blocking = new Blocking(4, dataReader, 0.7, 4, 2000000, sorter, attributeKeyElementFactory);
 
@@ -97,8 +83,22 @@ public class Main {
         System.out.println(goldResults.size());
 
          */
-/*
+
         SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, 2000000, attributeKeyElementFactory, 20, 1, 0.7, sorter);
+
+        List<AttributeScore> attributeScores = profiler.getAttributeScores();
+
+        int[] indices = new int[attributeScores.size()];
+
+        for (int i = 0; i < indices.length; i++) {
+            indices[i] = attributeScores.get(i).getIndex();
+        }
+
+        System.out.println(attributeScores);
+
+        System.out.println(Arrays.toString(indices));
+
+        sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(indices);
 
         try {
             // blocking.findDuplicatesUsingMultipleKeysConcurrently();
@@ -130,10 +130,6 @@ public class Main {
         System.out.println("Precession: " + (double) tp / (double) (tp + fp));
         System.out.println("Recall: " + (double) tp / (double) (tp + fn));
         System.out.println("F1-Score: " + (double) (2 * tp) / (double) (2 * tp + fn + fp));
-
- */
-
-
     }
 
     private static HashMap<String, Block> runBlocking(DataReader dataReader) throws IOException {

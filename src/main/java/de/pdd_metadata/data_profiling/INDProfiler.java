@@ -4,7 +4,7 @@ import de.hpi.isg.sindy.core.AbstractSindy;
 import de.hpi.isg.sindy.core.Sandy;
 import de.hpi.isg.sindy.core.Sindy;
 import de.hpi.isg.sindy.util.PartialIND;
-import de.hpi.mpss2015n.approxind.FAIDA;
+//import de.hpi.mpss2015n.approxind.FAIDA;
 import de.metanome.algorithm_integration.AlgorithmConfigurationException;
 import de.metanome.algorithm_integration.AlgorithmExecutionException;
 import de.metanome.algorithm_integration.ColumnIdentifier;
@@ -25,14 +25,14 @@ import java.util.stream.Collectors;
 public class INDProfiler {
     private Sindy sindy;
     private Sandy sandy;
-    private FAIDA faida;
+    // private FAIDA faida;
     private Set<InclusionDependency> inds = new HashSet<>();
     private Set<PartialIND> partialINDS = new HashSet<>();
     private FileInputGenerator fileInputGenerator;
 
     public INDProfiler(FileInputGenerator fileInputGenerator) {
         this.fileInputGenerator = fileInputGenerator;
-        this.faida = new FAIDA();
+        // this.faida = new FAIDA();
     }
 
     static class Parameters {
@@ -53,7 +53,7 @@ public class INDProfiler {
         sandy.setMinRelativeOverlap(0.0);
         sandy.run();
     }
-
+/*
     public void executeFullINDProfiler() throws AlgorithmExecutionException, FileNotFoundException {
         ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(fileInputGenerator));
 
@@ -65,6 +65,8 @@ public class INDProfiler {
 
         inds = results.stream().map(x -> (InclusionDependency) x).collect(Collectors.toSet());
     }
+
+ */
 
     private static List<ColumnIdentifier> getAcceptedColumns(RelationalInputGenerator relationalInputGenerator) throws InputGenerationException, AlgorithmConfigurationException {
         RelationalInput relationalInput = relationalInputGenerator.generateNewCopy();
