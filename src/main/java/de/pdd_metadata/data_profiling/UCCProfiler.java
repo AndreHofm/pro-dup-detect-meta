@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Getter
-public class UCCProfiler {
+public class UCCProfiler extends DependencyProfiler {
     private final Pyro pyro = new Pyro();
     private final HyUCC hyUCC = new HyUCC();
     private DefaultFileInputGenerator fileInputGenerator;
@@ -93,21 +93,5 @@ public class UCCProfiler {
         List<Result> results = resultReceiver.fetchNewResults();
 
         fullUCCs = results.stream().map(x -> (UniqueColumnCombination) x).collect(Collectors.toSet());
-    }
-
-    private static List<ColumnIdentifier> getAcceptedColumns(RelationalInputGenerator relationalInputGenerator) throws InputGenerationException, AlgorithmConfigurationException {
-        RelationalInput relationalInput = relationalInputGenerator.generateNewCopy();
-        String tableName = relationalInput.relationName();
-
-        return relationalInput.columnNames().stream()
-                .map(columnName -> new ColumnIdentifier(tableName, columnName))
-                .toList();
-    }
-
-    private static void suppressSysOut(Runnable method) throws RuntimeException{
-        PrintStream originalOut = System.out;
-        System.setOut(new PrintStream(new NullOutputStream()));
-        method.run();
-        System.setOut(originalOut);
     }
 }

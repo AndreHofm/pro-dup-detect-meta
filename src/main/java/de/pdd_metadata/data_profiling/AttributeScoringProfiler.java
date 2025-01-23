@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Getter
 public class AttributeScoringProfiler {
     private FDProfiler fdProfiler;
-    // private INDProfiler indProfiler;
+    private INDProfiler indProfiler;
     private UCCProfiler uccProfiler;
     private DataReader dataReader;
     private List<AttributeScore> attributeScores;
@@ -22,6 +22,7 @@ public class AttributeScoringProfiler {
         this.dataReader = dataReader;
         this.uccProfiler = new UCCProfiler(fileInputGenerator);
         this.fdProfiler = new FDProfiler(fileInputGenerator);
+        this.indProfiler = new INDProfiler(fileInputGenerator);
         this.attributeScores = new ArrayList<>();
     }
 
@@ -30,6 +31,7 @@ public class AttributeScoringProfiler {
 
         Set<String> filterAttributesByNullValues = filterAttributesByNullValues();
 
+        /*
         System.out.println("Starte uccProfiler...");
         HashMap<Vertical, Long> numberAttributePartialUCC = uccProfiler.executePartialUCCProfiler();
         System.out.println("uccProfiler fertig!");
@@ -38,9 +40,15 @@ public class AttributeScoringProfiler {
         HashMap<Vertical, Long> numberAttributePartialFD = fdProfiler.executePartialFDProfiler();
         System.out.println("fdProfiler fertig!");
 
-        //fdProfiler.executeFullFDProfiler();
+         */
 
-        uccProfiler.executeFullUCCProfiler();
+
+
+        // fdProfiler.executeFullFDProfiler(filterAttributesByNullValues);
+
+        // uccProfiler.executeFullUCCProfiler();
+
+        indProfiler.executePartialINDProfiler();
 
         Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
 

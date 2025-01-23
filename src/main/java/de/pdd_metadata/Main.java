@@ -10,6 +10,7 @@ import de.pdd_metadata.data_profiling.AttributeScoringProfiler;
 import de.pdd_metadata.data_profiling.INDProfiler;
 import de.pdd_metadata.data_profiling.UCCProfiler;
 import de.pdd_metadata.data_profiling.structures.AttributeScore;
+import de.pdd_metadata.duplicate_detection.Blocking;
 import de.pdd_metadata.duplicate_detection.SortedNeighbourhood;
 import de.pdd_metadata.duplicate_detection.Sorter;
 import de.pdd_metadata.io.DataReader;
@@ -62,7 +63,7 @@ public class Main {
         profiler.execute();
 
 
-        // Blocking blocking = new Blocking(4, dataReader, 0.7, 4, 2000000, sorter, attributeKeyElementFactory);
+        Blocking blocking = new Blocking(4, dataReader, 0.7, 4, 2000000, sorter, attributeKeyElementFactory);
 
 
         /*
@@ -84,6 +85,7 @@ public class Main {
 
          */
 
+        /*
         SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, 2000000, attributeKeyElementFactory, 20, 1, 0.7, sorter);
 
         List<AttributeScore> attributeScores = profiler.getAttributeScores();
@@ -130,11 +132,7 @@ public class Main {
         System.out.println("Precession: " + (double) tp / (double) (tp + fp));
         System.out.println("Recall: " + (double) tp / (double) (tp + fn));
         System.out.println("F1-Score: " + (double) (2 * tp) / (double) (2 * tp + fn + fp));
-    }
 
-    private static HashMap<String, Block> runBlocking(DataReader dataReader) throws IOException {
-        HashMap<String, Block> blocks = new HashMap<>();
-        blocks = dataReader.readBlockForMulti(new int[]{2});
-        return blocks;
+         */
     }
 }

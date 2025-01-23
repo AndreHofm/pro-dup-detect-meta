@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Getter
-public class FDProfiler {
+public class FDProfiler extends DependencyProfiler {
     private final Pyro pyro = new Pyro();
     private final HyFD hyFD = new HyFD();
     private DefaultFileInputGenerator fileInputGenerator;
@@ -76,7 +76,7 @@ public class FDProfiler {
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.VALIDATE_PARALLEL.name(), Parameters.VALIDATE_PARALLEL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.ENABLE_MEMORY_GUARDIAN.name(), Parameters.ENABLE_MEMORY_GUARDIAN);
         hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
-        hyFD.setIntegerConfigurationValue(HyUCC.Identifier.INPUT_ROW_LIMIT.name(), Parameters.FILE_MAX_ROWS);
+        hyFD.setIntegerConfigurationValue(HyFD.Identifier.INPUT_ROW_LIMIT.name(), Parameters.FILE_MAX_ROWS);
 
         ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(fileInputGenerator));
 
@@ -113,21 +113,5 @@ public class FDProfiler {
 
         fullFDs = results.stream().map(x -> (FunctionalDependency) x).collect(Collectors.toSet());
         System.out.println(fullFDs.size());
-    }
-
-    private static List<ColumnIdentifier> getAcceptedColumns(RelationalInputGenerator relationalInputGenerator) throws InputGenerationException, AlgorithmConfigurationException {
-        RelationalInput relationalInput = relationalInputGenerator.generateNewCopy();
-        String tableName = relationalInput.relationName();
-
-        return relationalInput.columnNames().stream()
-                .map(columnName -> new ColumnIdentifier(tableName, columnName))
-                .toList();
-    }
-
-    private static void suppressSysOut(Runnable method) throws RuntimeException{
-        PrintStream originalOut = System.out;
-        System.setOut(new PrintStream(new NullOutputStream()));
-        method.run();
-        System.setOut(originalOut);
     }
 }

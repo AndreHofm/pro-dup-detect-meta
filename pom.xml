@@ -14,6 +14,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.11.3</junit.version>
         <fastutil.version>8.5.13</fastutil.version>
+        <flink.version>1.9.0</flink.version>
+        <logging.scope>test</logging.scope>
+        <scala.compat.version>2.11</scala.compat.version>
     </properties>
 
     <dependencies>
@@ -38,6 +41,11 @@
         <dependency>
             <groupId>de.metanome.algorithms.hyucc</groupId>
             <artifactId>HyUCC</artifactId>
+            <version>1.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metanome.algorithms.binder</groupId>
+            <artifactId>BINDER</artifactId>
             <version>1.2-SNAPSHOT</version>
         </dependency>
         <!--Adding "safe versions" for HyUCC -->
@@ -75,13 +83,15 @@
             <artifactId>opencsv</artifactId>
             <version>5.9</version>
         </dependency>
-        <!--
+
+
         <dependency>
             <groupId>de.metanome.algorithms.faida</groupId>
             <artifactId>faida</artifactId>
             <version>1.2-SNAPSHOT</version>
         </dependency>
-        -->
+
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -92,6 +102,30 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.8.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-clients_${scala.compat.version}</artifactId>
+            <version>${flink.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-java</artifactId>
+            <version>${flink.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
     </dependencies>
 
     <build>
