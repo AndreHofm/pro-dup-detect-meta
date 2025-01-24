@@ -48,7 +48,7 @@ public class AttributeScoringProfiler {
 
         // uccProfiler.executeFullUCCProfiler();
 
-        indProfiler.executePartialINDProfiler();
+        indProfiler.executeFullINDProfiler();
 
         Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
 
