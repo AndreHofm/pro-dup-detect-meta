@@ -53,6 +53,11 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.8.1</version>
         </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.17.2</version>
+        </dependency>
 
         <!--Adding "safe versions" for HyUCC -->
         <dependency>
@@ -100,9 +105,7 @@
             <artifactId>sawfish</artifactId>
             <version>1.1-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>
-                /Users/andrehofmann/.m2/repository/de/metanome/algorithms/sawfish/1.1-SNAPSHOT/sawfish-1.1-SNAPSHOT.jar
-            </systemPath>
+            <systemPath>${project.basedir}/src/main/resources/sawfish-1.1-SNAPSHOT.jar</systemPath>
         </dependency>
     </dependencies>
 
