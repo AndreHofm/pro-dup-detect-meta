@@ -1,14 +1,17 @@
 package de.pdd_metadata.data_profiling;
 
-import de.hpi.isg.sindy.util.PartialIND;
+import de.metanome.algorithm_integration.AlgorithmConfigurationException;
 import de.metanome.algorithm_integration.AlgorithmExecutionException;
 import de.metanome.algorithm_integration.ColumnIdentifier;
+import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.RelationalInputGenerator;
 import de.metanome.algorithm_integration.results.InclusionDependency;
 import de.metanome.algorithm_integration.results.Result;
 import de.metanome.algorithms.binder.BINDERFile;
+import de.metanome.algorithms.sawfish.SawfishInterface;
+import de.metanome.backend.algorithm_execution.TempFileGenerator;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
-import de.metanome.backend.result_receiver.ResultCache;;
+import de.metanome.backend.result_receiver.ResultCache;
 import lombok.Getter;
 
 import java.io.FileNotFoundException;
@@ -19,12 +22,16 @@ import java.util.stream.Collectors;
 public class INDProfiler extends DependencyProfiler {
     private BINDERFile binder;
     private Set<InclusionDependency> inds = new HashSet<>();
-    private Set<PartialIND> partialINDS = new HashSet<>();
+    private Set<InclusionDependency> partialINDS = new HashSet<>();
     private DefaultFileInputGenerator fileInputGenerator;
+    private SawfishInterface sawfish;
+    private RelationalInputGenerator[] inputs;
 
     public INDProfiler(DefaultFileInputGenerator fileInputGenerator) {
         this.fileInputGenerator = fileInputGenerator;
         this.binder = new BINDERFile();
+        this.sawfish = new SawfishInterface();
+        this.inputs = new RelationalInputGenerator[]{fileInputGenerator, fileInputGenerator};
     }
 
     static class Parameters {
@@ -37,16 +44,32 @@ public class INDProfiler extends DependencyProfiler {
     }
 
     public void executePartialINDProfiler() throws Exception {
+        ResultCache resultReceiver = this.getResultReceiver(inputs);
+
+        sawfish.setRelationalInputConfigurationValue(SawfishInterface.Identifier.INPUT_FILES.name(), inputs);
+        sawfish.setStringConfigurationValue(SawfishInterface.Identifier.similarityThreshold.name(), "0.7");
+        sawfish.setBooleanConfigurationValue(SawfishInterface.Identifier.ignoreShortStrings.name(), false);
+        sawfish.setBooleanConfigurationValue(SawfishInterface.Identifier.measureTime.name(), false);
+        sawfish.setBooleanConfigurationValue(SawfishInterface.Identifier.ignoreNumericColumns.name(), false);
+        sawfish.setResultReceiver(resultReceiver);
+        sawfish.setTempFileGenerator(new TempFileGenerator());
+
+        suppressSysOut(() -> {
+            try {
+                sawfish.execute();
+            } catch (AlgorithmExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        List<Result> results = resultReceiver.fetchNewResults();
+        partialINDS = results.stream().map(x -> (InclusionDependency) x)
+                .filter(x -> !x.getDependant().toString().equals(x.getReferenced().toString()))
+                .collect(Collectors.toSet());
     }
 
     public void executeFullINDProfiler() throws AlgorithmExecutionException, FileNotFoundException {
-        RelationalInputGenerator[] inputs = new RelationalInputGenerator[]{fileInputGenerator, fileInputGenerator};
-
-        List<ColumnIdentifier> columnIdentifiers = new ArrayList<>();
-        columnIdentifiers.addAll(getAcceptedColumns(inputs[0]));
-        columnIdentifiers.addAll(getAcceptedColumns(inputs[1]));
-
-        ResultCache resultReceiver = new ResultCache("MetanomeMock", columnIdentifiers);
+        ResultCache resultReceiver = this.getResultReceiver(inputs);
 
         binder.setRelationalInputConfigurationValue(BINDERFile.Identifier.INPUT_FILES.name(), inputs);
         binder.setIntegerConfigurationValue(BINDERFile.Identifier.MAX_NARY_LEVEL.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
@@ -66,6 +89,13 @@ public class INDProfiler extends DependencyProfiler {
         inds = results.stream().map(x -> (InclusionDependency) x)
                 .filter(x -> !x.getDependant().toString().equals(x.getReferenced().toString()))
                 .collect(Collectors.toSet());
-        inds.forEach(System.out::println);
+    }
+
+    private ResultCache getResultReceiver(RelationalInputGenerator[] inputs) throws InputGenerationException, AlgorithmConfigurationException, FileNotFoundException {
+        List<ColumnIdentifier> columnIdentifiers = new ArrayList<>();
+        columnIdentifiers.addAll(getAcceptedColumns(inputs[0]));
+        columnIdentifiers.addAll(getAcceptedColumns(inputs[1]));
+
+        return new ResultCache("MetanomeMock", columnIdentifiers);
     }
 }

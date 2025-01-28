@@ -39,15 +39,21 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>de.metanome.algorithms.hyucc</groupId>
-            <artifactId>HyUCC</artifactId>
-            <version>1.2-SNAPSHOT</version>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.9</version>
         </dependency>
         <dependency>
-            <groupId>de.metanome.algorithms.binder</groupId>
-            <artifactId>BINDER</artifactId>
-            <version>1.2-SNAPSHOT</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.12</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+
         <!--Adding "safe versions" for HyUCC -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -58,6 +64,24 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>33.3.1-jre</version>
+        </dependency>
+
+        <!-- metanome -->
+        <dependency>
+            <groupId>de.metanome</groupId>
+            <artifactId>backend</artifactId>
+            <version>1.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metanome.algorithms.hyucc</groupId>
+            <artifactId>HyUCC</artifactId>
+            <version>1.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metanome.algorithms.binder</groupId>
+            <artifactId>BINDER</artifactId>
+            <version>1.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>de.metanome.algorithms.hyfd</groupId>
@@ -72,27 +96,13 @@
             <systemPath>${project.basedir}/src/main/resources/pyro-distro-1.0-SNAPSHOT-distro.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>de.hpi.isg.algorithms.sindy</groupId>
-            <artifactId>sindy</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>de.hpi.isg.algorithms.sawfish</groupId>
+            <artifactId>sawfish</artifactId>
+            <version>1.1-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/sindy-metanome_2.11-1.0-SNAPSHOT-sindy-metanome.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.opencsv</groupId>
-            <artifactId>opencsv</artifactId>
-            <version>5.9</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.8.1</version>
+            <systemPath>
+                /Users/andrehofmann/.m2/repository/de/metanome/algorithms/sawfish/1.1-SNAPSHOT/sawfish-1.1-SNAPSHOT.jar
+            </systemPath>
         </dependency>
     </dependencies>
 

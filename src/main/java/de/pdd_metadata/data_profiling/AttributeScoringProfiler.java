@@ -43,12 +43,11 @@ public class AttributeScoringProfiler {
          */
 
 
-
         // fdProfiler.executeFullFDProfiler(filterAttributesByNullValues);
 
         // uccProfiler.executeFullUCCProfiler();
 
-        indProfiler.executeFullINDProfiler();
+        indProfiler.executePartialINDProfiler();
 
         Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
 

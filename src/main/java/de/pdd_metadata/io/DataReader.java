@@ -11,6 +11,7 @@ import de.pdd_metadata.duplicate_detection.structures.Block;
 import de.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
 import de.pdd_metadata.duplicate_detection.structures.Record;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.apache.commons.codec.language.Metaphone;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -515,6 +516,35 @@ public class DataReader {
         } catch (ClassNotFoundException e) {
             return String.class;
         }
+    }
+
+    public IntArrayList readColumnAsList(int columnIndex) throws IOException {
+        IntArrayList columnValues = new IntArrayList();
+
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
+            String[] nextLine;
+            while ((nextLine = reader.readNext()) != null) {
+                // Überspringe Zeilen, die kürzer als der angeforderte Index sind
+                if (columnIndex >= nextLine.length) {
+                    continue;
+                }
+
+                String value = nextLine[columnIndex];
+                if (value != null && !value.trim().isEmpty()) {
+                    try {
+                        // Konvertiere den Wert in einen Integer und füge ihn zur Liste hinzu
+                        columnValues.add(Integer.parseInt(value.trim()));
+                    } catch (NumberFormatException e) {
+                        // Logge die Ausnahme, aber fahre mit der nächsten Zeile fort
+                        System.err.println("Skipping non-integer value: " + value + " in column " + columnIndex);
+                    }
+                }
+            }
+        } catch (CsvValidationException e) {
+            throw new RuntimeException(e);
+        }
+
+        return columnValues;
     }
 
     public enum ClassName {

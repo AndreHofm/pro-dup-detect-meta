@@ -2,25 +2,16 @@ package de.pdd_metadata.data_profiling;
 
 import de.hpi.isg.pyro.algorithms.Pyro;
 import de.hpi.isg.pyro.model.Column;
-import de.hpi.isg.pyro.model.PartialFD;
 import de.hpi.isg.pyro.model.PartialKey;
 import de.hpi.isg.pyro.model.Vertical;
-import de.metanome.algorithm_integration.AlgorithmConfigurationException;
 import de.metanome.algorithm_integration.AlgorithmExecutionException;
-import de.metanome.algorithm_integration.ColumnIdentifier;
-import de.metanome.algorithm_integration.input.FileInputGenerator;
-import de.metanome.algorithm_integration.input.InputGenerationException;
-import de.metanome.algorithm_integration.input.RelationalInput;
-import de.metanome.algorithm_integration.input.RelationalInputGenerator;
 import de.metanome.algorithm_integration.results.Result;
 import de.metanome.algorithm_integration.results.UniqueColumnCombination;
 import de.metanome.algorithms.hyucc.HyUCC;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.metanome.backend.result_receiver.ResultCache;
 import lombok.Getter;
-import org.apache.commons.io.output.NullOutputStream;
 
-import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
