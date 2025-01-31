@@ -1,6 +1,7 @@
 package de.pdd_metadata.data_profiling;
 
 import de.hpi.isg.pyro.model.Vertical;
+import de.metanome.algorithm_integration.results.InclusionDependency;
 import de.metanome.algorithm_integration.results.UniqueColumnCombination;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.pdd_metadata.data_profiling.structures.AttributeScore;
@@ -43,19 +44,31 @@ public class AttributeScoringProfiler {
          */
 
 
-        // fdProfiler.executeFullFDProfiler(filterAttributesByNullValues);
+        fdProfiler.executeFullFDProfiler(filterAttributesByNullValues);
 
-        // uccProfiler.executeFullUCCProfiler();
+        uccProfiler.executeFullUCCProfiler();
 
         indProfiler.executePartialINDProfiler();
 
         Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
 
+        Set<InclusionDependency> partialINDs = indProfiler.getPartialINDS();
+
+        String cd = "cd";
+        String dblp = "dblp_scholar";
+
         Set<String> filteredUCCs = fullUCCs.stream()
                 .flatMap(x -> x.getColumnCombination().getColumnIdentifiers().stream())
-                .map(x -> x.toString().replace("cd.csv.", "")).collect(Collectors.toSet());
+                .map(x -> x.toString().replace(dblp + ".csv.", "")).collect(Collectors.toSet());
 
-        this.attributeScores.removeIf(attributeScore -> filteredUCCs.contains(attributeScore.getAttribute()) || !filterAttributesByNullValues.contains(attributeScore.getAttribute()));
+        Set<String> filteredINDs = partialINDs.stream()
+                .flatMap(x -> x.getDependant().getColumnIdentifiers().stream())
+                .map(x -> x.toString().replace(dblp + ".csv.", "")).collect(Collectors.toSet());
+
+        this.attributeScores.removeIf(attributeScore -> filteredUCCs.contains(attributeScore.getAttribute())
+                || !filterAttributesByNullValues.contains(attributeScore.getAttribute())
+                || filteredINDs.contains(attributeScore.getAttribute())
+                || !fdProfiler.getFullFDs().contains(attributeScore.getAttribute()));
 
         //System.out.println(numberAttributePartialUCC);
         //System.out.println(numberAttributePartialFD);
@@ -74,10 +87,12 @@ public class AttributeScoringProfiler {
     }
 
     public Set<String> filterAttributesByNullValues() {
+        int sizeCD = 9763;
+        int sizeDBLP = 66879;
         HashMap<String, Integer> attributesNull = this.dataReader.countNullValues();
 
         return attributesNull.entrySet().stream()
-                .filter(x -> !(((double) x.getValue() / 9763) >= 0.01))
+                .filter(x -> !(((double) x.getValue() / sizeDBLP) >= 0.01))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }

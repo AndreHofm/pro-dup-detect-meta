@@ -1,36 +1,29 @@
 package de.pdd_metadata;
 
-import de.hpi.isg.pyro.akka.algorithms.Pyro;
-import de.metanome.algorithm_integration.AlgorithmConfigurationException;
-import de.metanome.algorithm_integration.AlgorithmExecutionException;
 import de.metanome.algorithm_integration.configuration.ConfigurationSettingFileInput;
-import de.metanome.algorithm_integration.input.FileInputGenerator;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.pdd_metadata.data_profiling.AttributeScoringProfiler;
-import de.pdd_metadata.data_profiling.INDProfiler;
-import de.pdd_metadata.data_profiling.UCCProfiler;
 import de.pdd_metadata.data_profiling.structures.AttributeScore;
 import de.pdd_metadata.duplicate_detection.Blocking;
 import de.pdd_metadata.duplicate_detection.SortedNeighbourhood;
 import de.pdd_metadata.duplicate_detection.Sorter;
 import de.pdd_metadata.io.DataReader;
 import de.pdd_metadata.duplicate_detection.structures.AttributeKeyElementFactory;
-import de.pdd_metadata.duplicate_detection.structures.Block;
 import de.pdd_metadata.duplicate_detection.structures.Duplicate;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws Exception {
         String dataPath = "./data/";
 
-        String input = dataPath + "cd.csv";
+        String input = dataPath + "dblp_scholar.csv";
 
         DataReader dataReader = new DataReader(input, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
 
-        String resultInput = dataPath + "cd_gold.csv";
+        String resultInput = dataPath + "dblp_scholar_DPL.csv";
 
         DataReader resultDataReader = new DataReader(resultInput, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
 
@@ -39,10 +32,6 @@ public class Main {
         Sorter sorter = new Sorter();
 
         AttributeKeyElementFactory attributeKeyElementFactory = new AttributeKeyElementFactory();
-
-        String input2 = "file:" + "/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/data/persons.tsv";
-        String input3 = "file:" + "/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/data/planets.tsv";
-
 
         ConfigurationSettingFileInput config = new ConfigurationSettingFileInput(input,
                 false,
@@ -62,9 +51,7 @@ public class Main {
 
         profiler.execute();
 
-
         Blocking blocking = new Blocking(4, dataReader, 0.7, 4, 2000000, sorter, attributeKeyElementFactory);
-
 
         /*
         MultiBlock multiBlock = new MultiBlock();
@@ -85,7 +72,6 @@ public class Main {
 
          */
 
-        /*
         SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, 2000000, attributeKeyElementFactory, 20, 1, 0.7, sorter);
 
         List<AttributeScore> attributeScores = profiler.getAttributeScores();
@@ -96,43 +82,45 @@ public class Main {
             indices[i] = attributeScores.get(i).getIndex();
         }
 
-        System.out.println(attributeScores);
-
-        System.out.println(Arrays.toString(indices));
-
         sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(indices);
 
-        try {
+        if (true) {
             // blocking.findDuplicatesUsingMultipleKeysConcurrently();
             // blocking.findDuplicatesUsingMultipleKeysSequential();
             // blocking.findDuplicatesUsingSingleKey();
             sortedNeighbourhood.findDuplicatesUsingMultipleKeysSequential();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+
+            Set<Duplicate> results = sortedNeighbourhood.getDuplicates();
+
+            Set<Duplicate> fn = new HashSet<>(goldResults);
+            fn.removeAll(results);
+
+            Set<Duplicate> fp = new HashSet<>(results);
+            fp.removeAll(goldResults);
+
+            var attributeIndex = attributeScores.stream().map(AttributeScore::getIndex).toArray();
+
+            Arrays.sort(attributeIndex);
+
+            System.out.println(Arrays.toString(attributeIndex));
+
+            printResults(fn, fp, results, goldResults, sortedNeighbourhood);
         }
+    }
 
-        Set<Duplicate> results = sortedNeighbourhood.getDuplicates();
+    private static void printResults(Set<Duplicate> fn, Set<Duplicate> fp, Set<Duplicate> results, Set<Duplicate> goldResults, SortedNeighbourhood snm) {
+        int tpSize = results.size() - fp.size();
+        int fpSize = fp.size();
+        int fnSize = fn.size();
 
-        Set<Duplicate> missing = new HashSet<>(goldResults);
-        missing.removeAll(results);
-
-        Set<Duplicate> solltenNichtDrinSein = new HashSet<>(results);
-        solltenNichtDrinSein.removeAll(goldResults);
-
-
-        int tp = results.size() - solltenNichtDrinSein.size();
-        int fp = solltenNichtDrinSein.size();
-        int fn = missing.size();
-
-        System.out.println("Number of Duplicates: " + sortedNeighbourhood.getDuplicates().size());
+        System.out.println("Number of Duplicates: " + snm.getDuplicates().size());
         System.out.println("Number of actual Duplicates: " + goldResults.size());
-        System.out.println("True Positive: " + tp);
-        System.out.println("False Positive: " + fp);
-        System.out.println("False Negative: " + fn);
-        System.out.println("Precession: " + (double) tp / (double) (tp + fp));
-        System.out.println("Recall: " + (double) tp / (double) (tp + fn));
-        System.out.println("F1-Score: " + (double) (2 * tp) / (double) (2 * tp + fn + fp));
-
-         */
+        System.out.println("True Positive: " + tpSize);
+        System.out.println("False Positive: " + fpSize);
+        System.out.println("False Negative: " + fnSize);
+        System.out.println("Precession: " + (double) tpSize / (double) (tpSize + fpSize));
+        System.out.println("Recall: " + (double) tpSize / (double) (tpSize + fnSize));
+        System.out.println("F1-Score: " + (double) (2 * tpSize) / (double) (2 * tpSize + fnSize + fpSize));
     }
 }

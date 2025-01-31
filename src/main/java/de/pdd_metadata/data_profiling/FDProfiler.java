@@ -23,7 +23,7 @@ public class FDProfiler extends DependencyProfiler {
     private final HyFD hyFD = new HyFD();
     private DefaultFileInputGenerator fileInputGenerator;
     private List<PartialFD> partialFDs = new ArrayList<>();
-    private Set<FunctionalDependency> fullFDs = new HashSet<>();
+    private Set<String> fullFDs = new HashSet<>();
 
     public FDProfiler(DefaultFileInputGenerator fileInputGenerator) {
         this.fileInputGenerator = fileInputGenerator;
@@ -33,7 +33,6 @@ public class FDProfiler extends DependencyProfiler {
         private static final boolean NULL_EQUALS_NULL = true;
         private static final boolean VALIDATE_PARALLEL = true;
         private static final boolean ENABLE_MEMORY_GUARDIAN = true;
-        private static final boolean DETECT_NARY = false;
         private static final int MAX_SEARCH_SPACE_LEVEL = 2;
         private static final int FILE_MAX_ROWS = -1;
     }
@@ -67,7 +66,7 @@ public class FDProfiler extends DependencyProfiler {
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.NULL_EQUALS_NULL.name(), Parameters.NULL_EQUALS_NULL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.VALIDATE_PARALLEL.name(), Parameters.VALIDATE_PARALLEL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.ENABLE_MEMORY_GUARDIAN.name(), Parameters.ENABLE_MEMORY_GUARDIAN);
-        hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
+        //hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
         hyFD.setIntegerConfigurationValue(HyFD.Identifier.INPUT_ROW_LIMIT.name(), Parameters.FILE_MAX_ROWS);
 
         ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(fileInputGenerator));
@@ -85,23 +84,35 @@ public class FDProfiler extends DependencyProfiler {
         List<Result> results = resultReceiver.fetchNewResults();
 
         var test = results.stream().map(x -> (FunctionalDependency) x)
+                // .filter(fd -> filteredAttributes.contains(fd.getDependant().getColumnIdentifier()))
                 .flatMap(fd -> fd.getDeterminant().getColumnIdentifiers().stream())
                 .map(ColumnIdentifier::getColumnIdentifier)
+                .map(x -> x.replace("dblp_scholar.csv.", ""))
+                .filter(filteredAttributes::contains)
+                //.collect(Collectors.toSet());
+                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+
+        // fullFDs = test;
+
+        var test3 = new ArrayList<>(test.entrySet().stream().toList());
+
+        System.out.println(test3);
+
+        test3.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+
+        fullFDs = test3.stream().map(Map.Entry::getKey).toList().stream().limit(7).collect(Collectors.toSet());
+
+        System.out.println(fullFDs);
+
+        //var test1 = test.entrySet().stream().filter(x -> ((double) x.getValue() / 107) > 0.5).collect(Collectors.toSet());
+        //System.out.println(test1);
+
+        var test2 = results.stream().map(x -> (FunctionalDependency) x)
+                .flatMap(x -> Stream.of(x.getDependant().getColumnIdentifier()))
                 .map(x -> x.replace("cd.csv.", ""))
                 .filter(filteredAttributes::contains)
                 .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
 
-        System.out.println(test);
-
-        var test2 = results.stream().map(x -> (FunctionalDependency) x)
-                .filter(x -> filteredAttributes.contains(x.getDependant().getColumnIdentifier()))
-                .map(FunctionalDependency::toString)
-                .map(x -> x.replace("cd.csv.", ""))
-                .toList();
-
-        System.out.println(test2);
-
-        fullFDs = results.stream().map(x -> (FunctionalDependency) x).collect(Collectors.toSet());
-        System.out.println(fullFDs.size());
+        //fullFDs = results.stream().map(x -> (FunctionalDependency) x).collect(Collectors.toSet());
     }
 }

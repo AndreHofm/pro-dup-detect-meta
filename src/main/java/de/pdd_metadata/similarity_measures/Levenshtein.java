@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 @Getter
 @Setter
 public class Levenshtein {
-    private int[] similarityAttributes; // = new int[]{2, 3, 8, 9};
+    private int[] similarityAttributes = new int[]{1, 4};// {2, 3, 8, 9};
     private int maxAttributeLength = 200;
 
     public double calculate(final String string1, final String string2) {
@@ -42,7 +42,7 @@ public class Levenshtein {
     }
 
     public double calculate(final String[] strings1, final String[] strings2) {
-        double levenshteinSimilarity = 0;
+        double levenshteinSimilarity;
 
         int[] upperLine = new int[strings1.length + 1];
         int[] lowerLine;
@@ -108,24 +108,27 @@ public class Levenshtein {
 
     public double calculateSimilarityOf(String[] r1, String[] r2) {
         if (r1 != null && r2 != null) {
-            int numComparisons = 0;
-            double recordSimilarity = 0;
-            double attributeSimilarity;
+            if (!r1[2].equals(r2[2])) {
+                int numComparisons = 0;
+                double recordSimilarity = 0;
+                double attributeSimilarity;
 
-            for (int attributeIndex : this.similarityAttributes) {
-                if (r1.length > attributeIndex || r2.length > attributeIndex) {
-                    if (r1.length > attributeIndex && r2.length > attributeIndex) {
-                        attributeSimilarity = this.calculateSimilarityOf(r1[attributeIndex].toLowerCase(), r2[attributeIndex].toLowerCase());
-                    } else {
-                        attributeSimilarity = 0;
+                for (int attributeIndex : this.similarityAttributes) {
+                    if (r1.length > attributeIndex || r2.length > attributeIndex) {
+                        if (r1.length > attributeIndex && r2.length > attributeIndex) {
+                            attributeSimilarity = this.calculateSimilarityOf(r1[attributeIndex].toLowerCase(), r2[attributeIndex].toLowerCase());
+                        } else {
+                            attributeSimilarity = 0;
+                        }
+
+                        recordSimilarity += attributeSimilarity;
+                        ++numComparisons;
                     }
-
-                    recordSimilarity += attributeSimilarity;
-                    ++numComparisons;
                 }
-            }
 
-            return recordSimilarity / numComparisons;
+                return recordSimilarity / numComparisons;
+            }
+            return 0;
         } else {
             throw new IllegalArgumentException("Records must not be null: r1=" + Arrays.toString(r1) + ", r2=" + Arrays.toString(r2));
         }

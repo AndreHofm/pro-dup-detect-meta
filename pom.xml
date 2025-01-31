@@ -14,9 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.11.3</junit.version>
         <fastutil.version>8.5.13</fastutil.version>
-        <flink.version>1.9.0</flink.version>
-        <logging.scope>test</logging.scope>
-        <scala.compat.version>2.11</scala.compat.version>
+        <metacrate.version>0.0.3-SNAPSHOT</metacrate.version>
     </properties>
 
     <dependencies>
@@ -75,7 +73,13 @@
         <dependency>
             <groupId>de.metanome</groupId>
             <artifactId>backend</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.2-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metanome</groupId>
+            <artifactId>algorithm_integration</artifactId>
+            <version>1.2-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -106,6 +110,18 @@
             <version>1.1-SNAPSHOT</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/src/main/resources/sawfish-1.1-SNAPSHOT.jar</systemPath>
+        </dependency>
+
+        <!-- Metacrate for Pyro-->
+        <dependency>
+            <groupId>de.hpi.isg</groupId>
+            <artifactId>mdms-clients</artifactId>
+            <version>${metacrate.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.hpi.isg</groupId>
+            <artifactId>mdms-model</artifactId>
+            <version>${metacrate.version}</version>
         </dependency>
     </dependencies>
 

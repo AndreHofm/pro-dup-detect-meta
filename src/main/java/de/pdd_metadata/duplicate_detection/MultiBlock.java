@@ -6,7 +6,6 @@ import de.pdd_metadata.duplicate_detection.structures.multi_block.BlockingStruct
 import de.pdd_metadata.duplicate_detection.structures.Record;
 import de.pdd_metadata.duplicate_detection.structures.multi_block.RecordPair;
 import de.pdd_metadata.similarity_measures.Levenshtein;
-import org.apache.hadoop.util.bloom.BloomFilter;
 
 import java.util.*;
 
