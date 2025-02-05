@@ -26,13 +26,10 @@ public class Blocking extends DuplicateDetector {
     private int blockSize;
 
     public Blocking(DataReader dataReader, Configuration config) {
+        super(dataReader, config);
         this.maxBlockRange = config.getMaxBlockRange();
         this.blockSize = config.getBlockSize();
-        this.partitionSize = config.getPartitionSize();
         this.numLoadableBlocks = (int) Math.ceil((double) this.partitionSize / (double) this.blockSize);
-        this.dataReader = dataReader;
-        this.threshold = config.getThreshold();
-        this.sorter = config.getSorter();
     }
 
     public Set<BlockResult> findDuplicatesIn(HashMap<Integer, Record> records, int[] order, int keyId, int blockOffset) {

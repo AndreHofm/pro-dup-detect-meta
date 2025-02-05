@@ -10,7 +10,7 @@ import de.uni_marburg.pdd_metadata.similarity_measures.Levenshtein;
 import java.util.*;
 
 public class MultiBlock {
-    public Levenshtein levenshtein = new Levenshtein();
+    public Levenshtein levenshtein = new Levenshtein(200);
     public Set<Duplicate> duplicates = new HashSet<>();
 
     public void execute(BlockingStructure H) {

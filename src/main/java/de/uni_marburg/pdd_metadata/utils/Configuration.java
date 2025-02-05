@@ -16,11 +16,10 @@ public class Configuration {
     private final String fileType = ".csv";
 
     private final int partitionSize = 2000000;
-    private final int blockSize = 4;
-    private final int maxBlockRange = 4;
-    private final int windowSize = 20;
-    private final int windowInterval = 1;
-    private final Sorter sorter = new Sorter();
+    private int blockSize = 4;
+    private int maxBlockRange = 4;
+    private int windowSize = 20;
+    private int windowInterval = 1;
     private double threshold;
 
     private char attributeSeparator;
@@ -38,12 +37,16 @@ public class Configuration {
     }
 
     public void setDataset(Dataset dataset) {
-        switch (dataset){
+        switch (dataset) {
             case CD:
                 this.datasetName = "cd";
                 this.fileName = this.datasetName + fileType;
                 this.goldStandardDatasetName = "cd_gold";
-                this.goldStandardFileName = this.goldStandardDatasetName +  fileType;
+                this.goldStandardFileName = this.goldStandardDatasetName + fileType;
+                this.blockSize = 4;
+                this.maxBlockRange = 4;
+                this.windowSize = 20;
+                this.windowInterval = 1;
                 this.threshold = 0.7;
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
@@ -54,7 +57,11 @@ public class Configuration {
                 this.datasetName = "dblp_scholar";
                 this.fileName = this.datasetName + fileType;
                 this.goldStandardDatasetName = "dblp_scholar_DPL";
-                this.goldStandardFileName = this.goldStandardDatasetName +  fileType;
+                this.goldStandardFileName = this.goldStandardDatasetName + fileType;
+                this.blockSize = 4;
+                this.maxBlockRange = 4;
+                this.windowSize = 20;
+                this.windowInterval = 1;
                 this.threshold = 0.7;
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
@@ -65,7 +72,11 @@ public class Configuration {
                 this.datasetName = "cora";
                 this.fileName = this.datasetName + fileType;
                 this.goldStandardDatasetName = "cora_DPL";
-                this.goldStandardFileName = this.goldStandardDatasetName +  fileType;
+                this.goldStandardFileName = this.goldStandardDatasetName + fileType;
+                this.blockSize = 4;
+                this.maxBlockRange = 4;
+                this.windowSize = 200;
+                this.windowInterval = 1;
                 this.threshold = 0.7;
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;

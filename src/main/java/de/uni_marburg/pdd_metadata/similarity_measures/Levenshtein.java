@@ -12,8 +12,12 @@ public class Levenshtein {
     // Best for cd {2, 3, 8, 9}
     // Best for dblp_scholar {1, 4}
     // Best for cora {3, 15}
-    private int[] similarityAttributes = new int[]{3, 15};
-    private int maxAttributeLength = 200;
+    private int[] similarityAttributes = {3, 15};
+    private int maxAttributeLength;
+
+    public Levenshtein(int maxAttributeLength) {
+        this.maxAttributeLength = maxAttributeLength;
+    }
 
     public double calculateSimilarityOf(String s1, String s2) {
         if (s1 != null && s2 != null && (!s1.isEmpty() || !s2.isEmpty())) {
@@ -48,24 +52,24 @@ public class Levenshtein {
     public double calculateSimilarityOf(String[] r1, String[] r2) {
         if (r1 != null && r2 != null) {
             //if (!r1[5].equals(r2[5])) {
-                int numComparisons = 0;
-                double recordSimilarity = 0;
-                double attributeSimilarity;
+            int numComparisons = 0;
+            double recordSimilarity = 0;
+            double attributeSimilarity;
 
-                for (int attributeIndex : this.similarityAttributes) {
-                    if (r1.length > attributeIndex || r2.length > attributeIndex) {
-                        if (r1.length > attributeIndex && r2.length > attributeIndex) {
-                            attributeSimilarity = this.calculateSimilarityOf(r1[attributeIndex].toLowerCase(), r2[attributeIndex].toLowerCase());
-                        } else {
-                            attributeSimilarity = 0;
-                        }
-
-                        recordSimilarity += attributeSimilarity;
-                        ++numComparisons;
+            for (int attributeIndex : this.similarityAttributes) {
+                if (r1.length > attributeIndex || r2.length > attributeIndex) {
+                    if (r1.length > attributeIndex && r2.length > attributeIndex) {
+                        attributeSimilarity = this.calculateSimilarityOf(r1[attributeIndex].toLowerCase(), r2[attributeIndex].toLowerCase());
+                    } else {
+                        attributeSimilarity = 0;
                     }
-                }
 
-                return recordSimilarity / numComparisons;
+                    recordSimilarity += attributeSimilarity;
+                    ++numComparisons;
+                }
+            }
+
+            return recordSimilarity / numComparisons;
             //}
             //return 0;
         } else {

@@ -30,23 +30,8 @@ public class Main {
 
         Set<Duplicate> goldResults = resultDataReader.readResultDuplicates();
 
-        ConfigurationSettingFileInput configInput = new ConfigurationSettingFileInput(input,
-                false,
-                ';',
-                '"',
-                '\\',
-                false,
-                true,
-                0,
-                true,
-                false,
-                "");
-
-        DefaultFileInputGenerator fileInputGenerator = new DefaultFileInputGenerator(configInput);
-
-        AttributeScoringProfiler profiler = new AttributeScoringProfiler(dataReader, fileInputGenerator, config);
-
-        profiler.execute();
+        AttributeScoringProfiler profiler = new AttributeScoringProfiler(dataReader, input, config);
+        // profiler.execute();
 
         Blocking blocking = new Blocking(dataReader, config);
 
@@ -60,7 +45,7 @@ public class Main {
             indices[i] = attributeScores.get(i).getIndex();
         }
 
-        sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(indices);
+        // sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(indices);
 
         if (true) {
             // blocking.findDuplicatesUsingMultipleKeysConcurrently();

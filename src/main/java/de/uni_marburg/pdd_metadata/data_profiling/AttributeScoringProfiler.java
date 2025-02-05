@@ -1,6 +1,9 @@
 package de.uni_marburg.pdd_metadata.data_profiling;
 
+import de.metanome.algorithm_integration.AlgorithmConfigurationException;
 import de.metanome.algorithm_integration.ColumnIdentifier;
+import de.metanome.algorithm_integration.configuration.ConfigurationSettingFileInput;
+import de.metanome.algorithm_integration.input.RelationalInputGenerator;
 import de.metanome.algorithm_integration.results.FunctionalDependency;
 import de.metanome.algorithm_integration.results.InclusionDependency;
 import de.metanome.algorithm_integration.results.UniqueColumnCombination;
@@ -22,8 +25,11 @@ public class AttributeScoringProfiler {
     private List<AttributeScore> attributeScores;
     private String datasetName;
 
-    public AttributeScoringProfiler(DataReader dataReader, DefaultFileInputGenerator fileInputGenerator, Configuration config) {
+    public AttributeScoringProfiler(DataReader dataReader, String input, Configuration config) {
         this.dataReader = dataReader;
+
+        DefaultFileInputGenerator fileInputGenerator = getInputGenerator(input);
+
         this.uccProfiler = new UCCProfiler(fileInputGenerator);
         this.fdProfiler = new FDProfiler(fileInputGenerator);
         this.indProfiler = new INDProfiler(fileInputGenerator);
@@ -110,7 +116,27 @@ public class AttributeScoringProfiler {
         }
     }
 
-    public Set<String> filterAttributesByNullValues() {
+    private static DefaultFileInputGenerator getInputGenerator(String path) {
+        try {
+            return new DefaultFileInputGenerator(new ConfigurationSettingFileInput(
+                    path,
+                    true,
+                    ';',
+                    '\"',
+                    '\\',
+                    false,
+                    true,
+                    0,
+                    true,
+                    true,
+                    ""
+            ));
+        } catch (AlgorithmConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Set<String> filterAttributesByNullValues() {
         int datasetSize = this.dataReader.getNumRecords();
         HashMap<String, Integer> attributesNull = this.dataReader.countNullValues();
 
