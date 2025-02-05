@@ -1,7 +1,5 @@
 package de.uni_marburg.pdd_metadata.utils;
 
-import de.uni_marburg.pdd_metadata.duplicate_detection.Sorter;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.AttributeKeyElementFactory;
 import lombok.Getter;
 
 import java.nio.charset.Charset;
