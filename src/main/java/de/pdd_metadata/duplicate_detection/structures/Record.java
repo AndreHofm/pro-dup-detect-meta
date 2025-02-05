@@ -4,14 +4,14 @@ import lombok.Getter;
 
 @Getter
 public class Record {
-    public int id = -1;
+    public int index = -1;
     public int blockingKey;
     public char typeSet;
     public String[] values;
     public int size;
 
-    public Record(int id, String[] values) {
-        this.id = id;
+    public Record(int index, String[] values) {
+        this.index = index;
         this.values = values;
         this.size = values.length;
     }

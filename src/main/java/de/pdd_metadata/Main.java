@@ -13,17 +13,22 @@ import de.pdd_metadata.duplicate_detection.structures.Duplicate;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws Exception {
+        String cd = "cd";
+        String dblp = "dblp_scholar";
+        String abtBuy = "Abt_Buy";
+        String amazonGoogle = "Amazon_Google";
+        String cora = "cora";
+
         String dataPath = "./data/";
 
-        String input = dataPath + "dblp_scholar.csv";
+        String input = dataPath + cora + ".csv";
 
         DataReader dataReader = new DataReader(input, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
 
-        String resultInput = dataPath + "dblp_scholar_DPL.csv";
+        String resultInput = dataPath + "cora_DPL.csv";
 
         DataReader resultDataReader = new DataReader(resultInput, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
 
@@ -90,8 +95,9 @@ public class Main {
             // blocking.findDuplicatesUsingSingleKey();
             sortedNeighbourhood.findDuplicatesUsingMultipleKeysSequential();
 
-
             Set<Duplicate> results = sortedNeighbourhood.getDuplicates();
+
+            // results.stream().map(x -> x.getRecordId1() + " " + x.getRecordId2()).forEach(System.out::println);
 
             Set<Duplicate> fn = new HashSet<>(goldResults);
             fn.removeAll(results);

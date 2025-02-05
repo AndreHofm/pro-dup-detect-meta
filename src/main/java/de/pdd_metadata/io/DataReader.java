@@ -279,7 +279,7 @@ public class DataReader {
 
             String[] ids;
             while ((ids = reader.readNext()) != null) {
-                resultDuplicates.add(new Duplicate(Integer.parseInt(ids[0]), Integer.parseInt(ids[1])));
+                resultDuplicates.add(new Duplicate(ids[0], ids[1]));
             }
 
             return resultDuplicates;
@@ -300,10 +300,10 @@ public class DataReader {
 
             for (int i = 0; i < records.size(); i++) {
                 for (int j = i; j < records.size(); j++) {
-                    if (records.get(i).id != records.get(j).id) {
+                    if (records.get(i).index != records.get(j).index) {
                         double sim = levenshtein.calculateSimilarityOf(records.get(i).values, records.get(j).values);
                         if (sim >= threshold) {
-                            resultDuplicates.add(new Duplicate(records.get(i).id, records.get(j).id, Integer.parseInt(records.get(i).values[0]), Integer.parseInt(records.get(j).values[0])));
+                            resultDuplicates.add(new Duplicate(records.get(i).index, records.get(j).index, records.get(i).values[0], records.get(j).values[0]));
                         }
                     }
                 }
@@ -503,7 +503,7 @@ public class DataReader {
     }
 
     private Record fitToMaxSize(Record record) {
-        return record.size <= this.maxAttributes ? record : new Record(record.id, Arrays.copyOfRange(record.values, 0, this.maxAttributes));
+        return record.size <= this.maxAttributes ? record : new Record(record.index, Arrays.copyOfRange(record.values, 0, this.maxAttributes));
     }
 
     private Class<?> detectType(String value) {

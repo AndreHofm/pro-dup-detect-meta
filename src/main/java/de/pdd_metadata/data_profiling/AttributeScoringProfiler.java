@@ -32,6 +32,8 @@ public class AttributeScoringProfiler {
 
         Set<String> filterAttributesByNullValues = filterAttributesByNullValues();
 
+        System.out.println("Null Values: " + filterAttributesByNullValues);
+
         /*
         System.out.println("Starte uccProfiler...");
         HashMap<Vertical, Long> numberAttributePartialUCC = uccProfiler.executePartialUCCProfiler();
@@ -56,25 +58,35 @@ public class AttributeScoringProfiler {
 
         String cd = "cd";
         String dblp = "dblp_scholar";
+        String abtBuy = "Abt_Buy";
+        String amazonGoogle = "Amazon_Google";
+        String cora = "cora";
 
         Set<String> filteredUCCs = fullUCCs.stream()
                 .flatMap(x -> x.getColumnCombination().getColumnIdentifiers().stream())
-                .map(x -> x.toString().replace(dblp + ".csv.", "")).collect(Collectors.toSet());
+                .map(x -> x.toString().replace(cora + ".csv.", "")).collect(Collectors.toSet());
 
         Set<String> filteredINDs = partialINDs.stream()
                 .flatMap(x -> x.getDependant().getColumnIdentifiers().stream())
-                .map(x -> x.toString().replace(dblp + ".csv.", "")).collect(Collectors.toSet());
+                .map(x -> x.toString().replace(cora + ".csv.", "")).collect(Collectors.toSet());
+
+        System.out.println("UCCs: " + filteredUCCs);
+
+        System.out.println("INDs: " + filteredINDs);
+
+        System.out.println("FDs: " + fdProfiler.getFullFDs());
 
         this.attributeScores.removeIf(attributeScore -> filteredUCCs.contains(attributeScore.getAttribute())
                 || !filterAttributesByNullValues.contains(attributeScore.getAttribute())
                 || filteredINDs.contains(attributeScore.getAttribute())
-                || !fdProfiler.getFullFDs().contains(attributeScore.getAttribute()));
+                || !fdProfiler.getFullFDs().contains(attributeScore.getAttribute())
+                || attributeScore.getAttribute().equals("dataset"));
 
-        //System.out.println(numberAttributePartialUCC);
-        //System.out.println(numberAttributePartialFD);
+        // System.out.println(numberAttributePartialUCC);
+        // System.out.println(numberAttributePartialFD);
 
         // Currently Pyro doesnt stop all threads?!
-        //System.exit(0);
+        // System.exit(0);
     }
 
     private void initializeAttributeScoreList() {
@@ -89,10 +101,13 @@ public class AttributeScoringProfiler {
     public Set<String> filterAttributesByNullValues() {
         int sizeCD = 9763;
         int sizeDBLP = 66879;
+        int sizeAbtBuy = 2174;
+        int sizeAmazonGoogle = 4589;
+        int sizeCora = 1879;
         HashMap<String, Integer> attributesNull = this.dataReader.countNullValues();
 
         return attributesNull.entrySet().stream()
-                .filter(x -> !(((double) x.getValue() / sizeDBLP) >= 0.01))
+                .filter(x -> !(((double) x.getValue() / sizeCora) >= 0.05))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }

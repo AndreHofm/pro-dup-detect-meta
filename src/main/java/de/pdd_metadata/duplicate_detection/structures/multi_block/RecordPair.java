@@ -19,7 +19,7 @@ public class RecordPair {
     public RecordPair(Record rA, Record rB) {
         this.rA = rA;
         this.rB = rB;
-        this.IdA = rA.id;
-        this.IdB = rB.id;
+        this.IdA = rA.index;
+        this.IdB = rB.index;
     }
 }

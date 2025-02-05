@@ -49,7 +49,7 @@ public class SortedNeighbourhood {
 
                 double value = this.levenshtein.calculateSimilarityOf(record1.values, record2.values);
 
-                Duplicate duplicate = new Duplicate(record1.id, record2.id, Integer.parseInt(record1.values[0]), Integer.parseInt(record2.values[0]));
+                Duplicate duplicate = new Duplicate(record1.index, record2.index, record1.values[0], record2.values[0]);
 
                 boolean newDuplicate = !this.duplicates.contains(duplicate);
 
@@ -95,7 +95,7 @@ public class SortedNeighbourhood {
                             double value = this.levenshtein.calculateSimilarityOf(record1.values, record2.values);
 
 
-                            Duplicate duplicate = new Duplicate(record1.id, record2.id, Integer.parseInt(record1.values[0]), Integer.parseInt(record2.values[0]));
+                            Duplicate duplicate = new Duplicate(record1.index, record2.index, record1.values[0], record2.values[0]);
 
                             boolean newDuplicate = !this.duplicates.contains(duplicate);
 

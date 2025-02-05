@@ -66,7 +66,7 @@ public class FDProfiler extends DependencyProfiler {
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.NULL_EQUALS_NULL.name(), Parameters.NULL_EQUALS_NULL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.VALIDATE_PARALLEL.name(), Parameters.VALIDATE_PARALLEL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.ENABLE_MEMORY_GUARDIAN.name(), Parameters.ENABLE_MEMORY_GUARDIAN);
-        //hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
+        // hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
         hyFD.setIntegerConfigurationValue(HyFD.Identifier.INPUT_ROW_LIMIT.name(), Parameters.FILE_MAX_ROWS);
 
         ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(fileInputGenerator));
@@ -87,7 +87,7 @@ public class FDProfiler extends DependencyProfiler {
                 // .filter(fd -> filteredAttributes.contains(fd.getDependant().getColumnIdentifier()))
                 .flatMap(fd -> fd.getDeterminant().getColumnIdentifiers().stream())
                 .map(ColumnIdentifier::getColumnIdentifier)
-                .map(x -> x.replace("dblp_scholar.csv.", ""))
+                .map(x -> x.replace("Amazon_Google.csv.", ""))
                 .filter(filteredAttributes::contains)
                 //.collect(Collectors.toSet());
                 .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
@@ -100,19 +100,12 @@ public class FDProfiler extends DependencyProfiler {
 
         test3.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
 
-        fullFDs = test3.stream().map(Map.Entry::getKey).toList().stream().limit(7).collect(Collectors.toSet());
+        fullFDs = test3.stream()
+                .map(Map.Entry::getKey)
+                .toList().stream()
+                //.limit(7)
+                .collect(Collectors.toSet());
 
         System.out.println(fullFDs);
-
-        //var test1 = test.entrySet().stream().filter(x -> ((double) x.getValue() / 107) > 0.5).collect(Collectors.toSet());
-        //System.out.println(test1);
-
-        var test2 = results.stream().map(x -> (FunctionalDependency) x)
-                .flatMap(x -> Stream.of(x.getDependant().getColumnIdentifier()))
-                .map(x -> x.replace("cd.csv.", ""))
-                .filter(filteredAttributes::contains)
-                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
-
-        //fullFDs = results.stream().map(x -> (FunctionalDependency) x).collect(Collectors.toSet());
     }
 }

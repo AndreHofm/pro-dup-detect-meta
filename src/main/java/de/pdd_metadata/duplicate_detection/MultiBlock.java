@@ -29,12 +29,12 @@ public class MultiBlock {
                     Record rB =  rp.rB;
                     block.evaluations++;
 
-                    Duplicate duplicate = new Duplicate(rA.id, rB.id);
+                    // Duplicate duplicate = new Duplicate(rA.id, rB.id);
 
                     if (levenshtein.calculateSimilarityOf(rA.values, rB.values) >= 0.7) {
                         matchingPairs.add(rp);
                         block.noMatchingPairs++;
-                        duplicates.add(duplicate);
+                        //duplicates.add(duplicate);
                     }
                 }
             }
@@ -63,7 +63,7 @@ public class MultiBlock {
 
                         if (levenshtein.calculateSimilarityOf(recordA.values, recordB.values) >= 0.7) {
                             block.noMatchingPairs++;
-                            duplicates.add(new Duplicate(recordA.id, recordB.id));
+                            //duplicates.add(new Duplicate(recordA.id, recordB.id));
                         }
 
                         block.calcScore();
