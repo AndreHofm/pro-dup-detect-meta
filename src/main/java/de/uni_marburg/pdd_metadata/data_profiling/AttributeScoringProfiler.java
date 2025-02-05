@@ -62,7 +62,10 @@ public class AttributeScoringProfiler {
         Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
 
         indProfiler.executePartialINDProfiler();
+        indProfiler.executeFullINDProfiler();
         Set<InclusionDependency> partialINDs = indProfiler.getPartialINDS();
+        Set<InclusionDependency> fullINDS = removeIdenticalINDs(indProfiler.getInds());
+        partialINDs.addAll(fullINDS);
 
         Set<String> filteredFDs = filteringFDs(fullFDs);
 
@@ -70,11 +73,9 @@ public class AttributeScoringProfiler {
 
         Set<String> filteredINDs = filteringINDSs(partialINDs);
 
-        System.out.println("UCCs: " + filteredUCCs);
-
-        System.out.println("INDs: " + filteredINDs);
-
         System.out.println("FDs: " + filteredFDs);
+        System.out.println("UCCs: " + filteredUCCs);
+        System.out.println("INDs: " + filteredINDs);
 
         this.attributeScores.removeIf(attributeScore -> filteredUCCs.contains(attributeScore.getAttribute())
                 || !filterAttributesByNullValues.contains(attributeScore.getAttribute())
@@ -105,6 +106,20 @@ public class AttributeScoringProfiler {
                 .flatMap(x -> x.getDependant().getColumnIdentifiers().stream())
                 .map(x -> x.toString().replace(datasetName + ".csv.", ""))
                 .collect(Collectors.toSet());
+    }
+
+    private Set<InclusionDependency> removeIdenticalINDs(Set<InclusionDependency> inds) {
+        List<InclusionDependency> list = new ArrayList<>(inds.stream().toList());
+
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = 0; j < list.size(); j++) {
+                if (list.get(i).getDependant().equals(list.get(j).getReferenced()) && list.get(j).getDependant().equals(list.get(i).getReferenced())) {
+                    list.remove(list.get(j));
+                }
+            }
+        }
+
+        return new HashSet<>(list);
     }
 
     private void initializeAttributeScoreList() {

@@ -18,7 +18,7 @@ import java.util.*;
 public class Main {
     public static void main(String[] args) throws Exception {
         Configuration config = new Configuration();
-        config.setDataset(Configuration.Dataset.CORA);
+        config.setDataset(Configuration.Dataset.CD);
 
         String dataPath = "./data/";
 
@@ -31,7 +31,7 @@ public class Main {
         Set<Duplicate> goldResults = resultDataReader.readResultDuplicates();
 
         AttributeScoringProfiler profiler = new AttributeScoringProfiler(dataReader, input, config);
-        // profiler.execute();
+        profiler.execute();
 
         Blocking blocking = new Blocking(dataReader, config);
 
@@ -45,7 +45,7 @@ public class Main {
             indices[i] = attributeScores.get(i).getIndex();
         }
 
-        // sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(indices);
+        sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(indices);
 
         if (true) {
             // blocking.findDuplicatesUsingMultipleKeysConcurrently();
