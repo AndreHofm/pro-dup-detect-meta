@@ -5,7 +5,6 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.enums.CSVReaderNullFieldIndicator;
 import com.opencsv.exceptions.CsvValidationException;
-import de.pdd_metadata.similarity_measures.Levenshtein;
 import de.pdd_metadata.duplicate_detection.Magpie;
 import de.pdd_metadata.duplicate_detection.structures.Block;
 import de.pdd_metadata.duplicate_detection.structures.Duplicate;
@@ -185,9 +184,7 @@ public class DataReader {
             blocks.put(blockId, new Block());
         }
 
-        if (blocksToLoad.isEmpty()) {
-            return blocks;
-        } else {
+        if (!blocksToLoad.isEmpty()) {
             List<Integer> sortedLineIndices = new ArrayList<>();
             HashMap<Integer, Integer> linePositions = new HashMap<>();
 
@@ -224,8 +221,8 @@ public class DataReader {
                 throw new RuntimeException(e);
             }
 
-            return blocks;
         }
+        return blocks;
     }
 
     public List<Record> readLines(Collection<Integer> lineIndices) throws IOException {
@@ -288,33 +285,6 @@ public class DataReader {
         }
     }
 
-    public Set<Duplicate> simpleDuDe(Levenshtein levenshtein, float threshold) {
-        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
-            Set<Duplicate> resultDuplicates = new HashSet<>();
-            List<Record> records = new ArrayList<>();
-
-            String[] values;
-            while ((values = reader.readNext()) != null) {
-                records.add(new Record(Integer.parseInt(values[0]), values));
-            }
-
-            for (int i = 0; i < records.size(); i++) {
-                for (int j = i; j < records.size(); j++) {
-                    if (records.get(i).index != records.get(j).index) {
-                        double sim = levenshtein.calculateSimilarityOf(records.get(i).values, records.get(j).values);
-                        if (sim >= threshold) {
-                            resultDuplicates.add(new Duplicate(records.get(i).index, records.get(j).index, records.get(i).values[0], records.get(j).values[0]));
-                        }
-                    }
-                }
-            }
-
-            return resultDuplicates;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public HashMap<String, Block> readBlockForMulti(int order[]) {
         System.out.println("Starting to read blocks...");
         HashMap<String, Block> blocks = new HashMap<>();
@@ -353,7 +323,6 @@ public class DataReader {
         System.out.println("Finished reading blocks.");
         return blocks;
     }
-
 
     public HashMap<String, Integer> countNullValues() {
         HashMap<String, Integer> nullCounts = new HashMap<>();
@@ -409,8 +378,7 @@ public class DataReader {
         return columnTypes;
     }
 
-
-    public int getNumRecords() throws IOException {
+    public int getNumRecords() {
         if (this.numLines == 0) {
             this.numLines = this.countLines(this.filePath, this.charset);
         }
@@ -468,10 +436,10 @@ public class DataReader {
     }
 
     private String getPartitionKeyFrom(int[] sortedLineIndices) {
-        int lenght = Math.min(sortedLineIndices.length, 5);
+        int length = Math.min(sortedLineIndices.length, 5);
         StringBuilder buffer = new StringBuilder("SNM_Partition");
 
-        for (int i = 0; i < lenght; ++i) {
+        for (int i = 0; i < length; ++i) {
             buffer.append("-").append(sortedLineIndices[i]);
         }
 
@@ -496,9 +464,11 @@ public class DataReader {
                 .build();
     }
 
-    private int countLines(String filePath, Charset charset) throws IOException {
+    private int countLines(String filePath, Charset charset) {
         try (var lines = Files.lines(Path.of(filePath), charset)) {
             return (int) lines.count();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -35,9 +35,6 @@ public class INDProfiler extends DependencyProfiler {
     }
 
     static class Parameters {
-        private static final boolean NULL_EQUALS_NULL = true;
-        private static final boolean VALIDATE_PARALLEL = true;
-        private static final boolean ENABLE_MEMORY_GUARDIAN = true;
         private static final boolean DETECT_NARY = false;
         private static final int MAX_SEARCH_SPACE_LEVEL = -1;
         private static final int FILE_MAX_ROWS = -1;

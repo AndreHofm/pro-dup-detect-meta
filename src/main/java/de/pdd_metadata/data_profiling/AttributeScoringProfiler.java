@@ -1,6 +1,7 @@
 package de.pdd_metadata.data_profiling;
 
-import de.hpi.isg.pyro.model.Vertical;
+import de.metanome.algorithm_integration.ColumnIdentifier;
+import de.metanome.algorithm_integration.results.FunctionalDependency;
 import de.metanome.algorithm_integration.results.InclusionDependency;
 import de.metanome.algorithm_integration.results.UniqueColumnCombination;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
@@ -18,6 +19,14 @@ public class AttributeScoringProfiler {
     private UCCProfiler uccProfiler;
     private DataReader dataReader;
     private List<AttributeScore> attributeScores;
+    /*
+        String cd = "cd";
+        String dblp = "dblp_scholar";
+        String abtBuy = "Abt_Buy";
+        String amazonGoogle = "Amazon_Google";
+        String cora = "cora";
+     */
+    private String datasetName = "cd";
 
     public AttributeScoringProfiler(DataReader dataReader, DefaultFileInputGenerator fileInputGenerator) {
         this.dataReader = dataReader;
@@ -45,48 +54,56 @@ public class AttributeScoringProfiler {
 
          */
 
-
-        fdProfiler.executeFullFDProfiler(filterAttributesByNullValues);
+        fdProfiler.executeFullFDProfiler();
+        Set<FunctionalDependency> fullFDs = fdProfiler.getFullFDs();
 
         uccProfiler.executeFullUCCProfiler();
-
-        indProfiler.executePartialINDProfiler();
-
         Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
 
+        indProfiler.executePartialINDProfiler();
         Set<InclusionDependency> partialINDs = indProfiler.getPartialINDS();
 
-        String cd = "cd";
-        String dblp = "dblp_scholar";
-        String abtBuy = "Abt_Buy";
-        String amazonGoogle = "Amazon_Google";
-        String cora = "cora";
+        Set<String> filteredFDs = filteringFDs(fullFDs);
 
-        Set<String> filteredUCCs = fullUCCs.stream()
-                .flatMap(x -> x.getColumnCombination().getColumnIdentifiers().stream())
-                .map(x -> x.toString().replace(cora + ".csv.", "")).collect(Collectors.toSet());
+        Set<String> filteredUCCs = filteringUCCs(fullUCCs);
 
-        Set<String> filteredINDs = partialINDs.stream()
-                .flatMap(x -> x.getDependant().getColumnIdentifiers().stream())
-                .map(x -> x.toString().replace(cora + ".csv.", "")).collect(Collectors.toSet());
+        Set<String> filteredINDs = filteringINDSs(partialINDs);
 
         System.out.println("UCCs: " + filteredUCCs);
 
         System.out.println("INDs: " + filteredINDs);
 
-        System.out.println("FDs: " + fdProfiler.getFullFDs());
+        System.out.println("FDs: " + filteredFDs);
 
         this.attributeScores.removeIf(attributeScore -> filteredUCCs.contains(attributeScore.getAttribute())
                 || !filterAttributesByNullValues.contains(attributeScore.getAttribute())
                 || filteredINDs.contains(attributeScore.getAttribute())
-                || !fdProfiler.getFullFDs().contains(attributeScore.getAttribute())
+                || !filteredFDs.contains(attributeScore.getAttribute())
                 || attributeScore.getAttribute().equals("dataset"));
+    }
 
-        // System.out.println(numberAttributePartialUCC);
-        // System.out.println(numberAttributePartialFD);
+    private Set<String> filteringFDs(Set<FunctionalDependency> fds) {
+        return fds.stream()
+                .flatMap(fd -> fd.getDeterminant().getColumnIdentifiers().stream())
+                .map(ColumnIdentifier::getColumnIdentifier)
+                .collect(Collectors.groupingBy(x -> x, Collectors.counting()))
+                .keySet().stream()
+                .limit(fds.size())
+                .collect(Collectors.toSet());
+    }
 
-        // Currently Pyro doesnt stop all threads?!
-        // System.exit(0);
+    private Set<String> filteringUCCs(Set<UniqueColumnCombination> uccs) {
+        return uccs.stream()
+                .flatMap(x -> x.getColumnCombination().getColumnIdentifiers().stream())
+                .map(x -> x.toString().replace(datasetName + ".csv.", ""))
+                .collect(Collectors.toSet());
+    }
+
+    private Set<String> filteringINDSs(Set<InclusionDependency> inds) {
+        return inds.stream()
+                .flatMap(x -> x.getDependant().getColumnIdentifiers().stream())
+                .map(x -> x.toString().replace(datasetName + ".csv.", ""))
+                .collect(Collectors.toSet());
     }
 
     private void initializeAttributeScoreList() {
@@ -99,15 +116,11 @@ public class AttributeScoringProfiler {
     }
 
     public Set<String> filterAttributesByNullValues() {
-        int sizeCD = 9763;
-        int sizeDBLP = 66879;
-        int sizeAbtBuy = 2174;
-        int sizeAmazonGoogle = 4589;
-        int sizeCora = 1879;
+        int datasetSize = this.dataReader.getNumRecords();
         HashMap<String, Integer> attributesNull = this.dataReader.countNullValues();
 
         return attributesNull.entrySet().stream()
-                .filter(x -> !(((double) x.getValue() / sizeCora) >= 0.05))
+                .filter(x -> !(((double) x.getValue() / datasetSize) >= 0.05))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }

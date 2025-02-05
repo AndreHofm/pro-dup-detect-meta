@@ -70,7 +70,6 @@ public class UCCProfiler extends DependencyProfiler {
         hyUCC.setIntegerConfigurationValue(HyUCC.Identifier.INPUT_ROW_LIMIT.name(), Parameters.FILE_MAX_ROWS);
 
         ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(fileInputGenerator));
-
         hyUCC.setResultReceiver(resultReceiver);
 
         suppressSysOut(() -> {
@@ -82,7 +81,6 @@ public class UCCProfiler extends DependencyProfiler {
         });
 
         List<Result> results = resultReceiver.fetchNewResults();
-
         fullUCCs = results.stream().map(x -> (UniqueColumnCombination) x).collect(Collectors.toSet());
     }
 }

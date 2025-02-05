@@ -24,11 +24,11 @@ public class Main {
 
         String dataPath = "./data/";
 
-        String input = dataPath + cora + ".csv";
+        String input = dataPath + cd + ".csv";
 
         DataReader dataReader = new DataReader(input, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
 
-        String resultInput = dataPath + "cora_DPL.csv";
+        String resultInput = dataPath + "cd_gold.csv";
 
         DataReader resultDataReader = new DataReader(resultInput, true, ';', 0, 100, StandardCharsets.ISO_8859_1);
 
@@ -58,25 +58,6 @@ public class Main {
 
         Blocking blocking = new Blocking(4, dataReader, 0.7, 4, 2000000, sorter, attributeKeyElementFactory);
 
-        /*
-        MultiBlock multiBlock = new MultiBlock();
-
-        BlockingStructure h = new BlockingStructure();
-
-        h.blocks = runBlocking(dataReader);
-
-        System.out.println(h.blocks.size());
-
-        multiBlock.execute2(h);
-
-        System.out.println(multiBlock.duplicates.size());
-
-        goldResults.removeAll(multiBlock.duplicates);
-
-        System.out.println(goldResults.size());
-
-         */
-
         SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, 2000000, attributeKeyElementFactory, 20, 1, 0.7, sorter);
 
         List<AttributeScore> attributeScores = profiler.getAttributeScores();
@@ -96,8 +77,6 @@ public class Main {
             sortedNeighbourhood.findDuplicatesUsingMultipleKeysSequential();
 
             Set<Duplicate> results = sortedNeighbourhood.getDuplicates();
-
-            // results.stream().map(x -> x.getRecordId1() + " " + x.getRecordId2()).forEach(System.out::println);
 
             Set<Duplicate> fn = new HashSet<>(goldResults);
             fn.removeAll(results);

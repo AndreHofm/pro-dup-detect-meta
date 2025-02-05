@@ -5,7 +5,6 @@ import de.hpi.isg.pyro.model.Column;
 import de.hpi.isg.pyro.model.PartialFD;
 import de.hpi.isg.pyro.model.Vertical;
 import de.metanome.algorithm_integration.AlgorithmExecutionException;
-import de.metanome.algorithm_integration.ColumnIdentifier;
 import de.metanome.algorithm_integration.results.FunctionalDependency;
 import de.metanome.algorithm_integration.results.Result;
 import de.metanome.algorithms.hyfd.HyFD;
@@ -23,7 +22,7 @@ public class FDProfiler extends DependencyProfiler {
     private final HyFD hyFD = new HyFD();
     private DefaultFileInputGenerator fileInputGenerator;
     private List<PartialFD> partialFDs = new ArrayList<>();
-    private Set<String> fullFDs = new HashSet<>();
+    private Set<FunctionalDependency> fullFDs = new HashSet<>();
 
     public FDProfiler(DefaultFileInputGenerator fileInputGenerator) {
         this.fileInputGenerator = fileInputGenerator;
@@ -61,16 +60,15 @@ public class FDProfiler extends DependencyProfiler {
         return (HashMap<Vertical, Long>) partialFDs.stream().collect(Collectors.groupingBy(key -> key.lhs, Collectors.counting()));
     }
 
-    public void executeFullFDProfiler(Set<String> filteredAttributes) throws Exception {
+    public void executeFullFDProfiler() throws Exception {
         hyFD.setRelationalInputConfigurationValue(HyFD.Identifier.INPUT_GENERATOR.name(), fileInputGenerator);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.NULL_EQUALS_NULL.name(), Parameters.NULL_EQUALS_NULL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.VALIDATE_PARALLEL.name(), Parameters.VALIDATE_PARALLEL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.ENABLE_MEMORY_GUARDIAN.name(), Parameters.ENABLE_MEMORY_GUARDIAN);
-        // hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
+        hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
         hyFD.setIntegerConfigurationValue(HyFD.Identifier.INPUT_ROW_LIMIT.name(), Parameters.FILE_MAX_ROWS);
 
         ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(fileInputGenerator));
-
         hyFD.setResultReceiver(resultReceiver);
 
         suppressSysOut(() -> {
@@ -82,30 +80,8 @@ public class FDProfiler extends DependencyProfiler {
         });
 
         List<Result> results = resultReceiver.fetchNewResults();
-
-        var test = results.stream().map(x -> (FunctionalDependency) x)
-                // .filter(fd -> filteredAttributes.contains(fd.getDependant().getColumnIdentifier()))
-                .flatMap(fd -> fd.getDeterminant().getColumnIdentifiers().stream())
-                .map(ColumnIdentifier::getColumnIdentifier)
-                .map(x -> x.replace("Amazon_Google.csv.", ""))
-                .filter(filteredAttributes::contains)
-                //.collect(Collectors.toSet());
-                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
-
-        // fullFDs = test;
-
-        var test3 = new ArrayList<>(test.entrySet().stream().toList());
-
-        System.out.println(test3);
-
-        test3.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
-
-        fullFDs = test3.stream()
-                .map(Map.Entry::getKey)
-                .toList().stream()
-                //.limit(7)
+        fullFDs = results.stream()
+                .map(x -> (FunctionalDependency) x)
                 .collect(Collectors.toSet());
-
-        System.out.println(fullFDs);
     }
 }
