@@ -286,45 +286,6 @@ public class DataReader {
         }
     }
 
-    public HashMap<String, Block> readBlockForMulti(int order[]) {
-        System.out.println("Starting to read blocks...");
-        HashMap<String, Block> blocks = new HashMap<>();
-        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
-            Metaphone metaphone = new Metaphone();
-            metaphone.setMaxCodeLen(4);
-
-            for (int i = 0; i < this.getNumRecords(); ++i) {
-                String[] line = reader.readNext();
-                StringBuilder blockingKey = new StringBuilder();
-
-                for (int key : order) {
-                    String tempKey = metaphone.encode(line[key]);
-                    String blockKey = tempKey.length() >= 2 ? tempKey.substring(0, 2) : tempKey;
-                    blockingKey.append(blockKey);
-                }
-
-                String finalKey = blockingKey.toString();
-
-                if (blocks.get(finalKey) == null) {
-                    blocks.put(finalKey, new Block());
-                }
-
-                Record record = new Record(Integer.parseInt(line[0]), line);
-                record = this.fitToMaxSize(record);
-                if (blocks.get(finalKey).recordsA.size() <= blocks.get(finalKey).recordsB.size()) {
-                    blocks.get(finalKey).recordsA.add(record);
-                } else {
-                    blocks.get(finalKey).recordsB.add(record);
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error reading blocks from file", e);
-        }
-
-        System.out.println("Finished reading blocks.");
-        return blocks;
-    }
-
     public HashMap<String, Integer> countNullValues() {
         HashMap<String, Integer> nullCounts = new HashMap<>();
 

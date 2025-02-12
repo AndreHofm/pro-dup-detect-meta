@@ -6,7 +6,6 @@ import lombok.Getter;
 public class Record {
     public int index;
     public int blockingKey;
-    public char typeSet;
     public String[] values;
     public int size;
 
