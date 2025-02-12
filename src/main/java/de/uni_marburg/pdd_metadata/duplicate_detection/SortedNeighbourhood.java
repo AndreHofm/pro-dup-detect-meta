@@ -3,9 +3,7 @@ package de.uni_marburg.pdd_metadata.duplicate_detection;
 import de.uni_marburg.pdd_metadata.io.DataReader;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Record;
-import de.uni_marburg.pdd_metadata.similarity_measures.Levenshtein;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.io.IOException;

@@ -12,6 +12,7 @@ public class Configuration {
     private String goldStandardDatasetName;
     private String goldStandardFileName;
     private final String fileType = ".csv";
+    private boolean twoInOneDataset;
 
     private final int partitionSize = 2000000;
     private int blockSize = 4;
@@ -49,6 +50,7 @@ public class Configuration {
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
+                this.twoInOneDataset = false;
                 break;
 
             case DBLP_SCHOLAR:
@@ -64,6 +66,7 @@ public class Configuration {
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
+                this.twoInOneDataset = true;
                 break;
 
             case CORA:

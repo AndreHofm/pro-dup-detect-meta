@@ -4,6 +4,7 @@ import de.uni_marburg.pdd_metadata.duplicate_detection.structures.AttributeKeyEl
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
 import de.uni_marburg.pdd_metadata.io.DataReader;
+import de.uni_marburg.pdd_metadata.similarity_measures.JaroWinkler;
 import de.uni_marburg.pdd_metadata.similarity_measures.Levenshtein;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
@@ -22,12 +23,14 @@ public abstract class DuplicateDetector {
     protected KeyElementFactory keyElementFactory = new AttributeKeyElementFactory();
     protected Set<Duplicate> duplicates = new HashSet<>();
     protected double threshold;
+    protected JaroWinkler jaroWinkler;
 
     public DuplicateDetector(DataReader dataReader, Configuration config) {
         this.dataReader = dataReader;
         this.partitionSize = config.getPartitionSize();
         this.threshold = config.getThreshold();
         this.sorter = new Sorter();
-        this.levenshtein = new Levenshtein(config.getLevenshteinMaxAttributeLength());
+        this.levenshtein = new Levenshtein(config.getLevenshteinMaxAttributeLength(), config.isTwoInOneDataset());
+        this.jaroWinkler =  new JaroWinkler();
     }
 }

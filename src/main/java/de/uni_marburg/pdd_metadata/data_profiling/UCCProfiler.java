@@ -37,7 +37,7 @@ public class UCCProfiler extends DependencyProfiler {
         private static final int FILE_MAX_ROWS = -1;
     }
 
-    public HashMap<Vertical, Long> executePartialUCCProfiler() throws Exception {
+    public void executePartialUCCProfiler() throws Exception {
         pyro.setRelationalInputConfigurationValue("inputFile", fileInputGenerator);
         pyro.setBooleanConfigurationValue("isNullEqualNull", true);
         pyro.setBooleanConfigurationValue("isFindFds", false);
@@ -53,12 +53,10 @@ public class UCCProfiler extends DependencyProfiler {
         });
 
         var test = partialUCCs.stream()
-                .flatMap(ucc -> Stream.of(ucc.vertical.getColumns()))
-                .collect(Collectors.groupingBy(Column::getName, Collectors.counting()));
+                .filter(ucc -> ucc.vertical.getColumns().length == 1)
+                .collect(Collectors.toSet());
 
         System.out.println(test);
-
-        return (HashMap<Vertical, Long>) partialUCCs.stream().collect(Collectors.groupingBy(key -> key.vertical, Collectors.counting()));
     }
 
     public void executeFullUCCProfiler() throws Exception {

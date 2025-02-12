@@ -1,5 +1,6 @@
 package de.uni_marburg.pdd_metadata.data_profiling;
 
+import de.hpi.isg.pyro.model.Vertical;
 import de.metanome.algorithm_integration.AlgorithmConfigurationException;
 import de.metanome.algorithm_integration.ColumnIdentifier;
 import de.metanome.algorithm_integration.configuration.ConfigurationSettingFileInput;

@@ -12,11 +12,13 @@ public class Levenshtein {
     // Best for cd {2, 3, 8, 9}
     // Best for dblp_scholar {1, 4}
     // Best for cora {3, 15}
-    private int[] similarityAttributes = {3, 15};
+    private int[] similarityAttributes = {2, 3, 8, 9};
     private int maxAttributeLength;
+    private boolean twoInOneDataset;
 
-    public Levenshtein(int maxAttributeLength) {
+    public Levenshtein(int maxAttributeLength, boolean twoInOneDataset) {
         this.maxAttributeLength = maxAttributeLength;
+        this.twoInOneDataset = twoInOneDataset;
     }
 
     public double calculateSimilarityOf(String s1, String s2) {
@@ -51,27 +53,47 @@ public class Levenshtein {
 
     public double calculateSimilarityOf(String[] r1, String[] r2) {
         if (r1 != null && r2 != null) {
-            //if (!r1[5].equals(r2[5])) {
-            int numComparisons = 0;
-            double recordSimilarity = 0;
-            double attributeSimilarity;
+            if (!twoInOneDataset) {
+                int numComparisons = 0;
+                double recordSimilarity = 0;
+                double attributeSimilarity;
 
-            for (int attributeIndex : this.similarityAttributes) {
-                if (r1.length > attributeIndex || r2.length > attributeIndex) {
-                    if (r1.length > attributeIndex && r2.length > attributeIndex) {
-                        attributeSimilarity = this.calculateSimilarityOf(r1[attributeIndex].toLowerCase(), r2[attributeIndex].toLowerCase());
-                    } else {
-                        attributeSimilarity = 0;
+                for (int attributeIndex : this.similarityAttributes) {
+                    if (r1.length > attributeIndex || r2.length > attributeIndex) {
+                        if (r1.length > attributeIndex && r2.length > attributeIndex) {
+                            attributeSimilarity = this.calculateSimilarityOf(r1[attributeIndex].toLowerCase(), r2[attributeIndex].toLowerCase());
+                        } else {
+                            attributeSimilarity = 0;
+                        }
+
+                        recordSimilarity += attributeSimilarity;
+                        ++numComparisons;
                     }
-
-                    recordSimilarity += attributeSimilarity;
-                    ++numComparisons;
                 }
+
+                return recordSimilarity / numComparisons;
+            } else if (!r1[2].equals(r2[2])) {
+                int numComparisons = 0;
+                double recordSimilarity = 0;
+                double attributeSimilarity;
+
+                for (int attributeIndex : this.similarityAttributes) {
+                    if (r1.length > attributeIndex || r2.length > attributeIndex) {
+                        if (r1.length > attributeIndex && r2.length > attributeIndex) {
+                            attributeSimilarity = this.calculateSimilarityOf(r1[attributeIndex].toLowerCase(), r2[attributeIndex].toLowerCase());
+                        } else {
+                            attributeSimilarity = 0;
+                        }
+
+                        recordSimilarity += attributeSimilarity;
+                        ++numComparisons;
+                    }
+                }
+
+                return recordSimilarity / numComparisons;
             }
 
-            return recordSimilarity / numComparisons;
-            //}
-            //return 0;
+            return 0;
         } else {
             throw new IllegalArgumentException("Records must not be null: r1=" + Arrays.toString(r1) + ", r2=" + Arrays.toString(r2));
         }
