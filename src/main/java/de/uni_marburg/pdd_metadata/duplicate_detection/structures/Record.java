@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class Record {
-    public int index = -1;
+    public int index;
     public int blockingKey;
     public char typeSet;
     public String[] values;

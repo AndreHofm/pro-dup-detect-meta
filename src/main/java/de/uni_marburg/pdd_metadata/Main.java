@@ -18,7 +18,7 @@ import java.util.*;
 public class Main {
     public static void main(String[] args) throws Exception {
         Configuration config = new Configuration();
-        config.setDataset(Configuration.Dataset.CD);
+        config.setDataset(Configuration.Dataset.CORA);
 
         String dataPath = "./data/";
 
