@@ -8,11 +8,10 @@ import com.opencsv.exceptions.CsvValidationException;
 import de.uni_marburg.pdd_metadata.duplicate_detection.Magpie;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Block;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
+import de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys.KeyElementFactory;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Record;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.apache.commons.codec.language.Metaphone;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.tuple.Pair;
 

@@ -1,8 +1,8 @@
 package de.uni_marburg.pdd_metadata.duplicate_detection;
 
 import de.uni_marburg.pdd_metadata.io.DataReader;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.progressive_blocking.BlockResult;
+import de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys.KeyElementFactory;
+import de.uni_marburg.pdd_metadata.duplicate_detection.structures.BlockResult;
 
 import java.io.IOException;
 import java.util.Set;

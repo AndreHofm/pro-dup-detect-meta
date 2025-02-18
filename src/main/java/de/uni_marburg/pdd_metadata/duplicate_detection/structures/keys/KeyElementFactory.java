@@ -1,4 +1,4 @@
-package de.uni_marburg.pdd_metadata.duplicate_detection.structures;
+package de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys;
 
 public abstract class KeyElementFactory {
     public KeyElementFactory() {

@@ -1,4 +1,4 @@
-package de.uni_marburg.pdd_metadata.duplicate_detection.structures.progressive_blocking;
+package de.uni_marburg.pdd_metadata.duplicate_detection.structures;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

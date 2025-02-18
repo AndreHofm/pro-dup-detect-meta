@@ -29,10 +29,13 @@ public class Configuration {
 
     private final int levenshteinMaxAttributeLength = 200;
 
+    private final int interlacedKeyMaxLength = 100;
+
     public enum Dataset {
         CD,
         DBLP_SCHOLAR,
         CORA,
+        CENSUS,
     }
 
     public void setDataset(Dataset dataset) {
@@ -77,6 +80,21 @@ public class Configuration {
                 this.blockSize = 4;
                 this.maxBlockRange = 4;
                 this.windowSize = 200;
+                this.windowInterval = 1;
+                this.threshold = 0.7;
+                this.attributeSeparator = ';';
+                this.hasHeadline = true;
+                this.charset = StandardCharsets.ISO_8859_1;
+                break;
+
+            case CENSUS:
+                this.datasetName = "census";
+                this.fileName = this.datasetName + fileType;
+                this.goldStandardDatasetName = "census_DPL";
+                this.goldStandardFileName = this.goldStandardDatasetName + fileType;
+                this.blockSize = 4;
+                this.maxBlockRange = 4;
+                this.windowSize = 20;
                 this.windowInterval = 1;
                 this.threshold = 0.7;
                 this.attributeSeparator = ';';

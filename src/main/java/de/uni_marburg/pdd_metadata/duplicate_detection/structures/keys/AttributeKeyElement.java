@@ -1,4 +1,4 @@
-package de.uni_marburg.pdd_metadata.duplicate_detection.structures;
+package de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys;
 
 public class AttributeKeyElement extends KeyElement {
     private String attributeValue;

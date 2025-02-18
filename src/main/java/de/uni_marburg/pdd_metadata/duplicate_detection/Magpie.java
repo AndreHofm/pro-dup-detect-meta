@@ -1,7 +1,7 @@
 package de.uni_marburg.pdd_metadata.duplicate_detection;
 
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.KeyElement;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.progressive_blocking.BlockResult;
+import de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys.KeyElement;
+import de.uni_marburg.pdd_metadata.duplicate_detection.structures.BlockResult;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Record;
 import lombok.Getter;
 

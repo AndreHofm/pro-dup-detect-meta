@@ -3,14 +3,12 @@ package de.uni_marburg.pdd_metadata.duplicate_detection;
 import de.uni_marburg.pdd_metadata.io.DataReader;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Block;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.progressive_blocking.BlockResult;
+import de.uni_marburg.pdd_metadata.duplicate_detection.structures.BlockResult;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Record;
 
 import java.io.IOException;
 import java.util.*;
 
-import de.uni_marburg.pdd_metadata.similarity_measures.Levenshtein;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -82,7 +80,7 @@ public class Blocking extends DuplicateDetector {
         System.out.println("Number of Duplicates: " + this.duplicates.size());
     }
 
-    protected void findDuplicatesUsingMultipleKeysConcurrently() throws IOException {
+    public void findDuplicatesUsingMultipleKeysConcurrently() throws IOException {
         int numRecords = this.dataReader.getNumRecords();
         int numAttributes = this.levenshtein.getSimilarityAttributes().length;
         int numBlocks = (int) Math.ceil((double) numRecords / (double) this.blockSize);

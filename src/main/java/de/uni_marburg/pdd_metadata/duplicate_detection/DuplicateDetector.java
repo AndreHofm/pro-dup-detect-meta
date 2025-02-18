@@ -1,8 +1,9 @@
 package de.uni_marburg.pdd_metadata.duplicate_detection;
 
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.AttributeKeyElementFactory;
+import de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys.AttributeKeyElementFactory;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.KeyElementFactory;
+import de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys.InterlacedKeyElementFactory;
+import de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys.KeyElementFactory;
 import de.uni_marburg.pdd_metadata.io.DataReader;
 import de.uni_marburg.pdd_metadata.similarity_measures.JaroWinkler;
 import de.uni_marburg.pdd_metadata.similarity_measures.Levenshtein;
@@ -20,7 +21,7 @@ public abstract class DuplicateDetector {
     protected Sorter sorter;
     protected DataReader dataReader;
     protected int partitionSize;
-    protected KeyElementFactory keyElementFactory = new AttributeKeyElementFactory();
+    protected KeyElementFactory keyElementFactory = new AttributeKeyElementFactory(); // InterlacedKeyElementFactory(100);
     protected Set<Duplicate> duplicates = new HashSet<>();
     protected double threshold;
     protected JaroWinkler jaroWinkler;
