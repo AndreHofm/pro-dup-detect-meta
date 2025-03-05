@@ -10,6 +10,7 @@ import de.metanome.algorithm_integration.results.Result;
 import de.metanome.algorithms.hyfd.HyFD;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.metanome.backend.result_receiver.ResultCache;
+import de.uni_marburg.pdd_metadata.io.DataReader;
 import lombok.Getter;
 
 import java.util.*;
@@ -22,10 +23,12 @@ public class FDProfiler extends DependencyProfiler {
     private final HyFD hyFD = new HyFD();
     private DefaultFileInputGenerator fileInputGenerator;
     private List<PartialFD> partialFDs = new ArrayList<>();
-    private Set<FunctionalDependency> fullFDs = new HashSet<>();
+    private List<FunctionalDependency> fullFDs = new ArrayList<>();
+    private DataReader dataReader;
 
-    public FDProfiler(DefaultFileInputGenerator fileInputGenerator) {
+    public FDProfiler(DefaultFileInputGenerator fileInputGenerator, DataReader dataReader) {
         this.fileInputGenerator = fileInputGenerator;
+        this.dataReader = dataReader;
     }
 
     static class Parameters {
@@ -65,7 +68,7 @@ public class FDProfiler extends DependencyProfiler {
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.NULL_EQUALS_NULL.name(), Parameters.NULL_EQUALS_NULL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.VALIDATE_PARALLEL.name(), Parameters.VALIDATE_PARALLEL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.ENABLE_MEMORY_GUARDIAN.name(), Parameters.ENABLE_MEMORY_GUARDIAN);
-        // hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
+        hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
         hyFD.setIntegerConfigurationValue(HyFD.Identifier.INPUT_ROW_LIMIT.name(), Parameters.FILE_MAX_ROWS);
 
         ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(fileInputGenerator));
@@ -82,6 +85,16 @@ public class FDProfiler extends DependencyProfiler {
         List<Result> results = resultReceiver.fetchNewResults();
         fullFDs = results.stream()
                 .map(x -> (FunctionalDependency) x)
-                .collect(Collectors.toSet());
+                .toList();
+
+         if(true) {
+             Map<String, List<String>> columnValues = dataReader.getAllColumnValues();
+
+             System.out.println(fullFDs.size());
+
+             fullFDs = fullFDs.stream().filter(fd -> MetaUtils.getPdep(fd, columnValues).gpdep >= 0.01).toList();
+
+             System.out.println(fullFDs.size());
+         }
     }
 }

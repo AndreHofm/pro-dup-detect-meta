@@ -9,7 +9,7 @@ public class AttributeScore {
     private final String attribute;
 
     @Setter
-    private double score = -1;
+    private double score = 0;
 
     public AttributeScore(int index, String attribute) {
         this.index = index;

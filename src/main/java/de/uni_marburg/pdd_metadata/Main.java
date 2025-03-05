@@ -1,24 +1,25 @@
 package de.uni_marburg.pdd_metadata;
 
-import de.metanome.algorithm_integration.configuration.ConfigurationSettingFileInput;
-import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.uni_marburg.pdd_metadata.data_profiling.AttributeScoringProfiler;
 import de.uni_marburg.pdd_metadata.data_profiling.structures.AttributeScore;
 import de.uni_marburg.pdd_metadata.duplicate_detection.Blocking;
 import de.uni_marburg.pdd_metadata.duplicate_detection.SortedNeighbourhood;
-import de.uni_marburg.pdd_metadata.duplicate_detection.Sorter;
 import de.uni_marburg.pdd_metadata.io.DataReader;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.AttributeKeyElementFactory;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Main {
+    final static Logger log = LogManager.getLogger(Main.class);
+
     public static void main(String[] args) throws Exception {
+        log.info("Starting programme");
+
         Configuration config = new Configuration();
-        config.setDataset(Configuration.Dataset.CORA);
+        config.setDataset(Configuration.Dataset.CENSUS);
 
         String dataPath = "./data/";
 
@@ -28,30 +29,50 @@ public class Main {
         String resultInput = dataPath + config.getGoldStandardFileName();
         DataReader resultDataReader = new DataReader(resultInput, config);
 
-        Set<Duplicate> goldResults = resultDataReader.readResultDuplicates();
+        Set<String> sampleIds = dataReader.readResultDuplicatesSamples();
 
-        AttributeScoringProfiler profiler = new AttributeScoringProfiler(dataReader, input, config);
-        profiler.execute();
+        Set<Duplicate> goldResults = resultDataReader.readResultDuplicates(sampleIds);
 
         Blocking blocking = new Blocking(dataReader, config);
 
         SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, config);
 
-        List<AttributeScore> attributeScores = profiler.getAttributeScores();
+        if (true) {
+            AttributeScoringProfiler profiler = new AttributeScoringProfiler(dataReader, input, config);
+            profiler.execute();
 
-        int[] indices = new int[attributeScores.size()];
+            List<AttributeScore> attributeScores = profiler.getAttributeScores();
 
-        for (int i = 0; i < indices.length; i++) {
-            indices[i] = attributeScores.get(i).getIndex();
+            HashMap<Integer, AttributeScore> attributeScoreHashMap = new HashMap<>();
+            for (AttributeScore attributeScore : attributeScores) {
+                attributeScoreHashMap.put(attributeScore.getIndex(), attributeScore);
+            }
+
+            int[] indices = new int[attributeScores.size()];
+
+            for (int i = 0; i < indices.length; i++) {
+                indices[i] = attributeScores.get(i).getIndex();
+            }
+
+            var attributeIndex = attributeScores.stream().map(AttributeScore::getIndex).toArray();
+
+            Arrays.sort(attributeIndex);
+
+            System.out.println(Arrays.toString(attributeIndex));
+
+            sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(indices);
+
+            sortedNeighbourhood.getLevenshtein().setAttributeScores(attributeScoreHashMap);
+
         }
-
-        sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(indices);
 
         if (true) {
             // blocking.findDuplicatesUsingMultipleKeysConcurrently();
             // blocking.findDuplicatesUsingMultipleKeysSequential();
             // blocking.findDuplicatesUsingSingleKey();
             sortedNeighbourhood.findDuplicatesUsingMultipleKeysSequential();
+            // sortedNeighbourhood.findDuplicatesUsingMultipleKeysConcurrently();
+            // sortedNeighbourhood.findDuplicatesUsingSingleKey();
 
             Set<Duplicate> results = sortedNeighbourhood.getDuplicates();
 
@@ -61,14 +82,10 @@ public class Main {
             Set<Duplicate> fp = new HashSet<>(results);
             fp.removeAll(goldResults);
 
-            var attributeIndex = attributeScores.stream().map(AttributeScore::getIndex).toArray();
-
-            Arrays.sort(attributeIndex);
-
-            System.out.println(Arrays.toString(attributeIndex));
-
             printResults(fn, fp, results, goldResults, sortedNeighbourhood);
         }
+
+        log.info("Ending programme");
     }
 
     private static void printResults(Set<Duplicate> fn, Set<Duplicate> fp, Set<Duplicate> results, Set<Duplicate> goldResults, SortedNeighbourhood snm) {
@@ -76,13 +93,13 @@ public class Main {
         int fpSize = fp.size();
         int fnSize = fn.size();
 
-        System.out.println("Number of Duplicates: " + snm.getDuplicates().size());
-        System.out.println("Number of actual Duplicates: " + goldResults.size());
-        System.out.println("True Positive: " + tpSize);
-        System.out.println("False Positive: " + fpSize);
-        System.out.println("False Negative: " + fnSize);
-        System.out.println("Precession: " + (double) tpSize / (double) (tpSize + fpSize));
-        System.out.println("Recall: " + (double) tpSize / (double) (tpSize + fnSize));
-        System.out.println("F1-Score: " + (double) (2 * tpSize) / (double) (2 * tpSize + fnSize + fpSize));
+        log.info("Number of Duplicates: {}", snm.getDuplicates().size());
+        log.info("Number of actual Duplicates: {}", goldResults.size());
+        log.info("True Positive: {}", tpSize);
+        log.info("False Positive: {}", fpSize);
+        log.info("False Negative: {}", fnSize);
+        log.info("Precession: {}", (double) tpSize / (double) (tpSize + fpSize));
+        log.info("Recall: {}", (double) tpSize / (double) (tpSize + fnSize));
+        log.info("F1-Score: {}", (double) (2 * tpSize) / (double) (2 * tpSize + fnSize + fpSize));
     }
 }

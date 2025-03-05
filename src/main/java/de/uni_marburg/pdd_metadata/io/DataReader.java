@@ -4,6 +4,7 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.enums.CSVReaderNullFieldIndicator;
+import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvValidationException;
 import de.uni_marburg.pdd_metadata.duplicate_detection.Magpie;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Block;
@@ -270,13 +271,19 @@ public class DataReader {
         }
     }
 
-    public Set<Duplicate> readResultDuplicates() {
+    public Set<Duplicate> readResultDuplicates(Set<String> sampleIds) {
         try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
             Set<Duplicate> resultDuplicates = new HashSet<>();
 
             String[] ids;
             while ((ids = reader.readNext()) != null) {
-                resultDuplicates.add(new Duplicate(ids[0], ids[1]));
+                if (!sampleIds.isEmpty()) {
+                    if (sampleIds.contains(ids[0]) && sampleIds.contains(ids[1])) {
+                        resultDuplicates.add(new Duplicate(ids[0], ids[1]));
+                    }
+                } else {
+                    resultDuplicates.add(new Duplicate(ids[0], ids[1]));
+                }
             }
 
             return resultDuplicates;
@@ -285,9 +292,23 @@ public class DataReader {
         }
     }
 
+    public Set<String> readResultDuplicatesSamples() {
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
+            Set<String> sampleIds = new HashSet<>();
+
+            String[] ids;
+            while ((ids = reader.readNext()) != null) {
+                sampleIds.add(ids[0]);
+            }
+
+            return sampleIds;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public HashMap<String, Integer> countNullValues() {
         HashMap<String, Integer> nullCounts = new HashMap<>();
-
 
         try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
             String[] attributes = this.getAttributeNames();
@@ -309,6 +330,37 @@ public class DataReader {
         }
 
         return nullCounts;
+    }
+
+    public Map<String, List<String>> getAllColumnValues() {
+        Map<String, List<String>> columnData = new HashMap<>();
+
+        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, false, this.charset)) {
+            List<String[]> rows = reader.readAll(); // Liest gesamte CSV-Datei ein
+
+            if (rows.isEmpty()) return columnData; // Falls Datei leer ist, zurückgeben
+
+            String[] headers = rows.get(0); // Erste Zeile enthält die Spaltennamen
+
+            // Initialisiere die Map mit leeren Listen für jede Spalte
+            for (String header : headers) {
+                columnData.put(header.trim(), new ArrayList<>());
+            }
+
+            // Werte für jede Spalte extrahieren (ab Zeile 1)
+            for (int i = 1; i < rows.size(); i++) {
+                String[] row = rows.get(i);
+                for (int j = 0; j < headers.length; j++) {
+                    if (row.length > j) {
+                        columnData.get(headers[j].trim()).add(row[j].trim());
+                    }
+                }
+            }
+        } catch (CsvException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return columnData;
     }
 
     public Map<String, ClassName> detectColumnTypes() {

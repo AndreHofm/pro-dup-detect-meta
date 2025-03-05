@@ -1,9 +1,11 @@
 package de.uni_marburg.pdd_metadata.similarity_measures;
 
+import de.uni_marburg.pdd_metadata.data_profiling.structures.AttributeScore;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.stream.IntStream;
 
 @Getter
@@ -12,9 +14,12 @@ public class Levenshtein {
     // Best for cd {2, 3, 8, 9}
     // Best for dblp_scholar {1, 4}
     // Best for cora {3, 15}
-    private int[] similarityAttributes = {2, 3, 8, 9};
+    // Best for Census {1, 5}
+    // Best for NCVoters {26, 31, 47}
+    private int[] similarityAttributes = {26, 31, 47};
     private int maxAttributeLength;
     private boolean twoInOneDataset;
+    private HashMap<Integer, AttributeScore> attributeScores;
 
     public Levenshtein(int maxAttributeLength, boolean twoInOneDataset) {
         this.maxAttributeLength = maxAttributeLength;
@@ -53,7 +58,7 @@ public class Levenshtein {
 
     public double calculateSimilarityOf(String[] r1, String[] r2) {
         if (r1 != null && r2 != null) {
-            if (!twoInOneDataset) {
+            if (!twoInOneDataset || !r1[2].equals(r2[2])) {
                 int numComparisons = 0;
                 double recordSimilarity = 0;
                 double attributeSimilarity;
@@ -66,31 +71,15 @@ public class Levenshtein {
                             attributeSimilarity = 0;
                         }
 
-                        recordSimilarity += attributeSimilarity;
+                        recordSimilarity += attributeSimilarity * attributeScores.get(attributeIndex).getScore();
+
+                        //recordSimilarity += attributeSimilarity;
+
                         ++numComparisons;
                     }
                 }
 
-                return recordSimilarity / numComparisons;
-            } else if (!r1[2].equals(r2[2])) {
-                int numComparisons = 0;
-                double recordSimilarity = 0;
-                double attributeSimilarity;
-
-                for (int attributeIndex : this.similarityAttributes) {
-                    if (r1.length > attributeIndex || r2.length > attributeIndex) {
-                        if (r1.length > attributeIndex && r2.length > attributeIndex) {
-                            attributeSimilarity = this.calculateSimilarityOf(r1[attributeIndex].toLowerCase(), r2[attributeIndex].toLowerCase());
-                        } else {
-                            attributeSimilarity = 0;
-                        }
-
-                        recordSimilarity += attributeSimilarity;
-                        ++numComparisons;
-                    }
-                }
-
-                return recordSimilarity / numComparisons;
+                return recordSimilarity; // / numComparisons;
             }
 
             return 0;

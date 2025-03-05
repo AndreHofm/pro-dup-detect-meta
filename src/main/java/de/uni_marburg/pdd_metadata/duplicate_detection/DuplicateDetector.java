@@ -22,6 +22,7 @@ public abstract class DuplicateDetector {
     protected DataReader dataReader;
     protected int partitionSize;
     protected KeyElementFactory keyElementFactory = new AttributeKeyElementFactory(); // InterlacedKeyElementFactory(100);
+    // protected KeyElementFactory keyElementFactory = new InterlacedKeyElementFactory(100);
     protected Set<Duplicate> duplicates = new HashSet<>();
     protected double threshold;
     protected JaroWinkler jaroWinkler;
