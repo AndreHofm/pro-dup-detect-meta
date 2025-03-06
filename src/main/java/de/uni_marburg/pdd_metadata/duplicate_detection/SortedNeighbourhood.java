@@ -68,15 +68,16 @@ public class SortedNeighbourhood extends DuplicateDetector {
             int[][] orders = new int[numAttributes][];
 
 
-            for(int i = 0; i < this.levenshtein.getSimilarityAttributes().length; i++) {
+            for (int i = 0; i < this.levenshtein.getSimilarityAttributes().length; i++) {
                 int[] keyAttributeNumbers = new int[]{i};
-                orders[i] = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, keyAttributeNumbers, this.dataReader, this.partitionSize, null, this);;
+                orders[i] = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, keyAttributeNumbers, this.dataReader, this.partitionSize, null, this);
+                ;
                 keysLastWindowSize[i] = 2;
                 keysLastResultCount[i] = this.duplicates.size();
             }
 
             int bestNextKey;
-            for(bestNextKey = 0; (bestNextKey = this.findBestNextKey(keysLastResultCount, keysLastWindowSize)) >= 0; keysLastResultCount[bestNextKey] = this.runSingleWindowDistance(orders[bestNextKey], keysLastWindowSize[bestNextKey] - 1)) {
+            for (bestNextKey = 0; (bestNextKey = this.findBestNextKey(keysLastResultCount, keysLastWindowSize)) >= 0; keysLastResultCount[bestNextKey] = this.runSingleWindowDistance(orders[bestNextKey], keysLastWindowSize[bestNextKey] - 1)) {
                 int var10002 = keysLastWindowSize[bestNextKey]++;
             }
         }
@@ -124,23 +125,23 @@ public class SortedNeighbourhood extends DuplicateDetector {
         int localWindowInterval = this.partitionSize - this.windowSize + 1 <= order.length ? this.windowInterval : this.windowSize;
         HashMap<Integer, HashSet<Integer>> lookaheads = new HashMap<>();
 
-        for(int i = 1; i < this.windowSize; ++i) {
+        for (int i = 1; i < this.windowSize; ++i) {
             lookaheads.put(i, new HashSet<>());
         }
 
-        for(int currentWindowStart = 1; currentWindowStart < this.windowSize; currentWindowStart += localWindowInterval) {
+        for (int currentWindowStart = 1; currentWindowStart < this.windowSize; currentWindowStart += localWindowInterval) {
             int currentWindowEnd = Math.min(currentWindowStart + localWindowInterval, this.windowSize);
             if (currentWindowStart > this.windowInterval || localWindowInterval != this.windowInterval) {
-                for(int partitionStartIndex = 0; partitionStartIndex < order.length; partitionStartIndex += this.partitionSize - this.windowSize + 1) {
+                for (int partitionStartIndex = 0; partitionStartIndex < order.length; partitionStartIndex += this.partitionSize - this.windowSize + 1) {
                     int partitionEndIndex = Math.min(partitionStartIndex + this.partitionSize, order.length);
                     int[] partitionIndices = Arrays.copyOfRange(order, partitionStartIndex, partitionEndIndex);
                     HashMap<Integer, Record> records = this.dataReader.readLines(partitionIndices);
                     int lastPivotElement = partitionStartIndex + this.partitionSize - this.windowSize + 1 < order.length ? partitionIndices.length - this.windowSize + 1 : partitionIndices.length;
 
-                    for(int windowDistance = currentWindowStart; windowDistance < currentWindowEnd; ++windowDistance) {
+                    for (int windowDistance = currentWindowStart; windowDistance < currentWindowEnd; ++windowDistance) {
                         HashSet<Integer> currentLookaheads = lookaheads.get(windowDistance);
 
-                        for(int indexPivot = 0; indexPivot < lastPivotElement; ++indexPivot) {
+                        for (int indexPivot = 0; indexPivot < lastPivotElement; ++indexPivot) {
                             int indexPartner = indexPivot + windowDistance;
                             if (indexPartner >= partitionIndices.length) {
                                 break;
@@ -160,7 +161,6 @@ public class SortedNeighbourhood extends DuplicateDetector {
                 }
             }
         }
-
     }
 
     private void lookAhead(int indexPivot, int indexPartner, int[] partitionIndices, HashMap<Integer, Record> records, HashMap<Integer, HashSet<Integer>> lookaheads) {
@@ -180,13 +180,13 @@ public class SortedNeighbourhood extends DuplicateDetector {
     private int runSingleWindowDistance(int[] order, int windowDistance) throws IOException {
         int numDuplicates = 0;
 
-        for(int partitionStartIndex = 0; partitionStartIndex < order.length; partitionStartIndex += this.partitionSize - windowDistance) {
+        for (int partitionStartIndex = 0; partitionStartIndex < order.length; partitionStartIndex += this.partitionSize - windowDistance) {
             int partitionEndIndex = Math.min(partitionStartIndex + this.partitionSize, order.length);
             int[] partitionIndices = Arrays.copyOfRange(order, partitionStartIndex, partitionEndIndex);
             HashMap<Integer, Record> records = this.dataReader.readLines(partitionIndices);
             int lastPivotElement = partitionIndices.length - windowDistance;
 
-            for(int indexPivot = 0; indexPivot < lastPivotElement; ++indexPivot) {
+            for (int indexPivot = 0; indexPivot < lastPivotElement; ++indexPivot) {
                 int indexPartner = indexPivot + windowDistance;
                 detectDuplicates(records, partitionIndices, indexPivot, indexPartner);
             }
@@ -199,7 +199,7 @@ public class SortedNeighbourhood extends DuplicateDetector {
         int bestNextKey = -1;
         int largestLastResultCount = -1;
 
-        for(int keyAttributeNumber = 0; keyAttributeNumber < keysLastResultCount.length; ++keyAttributeNumber) {
+        for (int keyAttributeNumber = 0; keyAttributeNumber < keysLastResultCount.length; ++keyAttributeNumber) {
             if (largestLastResultCount < keysLastResultCount[keyAttributeNumber] && this.windowSize > keysLastWindowSize[keyAttributeNumber]) {
                 largestLastResultCount = keysLastResultCount[keyAttributeNumber];
                 bestNextKey = keyAttributeNumber;
