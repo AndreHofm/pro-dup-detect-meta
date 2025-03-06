@@ -65,7 +65,7 @@ public class AttributeWeightProfiler {
         Set<String> filteredINDs = filteringINDSs(partialINDs);
 
         Map<String, Long> filteredUCCs = filteringUCCs(fullUCCs, filterAttributesByNullValues, filteredKeys, filteredINDs);
-        Map<String, Long> sortedFilteredUCCs =  sortDependencyMap(filteredUCCs);
+        Map<String, Long> sortedFilteredUCCs = sortDependencyMap(filteredUCCs);
 
         Set<String> dependants = getDependant(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs).keySet();
 

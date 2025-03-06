@@ -9,6 +9,7 @@ import de.uni_marburg.pdd_metadata.io.DataReader;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 
 import java.util.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
