@@ -56,8 +56,6 @@ public class ResultCollector {
         this.goldResults = dataReader.readResultDuplicates(sampleIds);
     }
 
-    public void collectEvent() {}
-
     public void logResults() {
         collectGoldResult();
 
