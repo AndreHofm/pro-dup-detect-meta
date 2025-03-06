@@ -13,6 +13,8 @@ import de.metanome.backend.algorithm_execution.TempFileGenerator;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.metanome.backend.result_receiver.ResultCache;
 import lombok.Getter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -26,6 +28,7 @@ public class INDProfiler extends DependencyProfiler {
     private DefaultFileInputGenerator fileInputGenerator;
     private SawfishInterface sawfish;
     private RelationalInputGenerator[] inputs;
+    private Logger log = LogManager.getLogger(INDProfiler.class);
 
     public INDProfiler(DefaultFileInputGenerator fileInputGenerator) {
         this.fileInputGenerator = fileInputGenerator;

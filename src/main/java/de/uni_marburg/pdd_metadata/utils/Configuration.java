@@ -7,12 +7,17 @@ import java.nio.charset.StandardCharsets;
 
 @Getter
 public class Configuration {
+    private final PairSelectionAlgorithm ALGORITHM = PairSelectionAlgorithm.SNM;
+    private final boolean USE_PROFILER = true;
+    private final boolean USE_WEIGHTS = false;
+
     private String datasetName;
     private String fileName;
     private String goldStandardDatasetName;
     private String goldStandardFileName;
     private final String fileType = ".csv";
     private boolean twoInOneDataset;
+    private int[] similarityAttributes;
 
     private final int partitionSize = 2000000;
     private int blockSize = 4;
@@ -39,6 +44,11 @@ public class Configuration {
         NCVOTERS,
     }
 
+    public enum PairSelectionAlgorithm {
+        SNM,
+        BLOCKING,
+    }
+
     public void setDataset(Dataset dataset) {
         switch (dataset) {
             case CD:
@@ -55,6 +65,7 @@ public class Configuration {
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.twoInOneDataset = false;
+                this.similarityAttributes = new int[]{2, 3, 8, 9};
                 break;
 
             case DBLP_SCHOLAR:
@@ -71,6 +82,7 @@ public class Configuration {
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.twoInOneDataset = true;
+                this.similarityAttributes = new int[]{1, 4};
                 break;
 
             case CORA:
@@ -86,6 +98,7 @@ public class Configuration {
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
+                this.similarityAttributes = new int[]{3, 15};
                 break;
 
             case CENSUS:
@@ -101,6 +114,7 @@ public class Configuration {
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
+                this.similarityAttributes = new int[]{1, 5};
                 break;
 
             case NCVOTERS:
@@ -116,6 +130,7 @@ public class Configuration {
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
+                this.similarityAttributes = new int[]{26, 31, 47};
                 break;
         }
     }

@@ -1,10 +1,11 @@
 package de.uni_marburg.pdd_metadata.duplicate_detection;
 
 import de.uni_marburg.pdd_metadata.io.DataReader;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Record;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -15,11 +16,14 @@ import java.util.HashSet;
 public class SortedNeighbourhood extends DuplicateDetector {
     private int windowSize;
     private int windowInterval;
+    private ResultCollector resultCollector;
+    private Logger log = LogManager.getLogger(SortedNeighbourhood.class);
 
-    public SortedNeighbourhood(DataReader dataReader, Configuration config) {
-        super(dataReader, config);
+    public SortedNeighbourhood(DataReader dataReader, ResultCollector resultCollector, Configuration config) {
+        super(dataReader, resultCollector, config);
         this.windowSize = config.getWindowSize();
         this.windowInterval = config.getWindowInterval();
+        this.resultCollector = resultCollector;
     }
 
     public int findDuplicatesIn(HashMap<Integer, Record> records, int[] order) {
@@ -42,15 +46,17 @@ public class SortedNeighbourhood extends DuplicateDetector {
     }
 
     public void findDuplicatesUsingMultipleKeysSequential() throws IOException {
+        this.log.info("Starting SNM...");
         var starTime = System.currentTimeMillis();
+
         for (int keyAttributeNumber : this.levenshtein.getSimilarityAttributes()) {
             int[] keyAttributeNumbers = new int[]{keyAttributeNumber};
             int[] order = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, keyAttributeNumbers, this.dataReader, this.partitionSize, null, this);
-            this.runWindowLinearIncreasing(order);
+            this.runWindowLinearIncreasingWithLookahead(order);
         }
 
         var endTime = System.currentTimeMillis() - starTime;
-        System.out.println(endTime);
+        this.log.info("Ending SNM - (Runtime: {}ms)", endTime);
     }
 
     public void findDuplicatesUsingMultipleKeysConcurrently() throws IOException {
@@ -83,34 +89,7 @@ public class SortedNeighbourhood extends DuplicateDetector {
         Record record1 = records.get(order[indexPivot]);
         Record record2 = records.get(order[indexPartner]);
 
-        /*
-        int numComparisons = 0;
-        double recordSimilarity = 0;
-        for (int attribute : this.levenshtein.getSimilarityAttributes()) {
-            double attributeSimilarity;
-            if(false) {
-                JaccardSimilarity sim = new JaccardSimilarity();
-
-                attributeSimilarity = sim.apply(record1.values[attribute].toLowerCase(), record2.values[attribute].toLowerCase());// / Math.max(record1.values[attribute].length(), record2.values[attribute].length()));
-            } else {
-                attributeSimilarity = this.levenshtein.calculateSimilarityOf(record1.values[attribute].toLowerCase(), record2.values[attribute].toLowerCase());
-            }
-
-            recordSimilarity += attributeSimilarity;
-            ++numComparisons;
-        }
-
-         */
-
-        double value = this.levenshtein.calculateSimilarityOf(record1.values, record2.values);//recordSimilarity / numComparisons;
-
-        Duplicate duplicate = new Duplicate(record1.index, record2.index, record1.values[0], record2.values[0]);
-
-        boolean newDuplicate = !this.duplicates.contains(duplicate);
-
-        if (value >= threshold && newDuplicate) {
-            this.duplicates.add(duplicate);
-        }
+        this.levenshtein.compare(record1, record2);
     }
 
     private void runWindowLinearIncreasing(int[] order) throws IOException {
@@ -132,6 +111,7 @@ public class SortedNeighbourhood extends DuplicateDetector {
                             if (indexPartner >= partitionIndices.length) {
                                 break;
                             }
+
                             detectDuplicates(records, partitionIndices, indexPivot, indexPartner);
                         }
                     }
@@ -142,10 +122,10 @@ public class SortedNeighbourhood extends DuplicateDetector {
 
     private void runWindowLinearIncreasingWithLookahead(int[] order) throws IOException {
         int localWindowInterval = this.partitionSize - this.windowSize + 1 <= order.length ? this.windowInterval : this.windowSize;
-        HashMap<Integer, HashSet<Integer>> lookaheads = new HashMap();
+        HashMap<Integer, HashSet<Integer>> lookaheads = new HashMap<>();
 
         for(int i = 1; i < this.windowSize; ++i) {
-            lookaheads.put(i, new HashSet());
+            lookaheads.put(i, new HashSet<>());
         }
 
         for(int currentWindowStart = 1; currentWindowStart < this.windowSize; currentWindowStart += localWindowInterval) {
@@ -167,10 +147,10 @@ public class SortedNeighbourhood extends DuplicateDetector {
                             }
 
                             if (!currentLookaheads.contains(partitionIndices[indexPivot])) {
-                                int currentNumDuplicates = this.duplicates.size();
+                                int currentNumDuplicates = this.resultCollector.getDuplicates().size();
                                 detectDuplicates(records, partitionIndices, indexPivot, indexPartner);
 
-                                if (currentNumDuplicates == this.duplicates.size()) {
+                                if (currentNumDuplicates == this.resultCollector.getDuplicates().size()) {
                                     this.lookAhead(indexPivot - 1, indexPartner, partitionIndices, records, lookaheads);
                                     this.lookAhead(indexPivot, indexPartner + 1, partitionIndices, records, lookaheads);
                                 }

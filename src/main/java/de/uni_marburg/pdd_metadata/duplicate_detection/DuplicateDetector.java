@@ -27,12 +27,12 @@ public abstract class DuplicateDetector {
     protected double threshold;
     protected JaroWinkler jaroWinkler;
 
-    public DuplicateDetector(DataReader dataReader, Configuration config) {
+    public DuplicateDetector(DataReader dataReader, ResultCollector resultCollector, Configuration config) {
         this.dataReader = dataReader;
         this.partitionSize = config.getPartitionSize();
         this.threshold = config.getThreshold();
         this.sorter = new Sorter();
-        this.levenshtein = new Levenshtein(config.getLevenshteinMaxAttributeLength(), config.isTwoInOneDataset());
-        this.jaroWinkler =  new JaroWinkler();
+        this.levenshtein = new Levenshtein(resultCollector, config);
+        this.jaroWinkler = new JaroWinkler();
     }
 }

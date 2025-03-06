@@ -23,8 +23,8 @@ public class Blocking extends DuplicateDetector {
     private int numLoadableBlocks;
     private int blockSize;
 
-    public Blocking(DataReader dataReader, Configuration config) {
-        super(dataReader, config);
+    public Blocking(DataReader dataReader, ResultCollector resultCollector, Configuration config) {
+        super(dataReader, resultCollector, config);
         this.maxBlockRange = config.getMaxBlockRange();
         this.blockSize = config.getBlockSize();
         this.numLoadableBlocks = (int) Math.ceil((double) this.partitionSize / (double) this.blockSize);
@@ -64,7 +64,7 @@ public class Blocking extends DuplicateDetector {
         this.runPriority(order);
     }
 
-    protected void findDuplicatesUsingMultipleKeysSequential() throws IOException {
+    public void findDuplicatesUsingMultipleKeysSequential() throws IOException {
         double startTime = System.currentTimeMillis();
 
         for (int keyAttributeNumber : this.levenshtein.getSimilarityAttributes()) {
@@ -219,16 +219,7 @@ public class Blocking extends DuplicateDetector {
                 Record record1 = block.records.get(recordIds.get(recordId1));
                 Record record2 = block.records.get(recordIds.get(recordId2));
 
-                double value = this.levenshtein.calculateSimilarityOf(record1.values, record2.values);
-
-                Duplicate duplicate = new Duplicate(record1.index, record2.index, record1.values[0], record2.values[0]);
-
-                boolean newDuplicate = !this.duplicates.contains(duplicate);
-
-                if (value >= threshold && newDuplicate) {
-                    this.duplicates.add(duplicate);
-                    ++numDuplicates;
-                }
+                this.levenshtein.compare(record1, record2);
             }
         }
 
@@ -245,16 +236,7 @@ public class Blocking extends DuplicateDetector {
                 Record record1 = leftBlock.records.get(recordId);
                 Record record2 = rightBlock.records.get(id);
 
-                double value = this.levenshtein.calculateSimilarityOf(record1.values, record2.values);
-
-                Duplicate duplicate = new Duplicate(record1.index, record2.index, record1.values[0], record2.values[0]);
-
-                boolean newDuplicate = !this.duplicates.contains(duplicate);
-
-                if (value >= threshold && newDuplicate) {
-                    this.duplicates.add(duplicate);
-                    ++numDuplicates;
-                }
+                this.levenshtein.compare(record1, record2);
             }
         }
 

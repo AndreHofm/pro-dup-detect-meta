@@ -1,11 +1,11 @@
 package de.uni_marburg.pdd_metadata;
 
-import de.uni_marburg.pdd_metadata.data_profiling.AttributeScoringProfiler;
-import de.uni_marburg.pdd_metadata.data_profiling.structures.AttributeScore;
+import de.uni_marburg.pdd_metadata.data_profiling.AttributeWeightProfiler;
+import de.uni_marburg.pdd_metadata.data_profiling.structures.AttributeWeight;
 import de.uni_marburg.pdd_metadata.duplicate_detection.Blocking;
+import de.uni_marburg.pdd_metadata.duplicate_detection.ResultCollector;
 import de.uni_marburg.pdd_metadata.duplicate_detection.SortedNeighbourhood;
 import de.uni_marburg.pdd_metadata.io.DataReader;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 
 import java.util.*;
@@ -16,90 +16,47 @@ public class Main {
     final static Logger log = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
-        log.info("Starting programme");
+        log.info("Starting programme...");
 
         Configuration config = new Configuration();
-        config.setDataset(Configuration.Dataset.CENSUS);
+        config.setDataset(Configuration.Dataset.CD);
 
         String dataPath = "./data/";
-
         String input = dataPath + config.getFileName();
         DataReader dataReader = new DataReader(input, config);
 
-        String resultInput = dataPath + config.getGoldStandardFileName();
-        DataReader resultDataReader = new DataReader(resultInput, config);
+        ResultCollector resultCollector = new ResultCollector(dataReader, config);
+        Blocking blocking = new Blocking(dataReader, resultCollector, config);
+        SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, resultCollector, config);
 
-        Set<String> sampleIds = dataReader.readResultDuplicatesSamples();
-
-        Set<Duplicate> goldResults = resultDataReader.readResultDuplicates(sampleIds);
-
-        Blocking blocking = new Blocking(dataReader, config);
-
-        SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, config);
-
-        if (true) {
-            AttributeScoringProfiler profiler = new AttributeScoringProfiler(dataReader, input, config);
+        if (config.isUSE_PROFILER()) {
+            AttributeWeightProfiler profiler = new AttributeWeightProfiler(dataReader, input, config);
             profiler.execute();
 
-            List<AttributeScore> attributeScores = profiler.getAttributeScores();
+            List<AttributeWeight> attributeWeights = profiler.getAttributeWeights();
 
-            HashMap<Integer, AttributeScore> attributeScoreHashMap = new HashMap<>();
-            for (AttributeScore attributeScore : attributeScores) {
-                attributeScoreHashMap.put(attributeScore.getIndex(), attributeScore);
+            HashMap<Integer, AttributeWeight> attributeScoreHashMap = new HashMap<>();
+            for (AttributeWeight attributeWeight : attributeWeights) {
+                attributeScoreHashMap.put(attributeWeight.getIndex(), attributeWeight);
             }
 
-            int[] indices = new int[attributeScores.size()];
+            int[] attributeIndex = attributeWeights.stream().mapToInt(AttributeWeight::getIndex).toArray();
 
-            for (int i = 0; i < indices.length; i++) {
-                indices[i] = attributeScores.get(i).getIndex();
-            }
+            sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(attributeIndex);
+            sortedNeighbourhood.getLevenshtein().setAttributeWeights(attributeScoreHashMap);
 
-            var attributeIndex = attributeScores.stream().map(AttributeScore::getIndex).toArray();
-
-            Arrays.sort(attributeIndex);
-
-            System.out.println(Arrays.toString(attributeIndex));
-
-            sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(indices);
-
-            sortedNeighbourhood.getLevenshtein().setAttributeScores(attributeScoreHashMap);
-
+            blocking.getLevenshtein().setSimilarityAttributes(attributeIndex);
+            blocking.getLevenshtein().setAttributeWeights(attributeScoreHashMap);
         }
 
-        if (true) {
-            // blocking.findDuplicatesUsingMultipleKeysConcurrently();
-            // blocking.findDuplicatesUsingMultipleKeysSequential();
-            // blocking.findDuplicatesUsingSingleKey();
+        if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.SNM) {
             sortedNeighbourhood.findDuplicatesUsingMultipleKeysSequential();
-            // sortedNeighbourhood.findDuplicatesUsingMultipleKeysConcurrently();
-            // sortedNeighbourhood.findDuplicatesUsingSingleKey();
-
-            Set<Duplicate> results = sortedNeighbourhood.getDuplicates();
-
-            Set<Duplicate> fn = new HashSet<>(goldResults);
-            fn.removeAll(results);
-
-            Set<Duplicate> fp = new HashSet<>(results);
-            fp.removeAll(goldResults);
-
-            printResults(fn, fp, results, goldResults, sortedNeighbourhood);
+        } else if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.BLOCKING) {
+            blocking.findDuplicatesUsingMultipleKeysSequential();
         }
+
+        resultCollector.logResults();
 
         log.info("Ending programme");
-    }
-
-    private static void printResults(Set<Duplicate> fn, Set<Duplicate> fp, Set<Duplicate> results, Set<Duplicate> goldResults, SortedNeighbourhood snm) {
-        int tpSize = results.size() - fp.size();
-        int fpSize = fp.size();
-        int fnSize = fn.size();
-
-        log.info("Number of Duplicates: {}", snm.getDuplicates().size());
-        log.info("Number of actual Duplicates: {}", goldResults.size());
-        log.info("True Positive: {}", tpSize);
-        log.info("False Positive: {}", fpSize);
-        log.info("False Negative: {}", fnSize);
-        log.info("Precession: {}", (double) tpSize / (double) (tpSize + fpSize));
-        log.info("Recall: {}", (double) tpSize / (double) (tpSize + fnSize));
-        log.info("F1-Score: {}", (double) (2 * tpSize) / (double) (2 * tpSize + fnSize + fpSize));
     }
 }

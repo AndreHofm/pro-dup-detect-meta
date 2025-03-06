@@ -10,8 +10,11 @@ import de.metanome.algorithm_integration.results.Result;
 import de.metanome.algorithms.hyfd.HyFD;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.metanome.backend.result_receiver.ResultCache;
+import de.uni_marburg.pdd_metadata.duplicate_detection.SortedNeighbourhood;
 import de.uni_marburg.pdd_metadata.io.DataReader;
 import lombok.Getter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,6 +28,7 @@ public class FDProfiler extends DependencyProfiler {
     private List<PartialFD> partialFDs = new ArrayList<>();
     private List<FunctionalDependency> fullFDs = new ArrayList<>();
     private DataReader dataReader;
+    private Logger log = LogManager.getLogger(FDProfiler.class);
 
     public FDProfiler(DefaultFileInputGenerator fileInputGenerator, DataReader dataReader) {
         this.fileInputGenerator = fileInputGenerator;
@@ -87,14 +91,12 @@ public class FDProfiler extends DependencyProfiler {
                 .map(x -> (FunctionalDependency) x)
                 .toList();
 
-         if(true) {
+        log.info("Number of FDs: {}", fullFDs.size());
+
+         if(false) {
              Map<String, List<String>> columnValues = dataReader.getAllColumnValues();
 
-             System.out.println(fullFDs.size());
-
              fullFDs = fullFDs.stream().filter(fd -> MetaUtils.getPdep(fd, columnValues).gpdep >= 0.01).toList();
-
-             System.out.println(fullFDs.size());
          }
     }
 }

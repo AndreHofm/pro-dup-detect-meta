@@ -7,24 +7,27 @@ import de.metanome.algorithm_integration.results.FunctionalDependency;
 import de.metanome.algorithm_integration.results.InclusionDependency;
 import de.metanome.algorithm_integration.results.UniqueColumnCombination;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
-import de.uni_marburg.pdd_metadata.data_profiling.structures.AttributeScore;
+import de.uni_marburg.pdd_metadata.data_profiling.structures.AttributeWeight;
 import de.uni_marburg.pdd_metadata.io.DataReader;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
-public class AttributeScoringProfiler {
+public class AttributeWeightProfiler {
     private FDProfiler fdProfiler;
     private INDProfiler indProfiler;
     private UCCProfiler uccProfiler;
     private DataReader dataReader;
-    private List<AttributeScore> attributeScores;
+    private List<AttributeWeight> attributeWeights;
     private String datasetName;
+    private Logger log = LogManager.getLogger(AttributeWeightProfiler.class);
 
-    public AttributeScoringProfiler(DataReader dataReader, String input, Configuration config) {
+    public AttributeWeightProfiler(DataReader dataReader, String input, Configuration config) {
         this.dataReader = dataReader;
 
         DefaultFileInputGenerator fileInputGenerator = getInputGenerator(input);
@@ -32,27 +35,16 @@ public class AttributeScoringProfiler {
         this.uccProfiler = new UCCProfiler(fileInputGenerator);
         this.fdProfiler = new FDProfiler(fileInputGenerator, dataReader);
         this.indProfiler = new INDProfiler(fileInputGenerator);
-        this.attributeScores = new ArrayList<>();
+        this.attributeWeights = new ArrayList<>();
         this.datasetName = config.getDatasetName();
     }
 
     public void execute() throws Exception {
+        this.log.info("Starting Attribute Weight Profiler...");
+        var starTime = System.currentTimeMillis();
         initializeAttributeScoreList();
 
         Set<String> filterAttributesByNullValues = filterAttributesByNullValues();
-
-
-        /*
-        System.out.println("Starte partialKeyProfiler...");
-        uccProfiler.executePartialUCCProfiler();
-        System.out.println("partialKeyProfiler fertig!");
-
-        /*
-        System.out.println("Starte fdProfiler...");
-        HashMap<Vertical, Long> numberAttributePartialFD = fdProfiler.executePartialFDProfiler();
-        System.out.println("fdProfiler fertig!");
-
-         */
 
         fdProfiler.executeFullFDProfiler();
         List<FunctionalDependency> fullFDs = fdProfiler.getFullFDs();
@@ -61,7 +53,6 @@ public class AttributeScoringProfiler {
         uccProfiler.executeKeyProfiler();
         Set<UniqueColumnCombination> keys = uccProfiler.getKeys();
         Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
-        // Set<UniqueColumnCombination> partialKeys = uccProfiler.getPartialKeys();
 
         indProfiler.executePartialINDProfiler();
         indProfiler.executeFullINDProfiler();
@@ -70,52 +61,34 @@ public class AttributeScoringProfiler {
         partialINDs.addAll(fullINDS);
 
         Set<String> filteredKeys = filteringKeys(keys);
-        // Set<String> filteredPartialKeys = filteringKeys(partialKeys);
 
         Set<String> filteredINDs = filteringINDSs(partialINDs);
 
         Map<String, Long> filteredUCCs = filteringUCCs(fullUCCs, filterAttributesByNullValues, filteredKeys, filteredINDs);
-
-        Map<String, Long> sortedFilteredUCCs = filteredUCCs.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue())
-                .collect(LinkedHashMap::new,
-                        (m, e) -> m.put(e.getKey(), e.getValue()),
-                        LinkedHashMap::putAll);
-
-        /*
-        System.out.println("Dependant: " + getDependant(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs).entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue())
-                .collect(LinkedHashMap::new,
-                        (m, e) -> m.put(e.getKey(), e.getValue()),
-                        LinkedHashMap::putAll));
-         */
+        Map<String, Long> sortedFilteredUCCs =  sortDependencyMap(filteredUCCs);
 
         Set<String> dependants = getDependant(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs).keySet();
 
         Map<String, Long> filteredFDs = filteringFDs(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs);
+        Map<String, Long> sortedFilteredFDs = sortDependencyMap(filteredFDs);
 
-        Map<String, Long> sortedFilteredFDs = filteredFDs.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue())
-                .collect(LinkedHashMap::new,
-                        (m, e) -> m.put(e.getKey(), e.getValue()),
-                        LinkedHashMap::putAll);
+        this.log.info("Number of UCCs: {}", fullUCCs.size());
+        this.log.info("Number of INDs: {}", partialINDs.size());
+        this.log.info("FDs: {}", sortedFilteredFDs);
+        this.log.info("Keys: {}", filteredKeys);
+        this.log.info("UCCs: {}", sortedFilteredUCCs);
+        this.log.info("INDs: {}", filteredINDs);
 
-        System.out.println("FDs: " + sortedFilteredFDs);
-        System.out.println("Keys: " + filteredKeys);
-        // System.out.println("Partial Keys: " + filteredPartialKeys);
-        System.out.println("UCCs: " + sortedFilteredUCCs);
-        System.out.println("INDs: " + filteredINDs);
-
-        this.attributeScores.removeIf(attributeScore -> filteredKeys.contains(attributeScore.getAttribute())
-                || !filterAttributesByNullValues.contains(attributeScore.getAttribute())
-                || filteredINDs.contains(attributeScore.getAttribute())
-                || (!new HashSet<>(filteredFDs.keySet()).contains(attributeScore.getAttribute()) && new HashSet<>(dependants).contains(attributeScore.getAttribute()))
-                || attributeScore.getAttribute().equals("dataset"));
+        this.attributeWeights.removeIf(attributeWeight -> filteredKeys.contains(attributeWeight.getAttribute())
+                || !filterAttributesByNullValues.contains(attributeWeight.getAttribute())
+                || filteredINDs.contains(attributeWeight.getAttribute())
+                || (!new HashSet<>(filteredFDs.keySet()).contains(attributeWeight.getAttribute()) && new HashSet<>(dependants).contains(attributeWeight.getAttribute()))
+                || attributeWeight.getAttribute().equals("dataset"));
 
         this.weightAttributes(sortedFilteredFDs, sortedFilteredUCCs);
+
+        var endTime = System.currentTimeMillis() - starTime;
+        this.log.info("Ending Attribute Weight Profiler - (Runtime: {}ms)", endTime);
     }
 
     private void weightAttributes(Map<String, Long> fds, Map<String, Long> uccs) {
@@ -141,12 +114,13 @@ public class AttributeScoringProfiler {
             sumUCC = sumUCC + value.intValue();
         }
 
-        HashMap<String, Double> nameWeightFD = calculateAttributeDependencyWeight(fds, sortedFDAttributes, sumFD);;
+        HashMap<String, Double> nameWeightFD = calculateAttributeDependencyWeight(fds, sortedFDAttributes, sumFD);
+        ;
 
         HashMap<String, Double> nameWeightUCC = calculateAttributeDependencyWeight(uccs, sortedUCCAttributes, sumUCC);
 
-        for (AttributeScore attributeScore : this.attributeScores) {
-            String attribute = attributeScore.getAttribute();
+        for (AttributeWeight attributeWeight : this.attributeWeights) {
+            String attribute = attributeWeight.getAttribute();
             double weight = 0;
             if (nameWeightFD.containsKey(attribute) && nameWeightUCC.containsKey(attribute)) {
                 weight = (nameWeightFD.get(attribute) + nameWeightUCC.get(attribute)) / 2.0;
@@ -156,7 +130,7 @@ public class AttributeScoringProfiler {
                 weight = nameWeightUCC.get(attribute) / (nameWeightFD.isEmpty() ? 1.0 : 2.0);
             }
 
-            attributeScore.setScore(weight);
+            attributeWeight.setWeight(weight);
         }
     }
 
@@ -169,6 +143,16 @@ public class AttributeScoringProfiler {
         }
 
         return nameWeightDependency;
+    }
+
+    private Set<String> filterAttributesByNullValues() {
+        int datasetSize = this.dataReader.getNumRecords();
+        HashMap<String, Integer> attributesNull = this.dataReader.countNullValues();
+
+        return attributesNull.entrySet().stream()
+                .filter(x -> !(((double) x.getValue() / datasetSize) >= (datasetName.equals("census") ? 0.15 : 0.05)))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
     private Map<String, Long> filteringFDs(List<FunctionalDependency> fds, Set<String> filterAttributesByNullValues, Set<String> filteredUCCs, Set<String> filteredINDs) {
@@ -184,14 +168,6 @@ public class AttributeScoringProfiler {
                 .collect(Collectors.toSet());
 
          */
-    }
-
-    private Map<String, Long> getDependant(List<FunctionalDependency> fds, Set<String> filterAttributesByNullValues, Set<String> filteredUCCs, Set<String> filteredINDs) {
-        return fds.stream()
-                .map(fd -> fd.getDependant().getColumnIdentifier())
-                .filter(filterAttributesByNullValues::contains)
-                .filter(column -> !filteredINDs.contains(column) && !filteredUCCs.contains(column))
-                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
     }
 
     private Set<String> filteringKeys(Set<UniqueColumnCombination> uccs) {
@@ -217,6 +193,14 @@ public class AttributeScoringProfiler {
                 .collect(Collectors.toSet());
     }
 
+    private Map<String, Long> getDependant(List<FunctionalDependency> fds, Set<String> filterAttributesByNullValues, Set<String> filteredUCCs, Set<String> filteredINDs) {
+        return fds.stream()
+                .map(fd -> fd.getDependant().getColumnIdentifier())
+                .filter(filterAttributesByNullValues::contains)
+                .filter(column -> !filteredINDs.contains(column) && !filteredUCCs.contains(column))
+                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+    }
+
     private Set<InclusionDependency> removeIdenticalINDs(Set<InclusionDependency> inds) {
         List<InclusionDependency> list = new ArrayList<>(inds.stream().toList());
 
@@ -231,12 +215,21 @@ public class AttributeScoringProfiler {
         return new HashSet<>(list);
     }
 
+    private Map<String, Long> sortDependencyMap(Map<String, Long> map) {
+        return map.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue())
+                .collect(LinkedHashMap::new,
+                        (m, e) -> m.put(e.getKey(), e.getValue()),
+                        LinkedHashMap::putAll);
+    }
+
     private void initializeAttributeScoreList() {
         String[] attributeNames = dataReader.getAttributeNames();
 
         for (int i = 0; i < attributeNames.length; i++) {
-            AttributeScore attribute = new AttributeScore(i, attributeNames[i]);
-            this.attributeScores.add(attribute);
+            AttributeWeight attribute = new AttributeWeight(i, attributeNames[i]);
+            this.attributeWeights.add(attribute);
         }
     }
 
@@ -258,15 +251,5 @@ public class AttributeScoringProfiler {
         } catch (AlgorithmConfigurationException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private Set<String> filterAttributesByNullValues() {
-        int datasetSize = this.dataReader.getNumRecords();
-        HashMap<String, Integer> attributesNull = this.dataReader.countNullValues();
-
-        return attributesNull.entrySet().stream()
-                .filter(x -> !(((double) x.getValue() / datasetSize) >= (datasetName.equals("census") ? 0.15 : 0.05)))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
     }
 }

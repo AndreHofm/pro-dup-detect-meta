@@ -13,12 +13,14 @@ public class Duplicate implements Comparable<Duplicate> {
     private int index2;
     private String recordId1;
     private String recordId2;
+    private long timestamp;
 
-    public Duplicate(String recordId1, String recordId2) {
+    public Duplicate(String recordId1, String recordId2, long timestamp) {
         this.index1 = -1;
         this.index2 = -1;
         this.recordId1 = recordId1.compareTo(recordId2) <= 0 ? recordId1 : recordId2;
         this.recordId2 = recordId1.compareTo(recordId2) > 0 ? recordId1 : recordId2;
+        this.timestamp = timestamp;
     }
 
     @Override

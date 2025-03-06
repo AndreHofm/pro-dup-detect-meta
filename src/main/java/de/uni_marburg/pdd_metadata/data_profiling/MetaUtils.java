@@ -13,7 +13,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class MetaUtils {
 
-    public static PdepTuple getPdep(FunctionalDependency fd, Map<String, List<String>> columnValues){
+    public static PdepTuple getPdep(FunctionalDependency fd, Map<String, List<String>> columnValues) {
         Set<ColumnIdentifier> determinant = fd.getDeterminant().getColumnIdentifiers();
         ColumnIdentifier dependant = fd.getDependant();
 
@@ -39,9 +39,9 @@ public class MetaUtils {
     private static double pdep(Map<String, Integer> valuesB, int N) {
         double result = 0;
         for (Integer count : valuesB.values()) {
-            result += (count*count);
+            result += (count * count);
         }
-        return result / (N*N);
+        return result / (N * N);
     }
 
     public static double gpdep(Map<String, Integer> valuesA, Map<String, Integer> valuesB, int N) {

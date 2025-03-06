@@ -12,8 +12,6 @@ import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys.KeyElementFactory;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Record;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
@@ -23,6 +21,7 @@ import java.util.*;
 
 public class DataReader {
     public String filePath;
+    public String goldFilePath;
     public boolean hasHeadline;
     public char attributeSeparator;
     public int numLines;
@@ -35,6 +34,7 @@ public class DataReader {
 
     public DataReader(String filePath, Configuration config) {
         this.filePath = filePath;
+        this.goldFilePath = "./data/" + config.getGoldStandardFileName();
         this.hasHeadline = config.isHasHeadline();
         this.attributeSeparator = config.getAttributeSeparator();
         this.numLines = config.getNumLines();
@@ -91,7 +91,6 @@ public class DataReader {
     public HashMap<Integer, Block> readBlocks(int[] order, int startBlock, int endBlock, int blockSize) {
         assert order.length > 0;
 
-        System.out.println("Starting to read blocks...");
         if (startBlock >= endBlock) {
             return new HashMap<>();
         }
@@ -133,7 +132,6 @@ public class DataReader {
             throw new RuntimeException("Error reading blocks from file", e);
         }
 
-        System.out.println("Finished reading blocks.");
         return blocks;
     }
 
@@ -272,17 +270,17 @@ public class DataReader {
     }
 
     public Set<Duplicate> readResultDuplicates(Set<String> sampleIds) {
-        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
+        try (CSVReader reader = this.buildFileReader(this.goldFilePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
             Set<Duplicate> resultDuplicates = new HashSet<>();
 
             String[] ids;
             while ((ids = reader.readNext()) != null) {
                 if (!sampleIds.isEmpty()) {
                     if (sampleIds.contains(ids[0]) && sampleIds.contains(ids[1])) {
-                        resultDuplicates.add(new Duplicate(ids[0], ids[1]));
+                        resultDuplicates.add(new Duplicate(ids[0], ids[1], 0));
                     }
                 } else {
-                    resultDuplicates.add(new Duplicate(ids[0], ids[1]));
+                    resultDuplicates.add(new Duplicate(ids[0], ids[1], 0));
                 }
             }
 
@@ -336,18 +334,16 @@ public class DataReader {
         Map<String, List<String>> columnData = new HashMap<>();
 
         try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, false, this.charset)) {
-            List<String[]> rows = reader.readAll(); // Liest gesamte CSV-Datei ein
+            List<String[]> rows = reader.readAll();
 
-            if (rows.isEmpty()) return columnData; // Falls Datei leer ist, zurückgeben
+            if (rows.isEmpty()) return columnData;
 
-            String[] headers = rows.get(0); // Erste Zeile enthält die Spaltennamen
+            String[] headers = rows.get(0);
 
-            // Initialisiere die Map mit leeren Listen für jede Spalte
             for (String header : headers) {
                 columnData.put(header.trim(), new ArrayList<>());
             }
 
-            // Werte für jede Spalte extrahieren (ab Zeile 1)
             for (int i = 1; i < rows.size(); i++) {
                 String[] row = rows.get(i);
                 for (int j = 0; j < headers.length; j++) {
@@ -363,34 +359,6 @@ public class DataReader {
         return columnData;
     }
 
-    public Map<String, ClassName> detectColumnTypes() {
-        Map<String, ClassName> columnTypes = new HashMap<>();
-
-        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
-            String[] firstRow = reader.readNext();
-            String[] attributes = this.getAttributeNames();
-
-            for (int i = 0; i < attributes.length; i++) {
-                try {
-                    Integer.parseInt(firstRow[i]);
-                    columnTypes.put(attributes[i], ClassName.Integer);
-                } catch (NumberFormatException e) {
-                    try {
-                        Double.parseDouble(firstRow[i]);
-                        columnTypes.put(attributes[i], ClassName.Double);
-                    } catch (NumberFormatException e2) {
-                        columnTypes.put(attributes[i], ClassName.String);
-                    }
-                }
-            }
-        } catch (IOException | CsvValidationException e) {
-            throw new RuntimeException(e);
-        }
-
-
-        return columnTypes;
-    }
-
     public int getNumRecords() {
         if (this.numLines == 0) {
             this.numLines = this.countLines(this.filePath, this.charset);
@@ -399,7 +367,7 @@ public class DataReader {
         return this.hasHeadline ? this.numLines - 1 : this.numLines;
     }
 
-    public int getNumAttributes() {
+    private int getNumAttributes() {
         if (this.numAttributes == 0) {
             this.numAttributes = this.countAttributes();
         }
@@ -407,7 +375,7 @@ public class DataReader {
         return Math.min(this.numAttributes, this.maxAttributes);
     }
 
-    protected String[] extractFields(String[] fields, int[] indices) {
+    private String[] extractFields(String[] fields, int[] indices) {
         String[] extractedFields = new String[indices.length];
 
         for (int i = 0; i < indices.length; ++i) {
@@ -417,7 +385,7 @@ public class DataReader {
         return extractedFields;
     }
 
-    protected int countAttributes() {
+    private int countAttributes() {
         try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
             String[] line;
             if ((line = reader.readNext()) == null) {
@@ -487,52 +455,5 @@ public class DataReader {
 
     private Record fitToMaxSize(Record record) {
         return record.size <= this.maxAttributes ? record : new Record(record.index, Arrays.copyOfRange(record.values, 0, this.maxAttributes));
-    }
-
-    private Class<?> detectType(String value) {
-        if (value == null || value.isEmpty()) {
-            return String.class;
-        }
-
-        try {
-            return ClassUtils.getClass(value);
-        } catch (ClassNotFoundException e) {
-            return String.class;
-        }
-    }
-
-    public IntArrayList readColumnAsList(int columnIndex) throws IOException {
-        IntArrayList columnValues = new IntArrayList();
-
-        try (CSVReader reader = this.buildFileReader(this.filePath, this.attributeSeparator, this.hasHeadline, this.charset)) {
-            String[] nextLine;
-            while ((nextLine = reader.readNext()) != null) {
-                // Überspringe Zeilen, die kürzer als der angeforderte Index sind
-                if (columnIndex >= nextLine.length) {
-                    continue;
-                }
-
-                String value = nextLine[columnIndex];
-                if (value != null && !value.trim().isEmpty()) {
-                    try {
-                        // Konvertiere den Wert in einen Integer und füge ihn zur Liste hinzu
-                        columnValues.add(Integer.parseInt(value.trim()));
-                    } catch (NumberFormatException e) {
-                        // Logge die Ausnahme, aber fahre mit der nächsten Zeile fort
-                        System.err.println("Skipping non-integer value: " + value + " in column " + columnIndex);
-                    }
-                }
-            }
-        } catch (CsvValidationException e) {
-            throw new RuntimeException(e);
-        }
-
-        return columnValues;
-    }
-
-    public enum ClassName {
-        String,
-        Integer,
-        Double
     }
 }
