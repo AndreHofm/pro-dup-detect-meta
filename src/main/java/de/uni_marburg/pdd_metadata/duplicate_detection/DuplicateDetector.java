@@ -2,7 +2,6 @@ package de.uni_marburg.pdd_metadata.duplicate_detection;
 
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys.AttributeKeyElementFactory;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys.InterlacedKeyElementFactory;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.keys.KeyElementFactory;
 import de.uni_marburg.pdd_metadata.io.DataReader;
 import de.uni_marburg.pdd_metadata.similarity_measures.JaroWinkler;
@@ -30,7 +29,7 @@ public abstract class DuplicateDetector {
     public DuplicateDetector(DataReader dataReader, ResultCollector resultCollector, Configuration config) {
         this.dataReader = dataReader;
         this.partitionSize = config.getPartitionSize();
-        this.threshold = config.getThreshold();
+        this.threshold = config.getSimThreshold();
         this.sorter = new Sorter();
         this.levenshtein = new Levenshtein(resultCollector, config);
         this.jaroWinkler = new JaroWinkler();

@@ -15,6 +15,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Getter
 public class Blocking extends DuplicateDetector {
@@ -22,6 +24,7 @@ public class Blocking extends DuplicateDetector {
     private int maxBlockRange;
     private int numLoadableBlocks;
     private int blockSize;
+    private Logger log = LogManager.getLogger(Blocking.class);
 
     public Blocking(DataReader dataReader, ResultCollector resultCollector, Configuration config) {
         super(dataReader, resultCollector, config);
@@ -65,6 +68,7 @@ public class Blocking extends DuplicateDetector {
     }
 
     public void findDuplicatesUsingMultipleKeysSequential() throws IOException {
+        this.log.info("Starting Blocking...");
         double startTime = System.currentTimeMillis();
 
         for (int keyAttributeNumber : this.levenshtein.getSimilarityAttributes()) {
@@ -73,11 +77,8 @@ public class Blocking extends DuplicateDetector {
             this.runPriority(order);
         }
 
-        double endTime = System.currentTimeMillis();
-
-        System.out.println((endTime - startTime) / 1000 + "s");
-
-        System.out.println("Number of Duplicates: " + this.duplicates.size());
+        double endTime = System.currentTimeMillis() - startTime;
+        this.log.info("Ending Blocking - (Runtime: {}ms)", endTime);
     }
 
     public void findDuplicatesUsingMultipleKeysConcurrently() throws IOException {

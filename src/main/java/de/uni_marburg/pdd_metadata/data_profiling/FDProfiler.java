@@ -12,6 +12,7 @@ import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.metanome.backend.result_receiver.ResultCache;
 import de.uni_marburg.pdd_metadata.duplicate_detection.SortedNeighbourhood;
 import de.uni_marburg.pdd_metadata.io.DataReader;
+import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,17 +30,19 @@ public class FDProfiler extends DependencyProfiler {
     private List<FunctionalDependency> fullFDs = new ArrayList<>();
     private DataReader dataReader;
     private Logger log = LogManager.getLogger(FDProfiler.class);
+    private Configuration config;
 
-    public FDProfiler(DefaultFileInputGenerator fileInputGenerator, DataReader dataReader) {
+    public FDProfiler(DefaultFileInputGenerator fileInputGenerator, DataReader dataReader, Configuration config) {
         this.fileInputGenerator = fileInputGenerator;
         this.dataReader = dataReader;
+        this.config = config;
     }
 
     static class Parameters {
         private static final boolean NULL_EQUALS_NULL = true;
         private static final boolean VALIDATE_PARALLEL = true;
         private static final boolean ENABLE_MEMORY_GUARDIAN = true;
-        private static final int MAX_SEARCH_SPACE_LEVEL = 2;
+        private static final int MAX_SEARCH_SPACE_LEVEL = 1;
         private static final int FILE_MAX_ROWS = -1;
     }
 
@@ -93,10 +96,11 @@ public class FDProfiler extends DependencyProfiler {
 
         log.info("Number of FDs: {}", fullFDs.size());
 
-         if(false) {
-             Map<String, List<String>> columnValues = dataReader.getAllColumnValues();
 
-             fullFDs = fullFDs.stream().filter(fd -> MetaUtils.getPdep(fd, columnValues).gpdep >= 0.01).toList();
-         }
+        Map<String, List<String>> columnValues = dataReader.getAllColumnValues();
+
+        fullFDs = fullFDs.stream()
+                .filter(fd -> MetaUtils.getPdep(fd, columnValues).gpdep >= config.getGpdepThreshold()).
+                toList();
     }
 }

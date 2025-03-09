@@ -1,6 +1,7 @@
 package de.uni_marburg.pdd_metadata.utils;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -10,6 +11,12 @@ public class Configuration {
     private final PairSelectionAlgorithm ALGORITHM = PairSelectionAlgorithm.SNM;
     private final boolean USE_PROFILER = true;
     private final boolean USE_WEIGHTS = false;
+
+    private final boolean USE_MISSING_INFORMATION = true;
+    private final boolean USE_FD_INFORMATION = false;
+    private final boolean USE_UCC_INFORMATION = false;
+    private final boolean USE_PK_INFORMATION = true;
+    private final boolean USE_IND_INFORMATION = false;
 
     private String datasetName;
     private String fileName;
@@ -24,7 +31,14 @@ public class Configuration {
     private int maxBlockRange = 4;
     private int windowSize = 20;
     private int windowInterval = 1;
-    private double threshold;
+
+    private double simThreshold;
+    @Setter
+    private double nullThreshold;
+    @Setter
+    private double gpdepThreshold;
+    @Setter
+    private double indThreshold;
 
     private char attributeSeparator;
     private boolean hasHeadline;
@@ -38,10 +52,11 @@ public class Configuration {
 
     public enum Dataset {
         CD,
-        DBLP_SCHOLAR,
-        CORA,
         CENSUS,
+        CORA,
+        DBLP_SCHOLAR,
         NCVOTERS,
+        NCVOTERS_SAMPLE,
     }
 
     public enum PairSelectionAlgorithm {
@@ -60,45 +75,16 @@ public class Configuration {
                 this.maxBlockRange = 4;
                 this.windowSize = 20;
                 this.windowInterval = 1;
-                this.threshold = 0.7;
+                // current best 0.65
+                this.simThreshold = 0.65;
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.twoInOneDataset = false;
                 this.similarityAttributes = new int[]{2, 3, 8, 9};
-                break;
-
-            case DBLP_SCHOLAR:
-                this.datasetName = "dblp_scholar";
-                this.fileName = this.datasetName + fileType;
-                this.goldStandardDatasetName = "dblp_scholar_DPL";
-                this.goldStandardFileName = this.goldStandardDatasetName + fileType;
-                this.blockSize = 4;
-                this.maxBlockRange = 4;
-                this.windowSize = 20;
-                this.windowInterval = 1;
-                this.threshold = 0.7;
-                this.attributeSeparator = ';';
-                this.hasHeadline = true;
-                this.charset = StandardCharsets.ISO_8859_1;
-                this.twoInOneDataset = true;
-                this.similarityAttributes = new int[]{1, 4};
-                break;
-
-            case CORA:
-                this.datasetName = "cora";
-                this.fileName = this.datasetName + fileType;
-                this.goldStandardDatasetName = "cora_DPL";
-                this.goldStandardFileName = this.goldStandardDatasetName + fileType;
-                this.blockSize = 4;
-                this.maxBlockRange = 4;
-                this.windowSize = 200;
-                this.windowInterval = 1;
-                this.threshold = 0.7;
-                this.attributeSeparator = ';';
-                this.hasHeadline = true;
-                this.charset = StandardCharsets.ISO_8859_1;
-                this.similarityAttributes = new int[]{3, 15};
+                this.nullThreshold = 0.05;
+                this.gpdepThreshold = 0;
+                this.indThreshold = 0.7;
                 break;
 
             case CENSUS:
@@ -110,11 +96,56 @@ public class Configuration {
                 this.maxBlockRange = 4;
                 this.windowSize = 20;
                 this.windowInterval = 1;
-                this.threshold = 0.7;
+                // current best 0.75
+                this.simThreshold = 0.75;
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.similarityAttributes = new int[]{1, 5};
+                this.nullThreshold = 0.25;
+                this.gpdepThreshold = 0;
+                this.indThreshold = 0.7;
+                break;
+
+            case CORA:
+                this.datasetName = "cora";
+                this.fileName = this.datasetName + fileType;
+                this.goldStandardDatasetName = "cora_DPL";
+                this.goldStandardFileName = this.goldStandardDatasetName + fileType;
+                this.blockSize = 4;
+                this.maxBlockRange = 4;
+                this.windowSize = 200;
+                this.windowInterval = 1;
+                // current best 0.65 since recall higher
+                this.simThreshold = 0.65;
+                this.attributeSeparator = ';';
+                this.hasHeadline = true;
+                this.charset = StandardCharsets.ISO_8859_1;
+                this.similarityAttributes = new int[]{3, 15};
+                this.nullThreshold = 0.35;
+                this.gpdepThreshold = 0;
+                this.indThreshold = 0.7;
+                break;
+
+            case DBLP_SCHOLAR:
+                this.datasetName = "dblp_scholar";
+                this.fileName = this.datasetName + fileType;
+                this.goldStandardDatasetName = "dblp_scholar_DPL";
+                this.goldStandardFileName = this.goldStandardDatasetName + fileType;
+                this.blockSize = 4;
+                this.maxBlockRange = 4;
+                this.windowSize = 20;
+                this.windowInterval = 1;
+                // current best 0.65
+                this.simThreshold = 0.65;
+                this.attributeSeparator = ';';
+                this.hasHeadline = true;
+                this.charset = StandardCharsets.ISO_8859_1;
+                this.twoInOneDataset = true;
+                this.similarityAttributes = new int[]{1, 4};
+                this.nullThreshold = 0.05;
+                this.gpdepThreshold = 0;
+                this.indThreshold = 0.7;
                 break;
 
             case NCVOTERS:
@@ -126,11 +157,35 @@ public class Configuration {
                 this.maxBlockRange = 4;
                 this.windowSize = 20;
                 this.windowInterval = 1;
-                this.threshold = 0.5;
+                // current best 0.65
+                this.simThreshold = 0.65;
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.similarityAttributes = new int[]{26, 31, 47};
+                this.nullThreshold = 0.15;
+                this.gpdepThreshold = 0.01;
+                this.indThreshold = 0.7;
+                break;
+
+            case NCVOTERS_SAMPLE:
+                this.datasetName = "ncvoters_sample";
+                this.fileName = this.datasetName + fileType;
+                this.goldStandardDatasetName = "ncvoters_DPL";
+                this.goldStandardFileName = this.goldStandardDatasetName + fileType;
+                this.blockSize = 4;
+                this.maxBlockRange = 4;
+                this.windowSize = 20;
+                this.windowInterval = 1;
+                // current best 0.65
+                this.simThreshold = 0.65;
+                this.attributeSeparator = ';';
+                this.hasHeadline = true;
+                this.charset = StandardCharsets.ISO_8859_1;
+                this.similarityAttributes = new int[]{26, 31, 47};
+                this.nullThreshold = 0.25;
+                this.gpdepThreshold = 0.01;
+                this.indThreshold = 0.7;
                 break;
         }
     }

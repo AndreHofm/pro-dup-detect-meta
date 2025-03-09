@@ -25,6 +25,7 @@ public class AttributeWeightProfiler {
     private DataReader dataReader;
     private List<AttributeWeight> attributeWeights;
     private String datasetName;
+    private Configuration config;
     private Logger log = LogManager.getLogger(AttributeWeightProfiler.class);
 
     public AttributeWeightProfiler(DataReader dataReader, String input, Configuration config) {
@@ -33,10 +34,11 @@ public class AttributeWeightProfiler {
         DefaultFileInputGenerator fileInputGenerator = getInputGenerator(input);
 
         this.uccProfiler = new UCCProfiler(fileInputGenerator);
-        this.fdProfiler = new FDProfiler(fileInputGenerator, dataReader);
-        this.indProfiler = new INDProfiler(fileInputGenerator);
+        this.fdProfiler = new FDProfiler(fileInputGenerator, dataReader, config);
+        this.indProfiler = new INDProfiler(fileInputGenerator, config);
         this.attributeWeights = new ArrayList<>();
         this.datasetName = config.getDatasetName();
+        this.config = config;
     }
 
     public void execute() throws Exception {
@@ -44,50 +46,79 @@ public class AttributeWeightProfiler {
         var starTime = System.currentTimeMillis();
         initializeAttributeScoreList();
 
-        Set<String> filterAttributesByNullValues = filterAttributesByNullValues();
+        Set<String> filterAttributesByNullValues = new HashSet<>();
 
-        fdProfiler.executeFullFDProfiler();
-        List<FunctionalDependency> fullFDs = fdProfiler.getFullFDs();
+        Map<String, Long> sortedFilteredFDs = new HashMap<>();
 
-        uccProfiler.executeFullUCCProfiler();
-        uccProfiler.executeKeyProfiler();
-        Set<UniqueColumnCombination> keys = uccProfiler.getKeys();
-        Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
+        Map<String, Long> sortedFilteredUCCs = new HashMap<>();
 
-        indProfiler.executePartialINDProfiler();
-        indProfiler.executeFullINDProfiler();
-        Set<InclusionDependency> partialINDs = indProfiler.getPartialINDS();
-        Set<InclusionDependency> fullINDS = removeIdenticalINDs(indProfiler.getInds());
-        partialINDs.addAll(fullINDS);
+        Set<String> filteredKeys = new HashSet<>();
 
-        Set<String> filteredKeys = filteringKeys(keys);
+        Set<String> filteredINDs = new HashSet<>();
 
-        Set<String> filteredINDs = filteringINDSs(partialINDs);
+        if (config.isUSE_MISSING_INFORMATION()) {
+            filterAttributesByNullValues.addAll(filterAttributesByNullValues());
 
-        Map<String, Long> filteredUCCs = filteringUCCs(fullUCCs, filterAttributesByNullValues, filteredKeys, filteredINDs);
-        Map<String, Long> sortedFilteredUCCs = sortDependencyMap(filteredUCCs);
+            this.attributeWeights.removeIf(attributeWeight -> !filterAttributesByNullValues.contains(attributeWeight.getAttribute()));
+        }
 
-        Set<String> dependants = getDependant(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs).keySet();
+        if (config.isUSE_IND_INFORMATION()) {
+            indProfiler.executePartialINDProfiler();
+            indProfiler.executeFullINDProfiler();
+            Set<InclusionDependency> partialINDs = indProfiler.getPartialINDS();
+            Set<InclusionDependency> fullINDS = removeIdenticalINDs(indProfiler.getInds());
+            partialINDs.addAll(fullINDS);
+            filteredINDs.addAll(filteringINDSs(partialINDs));
 
-        Map<String, Long> filteredFDs = filteringFDs(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs);
-        Map<String, Long> sortedFilteredFDs = sortDependencyMap(filteredFDs);
+            this.log.info("Number of INDs: {}", partialINDs.size());
+            this.log.info("INDs: {}", filteredINDs);
 
-        this.log.info("Number of UCCs: {}", fullUCCs.size());
-        this.log.info("Number of INDs: {}", partialINDs.size());
-        this.log.info("FDs: {}", sortedFilteredFDs);
-        this.log.info("Keys: {}", filteredKeys);
-        this.log.info("UCCs: {}", sortedFilteredUCCs);
-        this.log.info("INDs: {}", filteredINDs);
+            this.attributeWeights.removeIf(attributeWeight -> filteredINDs.contains(attributeWeight.getAttribute()));
+        }
 
-        this.attributeWeights.removeIf(attributeWeight -> filteredKeys.contains(attributeWeight.getAttribute())
-                || !filterAttributesByNullValues.contains(attributeWeight.getAttribute())
-                || filteredINDs.contains(attributeWeight.getAttribute())
-                || (!new HashSet<>(filteredFDs.keySet()).contains(attributeWeight.getAttribute()) && new HashSet<>(dependants).contains(attributeWeight.getAttribute()))
-                || attributeWeight.getAttribute().equals("dataset"));
+        if (config.isUSE_UCC_INFORMATION()) {
+            uccProfiler.executeFullUCCProfiler();
+            Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
 
-        this.weightAttributes(sortedFilteredFDs, sortedFilteredUCCs);
+            Map<String, Long> filteredUCCs = filteringUCCs(fullUCCs, filterAttributesByNullValues, filteredKeys, filteredINDs);
+            sortedFilteredUCCs.putAll(sortDependencyMap(filteredUCCs));
+
+            this.log.info("Number of UCCs: {}", fullUCCs.size());
+            this.log.info("UCCs: {}", sortedFilteredUCCs);
+        }
+
+        if (config.isUSE_PK_INFORMATION()) {
+            uccProfiler.executeKeyProfiler();
+            Set<UniqueColumnCombination> keys = uccProfiler.getKeys();
+            filteredKeys.addAll(filteringKeys(keys));
+
+            this.log.info("Keys: {}", filteredKeys);
+            this.attributeWeights.removeIf(attributeWeight -> filteredKeys.contains(attributeWeight.getAttribute()));
+        }
+
+        if (config.isUSE_FD_INFORMATION()) {
+            fdProfiler.executeFullFDProfiler();
+            List<FunctionalDependency> fullFDs = fdProfiler.getFullFDs();
+
+            Set<String> dependants = getDependant(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs).keySet();
+
+            Map<String, Long> filteredFDs = filteringFDs(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs);
+            sortedFilteredFDs.putAll(sortDependencyMap(filteredFDs));
+
+            this.log.info("FDs: {}", sortedFilteredFDs);
+
+            this.attributeWeights.removeIf(attributeWeight -> (!new HashSet<>(filteredFDs.keySet()).contains(attributeWeight.getAttribute())));
+                    //&& new HashSet<>(dependants).contains(attributeWeight.getAttribute())));
+        }
+
+        this.attributeWeights.removeIf(attributeWeight -> attributeWeight.getAttribute().equals("dataset"));
+
+        if (config.isUSE_WEIGHTS()) {
+            this.weightAttributes(sortedFilteredFDs, sortedFilteredUCCs);
+        }
 
         var endTime = System.currentTimeMillis() - starTime;
+        this.log.info("Number of Attributes: {}", this.attributeWeights.size());
         this.log.info("Ending Attribute Weight Profiler - (Runtime: {}ms)", endTime);
     }
 
@@ -150,7 +181,7 @@ public class AttributeWeightProfiler {
         HashMap<String, Integer> attributesNull = this.dataReader.countNullValues();
 
         return attributesNull.entrySet().stream()
-                .filter(x -> !(((double) x.getValue() / datasetSize) >= (datasetName.equals("census") ? 0.15 : 0.05)))
+                .filter(x -> !(((double) x.getValue() / datasetSize) >= config.getNullThreshold()))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }

@@ -12,6 +12,7 @@ import de.metanome.algorithms.sawfish.SawfishInterface;
 import de.metanome.backend.algorithm_execution.TempFileGenerator;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.metanome.backend.result_receiver.ResultCache;
+import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,12 +30,14 @@ public class INDProfiler extends DependencyProfiler {
     private SawfishInterface sawfish;
     private RelationalInputGenerator[] inputs;
     private Logger log = LogManager.getLogger(INDProfiler.class);
+    private Configuration config;
 
-    public INDProfiler(DefaultFileInputGenerator fileInputGenerator) {
+    public INDProfiler(DefaultFileInputGenerator fileInputGenerator, Configuration config) {
         this.fileInputGenerator = fileInputGenerator;
         this.binder = new BINDERFile();
         this.sawfish = new SawfishInterface();
         this.inputs = new RelationalInputGenerator[]{fileInputGenerator, fileInputGenerator};
+        this.config = config;
     }
 
     static class Parameters {
@@ -47,7 +50,7 @@ public class INDProfiler extends DependencyProfiler {
         ResultCache resultReceiver = this.getResultReceiver(inputs);
 
         sawfish.setRelationalInputConfigurationValue(SawfishInterface.Identifier.INPUT_FILES.name(), inputs);
-        sawfish.setStringConfigurationValue(SawfishInterface.Identifier.similarityThreshold.name(), "0.7");
+        sawfish.setStringConfigurationValue(SawfishInterface.Identifier.similarityThreshold.name(), String.valueOf(config.getIndThreshold()));
         sawfish.setBooleanConfigurationValue(SawfishInterface.Identifier.ignoreShortStrings.name(), false);
         sawfish.setBooleanConfigurationValue(SawfishInterface.Identifier.measureTime.name(), false);
         sawfish.setBooleanConfigurationValue(SawfishInterface.Identifier.ignoreNumericColumns.name(), false);

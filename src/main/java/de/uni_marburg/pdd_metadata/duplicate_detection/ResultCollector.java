@@ -23,6 +23,9 @@ public class ResultCollector {
     private long lastComparisonMeasurement;
     private Set<Duplicate> duplicates = new HashSet<>();
     private Set<Duplicate> goldResults = new HashSet<>();
+    private double precision;
+    private double recall;
+    private double f1;
 
     public ResultCollector(DataReader dataReader, DataWriter dataWriter, Configuration config) {
         this.config = config;
@@ -71,13 +74,23 @@ public class ResultCollector {
         int fpSize = fp.size();
         int fnSize = fn.size();
 
+        this.precision = (double) tpSize / (double) (tpSize + fpSize);
+        this.recall = (double) tpSize / (double) (tpSize + fnSize);
+        this.f1 = (double) (2 * tpSize) / (double) (2 * tpSize + fnSize + fpSize);
+
         log.info("Number of Duplicates: {}", this.getDuplicates().size());
         log.info("Number of actual Duplicates: {}", this.goldResults.size());
+        /*
         log.info("True Positive: {}", tpSize);
         log.info("False Positive: {}", fpSize);
         log.info("False Negative: {}", fnSize);
-        log.info("Precession: {}", (double) tpSize / (double) (tpSize + fpSize));
-        log.info("Recall: {}", (double) tpSize / (double) (tpSize + fnSize));
-        log.info("F1-Score: {}", (double) (2 * tpSize) / (double) (2 * tpSize + fnSize + fpSize));
+         */
+        log.info("Precession: {}", this.precision);
+        log.info("Recall: {}", this.recall);
+        log.info("F1-Score: {}", this.f1);
+    }
+
+    public void clearDuplicates() {
+        this.duplicates.clear();
     }
 }

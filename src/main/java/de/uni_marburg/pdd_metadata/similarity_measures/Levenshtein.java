@@ -30,7 +30,7 @@ public class Levenshtein {
     public Levenshtein(ResultCollector resultCollector, Configuration config) {
         this.maxAttributeLength = config.getLevenshteinMaxAttributeLength();
         this.twoInOneDataset = config.isTwoInOneDataset();
-        this.threshold = config.getThreshold();
+        this.threshold = config.getSimThreshold();
         this.resultCollector = resultCollector;
         this.similarityAttributes = config.getSimilarityAttributes();
         this.useWeights = config.isUSE_WEIGHTS();
