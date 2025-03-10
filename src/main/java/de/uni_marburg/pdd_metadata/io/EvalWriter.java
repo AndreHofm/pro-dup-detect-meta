@@ -20,6 +20,13 @@ public class EvalWriter {
         writeCSVNumberOfAttributes(filePath, threshold, numberOfAttributes);
     }
 
+    public static void writeCSVForInteger(String filePath, List<Integer> maxDet, List<Double> precision, List<Double> recall, List<Double> f1Score, List<Integer> numberOfAttributes) {
+        writeCSVForInteger(filePath, maxDet, precision, "precision");
+        writeCSVForInteger(filePath, maxDet, recall, "recall");
+        writeCSVForInteger(filePath, maxDet, f1Score, "f1_score");
+        writeCSVNumberOfAttributesForInteger(filePath, maxDet, numberOfAttributes);
+    }
+
     private static void writeCSV(String filePath, List<Double> threshold, List<Double> metric, String metricName) {
         String output = filePath + metricName + ".csv";
         Path parentDir = Path.of(output).getParent();
@@ -45,6 +52,31 @@ public class EvalWriter {
         }
     }
 
+    private static void writeCSVForInteger(String filePath, List<Integer> maxDet, List<Double> metric, String metricName) {
+        String output = filePath + metricName + ".csv";
+        Path parentDir = Path.of(output).getParent();
+
+        try {
+            if (parentDir != null) {
+                Files.createDirectories(parentDir); // Erstellt das Verzeichnis, falls es nicht existiert
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(output))) {
+                String header = "Max Determinant," + metricName;
+                writer.write(header);
+                writer.newLine();
+
+                for (int i = 0; i < maxDet.size(); i++) {
+                    writer.write(maxDet.get(i) + "," + metric.get(i));
+                    writer.newLine();
+                }
+                log.info("CSV-Datei wurde erfolgreich erstellt: {}", output);
+            }
+        } catch (IOException e) {
+            log.error("Fehler beim Schreiben der CSV-Datei: {}", e.getMessage());
+        }
+    }
+
     private static void writeCSVNumberOfAttributes(String filePath, List<Double> threshold, List<Integer> numberOfAttributes) {
         String output = filePath + "number_of_attributes" + ".csv";
         Path parentDir = Path.of(output).getParent();
@@ -61,6 +93,31 @@ public class EvalWriter {
 
                 for (int i = 0; i < threshold.size(); i++) {
                     writer.write(threshold.get(i) + "," + numberOfAttributes.get(i));
+                    writer.newLine();
+                }
+                log.info("CSV-Datei wurde erfolgreich erstellt: {}", output);
+            }
+        } catch (IOException e) {
+            log.error("Fehler beim Schreiben der CSV-Datei: {}", e.getMessage());
+        }
+    }
+
+    private static void writeCSVNumberOfAttributesForInteger(String filePath, List<Integer> maxDet, List<Integer> numberOfAttributes) {
+        String output = filePath + "number_of_attributes" + ".csv";
+        Path parentDir = Path.of(output).getParent();
+
+        try {
+            if (parentDir != null) {
+                Files.createDirectories(parentDir); // Erstellt das Verzeichnis, falls es nicht existiert
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(output))) {
+                String header = "Max Determinant," + "number_of_attributes";
+                writer.write(header);
+                writer.newLine();
+
+                for (int i = 0; i < maxDet.size(); i++) {
+                    writer.write(maxDet.get(i) + "," + numberOfAttributes.get(i));
                     writer.newLine();
                 }
                 log.info("CSV-Datei wurde erfolgreich erstellt: {}", output);

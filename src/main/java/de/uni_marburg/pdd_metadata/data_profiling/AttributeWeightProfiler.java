@@ -81,7 +81,7 @@ public class AttributeWeightProfiler {
             Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
 
             Map<String, Long> filteredUCCs = filteringUCCs(fullUCCs, filterAttributesByNullValues, filteredKeys, filteredINDs);
-            sortedFilteredUCCs.putAll(sortDependencyMap(filteredUCCs));
+            sortedFilteredUCCs = sortDependencyMap(filteredUCCs);
 
             this.log.info("Number of UCCs: {}", fullUCCs.size());
             this.log.info("UCCs: {}", sortedFilteredUCCs);
@@ -103,7 +103,7 @@ public class AttributeWeightProfiler {
             Set<String> dependants = getDependant(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs).keySet();
 
             Map<String, Long> filteredFDs = filteringFDs(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs);
-            sortedFilteredFDs.putAll(sortDependencyMap(filteredFDs));
+            sortedFilteredFDs = sortDependencyMap(filteredFDs);
 
             this.log.info("FDs: {}", sortedFilteredFDs);
 
@@ -188,17 +188,23 @@ public class AttributeWeightProfiler {
 
     private Map<String, Long> filteringFDs(List<FunctionalDependency> fds, Set<String> filterAttributesByNullValues, Set<String> filteredUCCs, Set<String> filteredINDs) {
         return fds.stream()
+                /*
+                .filter(fd -> fd.getDeterminant().getColumnIdentifiers()
+                        .stream()
+                        .noneMatch(s -> filteredUCCs.contains(s.getColumnIdentifier())))
+                .filter(fd -> fd.getDeterminant().getColumnIdentifiers()
+                        .stream()
+                        .noneMatch(s -> filteredINDs.contains(s.getColumnIdentifier())))
+                .filter(fd -> fd.getDeterminant().getColumnIdentifiers()
+                        .stream()
+                        .allMatch(s -> filterAttributesByNullValues.contains(s.getColumnIdentifier())))
+
+                 */
                 .flatMap(fd -> fd.getDeterminant().getColumnIdentifiers().stream())
                 .map(ColumnIdentifier::getColumnIdentifier)
                 .filter(filterAttributesByNullValues::contains)
                 .filter(column -> !filteredINDs.contains(column) && !filteredUCCs.contains(column))
                 .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
-        /*
-                .keySet().stream()
-                .limit(fds.size())
-                .collect(Collectors.toSet());
-
-         */
     }
 
     private Set<String> filteringKeys(Set<UniqueColumnCombination> uccs) {
