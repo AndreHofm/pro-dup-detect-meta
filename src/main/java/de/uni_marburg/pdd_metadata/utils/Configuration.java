@@ -10,13 +10,15 @@ import java.nio.charset.StandardCharsets;
 public class Configuration {
     private final PairSelectionAlgorithm ALGORITHM = PairSelectionAlgorithm.SNM;
     private final boolean USE_PROFILER = true;
-    private final boolean USE_WEIGHTS = true;
 
-    private final boolean USE_MISSING_INFORMATION = true;
-    private final boolean USE_FD_INFORMATION = true;
-    private final boolean USE_UCC_INFORMATION = true;
-    private final boolean USE_PK_INFORMATION = true;
-    private final boolean USE_IND_INFORMATION = true;
+    private final boolean FILTER_WITH_MISSING_INFO = true;
+    private final boolean FILTER_WITH_FD_INFO = true;
+    private final boolean FILTER_WITH_PK = true;
+    private final boolean FILTER_WITH_IND_INFO = false;
+
+    private final boolean USE_WEIGHTS = true;
+    private final boolean USE_FD_INFO = true;
+    private final boolean USE_UCC_INFO = true;
 
     private String datasetName;
     private String fileName;
@@ -40,7 +42,9 @@ public class Configuration {
     @Setter
     private double indThreshold;
     @Setter
-    private int maxDeterminant;
+    private int maxFDDeterminant;
+    @Setter
+    private int maxUCCDeterminant = 3;
 
     private char attributeSeparator;
     private boolean hasHeadline;
@@ -64,6 +68,7 @@ public class Configuration {
     public enum PairSelectionAlgorithm {
         SNM,
         BLOCKING,
+        NONE,
     }
 
     public void setDataset(Dataset dataset) {
@@ -86,7 +91,7 @@ public class Configuration {
                 this.nullThreshold = 0.05; // best overall 0.05
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
-                this.maxDeterminant = 2;
+                this.maxFDDeterminant = 2; // evaluation 3 // over all 2
                 break;
 
             case CENSUS:
@@ -106,6 +111,7 @@ public class Configuration {
                 this.nullThreshold = 0.25; // best overall 0.25
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
+                this.maxFDDeterminant = 3;
                 break;
 
             case CORA:
@@ -114,7 +120,7 @@ public class Configuration {
                 this.goldStandardDatasetName = "cora_DPL";
                 this.goldStandardFileName = this.goldStandardDatasetName + fileType;
                 this.blockSize = 4;
-                this.maxBlockRange = 4;
+                this.maxBlockRange = 60;
                 this.windowSize = 200;
                 this.windowInterval = 1;
                 this.simThreshold = 0.65; // current best 0.65 since recall higher
@@ -122,9 +128,10 @@ public class Configuration {
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.similarityAttributes = new int[]{3, 15};
-                this.nullThreshold = 0.35; // best overall 0.05 // PB 0.1
+                this.nullThreshold = 0.1; // best overall 0.05 // PB 0.1 // PSNM 0.35
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
+                this.maxFDDeterminant = 5; // eval 3 // best overall 5
                 break;
 
             case DBLP_SCHOLAR:
@@ -142,9 +149,10 @@ public class Configuration {
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.twoInOneDataset = true;
                 this.similarityAttributes = new int[]{1, 4};
-                this.nullThreshold = 0.55; // best overall 0.05
+                this.nullThreshold = 0.05; // best overall 0.05
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
+                this.maxFDDeterminant = 3;
                 break;
 
             case NCVOTERS:
@@ -156,7 +164,7 @@ public class Configuration {
                 this.maxBlockRange = 4;
                 this.windowSize = 20;
                 this.windowInterval = 1;
-                this.simThreshold = 0.65; // current best 0.65
+                this.simThreshold = 0.5; // current best 0.65 // best overall 0.5
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
@@ -164,6 +172,7 @@ public class Configuration {
                 this.nullThreshold = 0.15; // best overall 0.15
                 this.gpdepThreshold = 0.01;
                 this.indThreshold = 0.7;
+                this.maxFDDeterminant = 3;
                 break;
 
             case NCVOTERS_SAMPLE:
@@ -175,14 +184,16 @@ public class Configuration {
                 this.maxBlockRange = 4;
                 this.windowSize = 20;
                 this.windowInterval = 1;
-                this.simThreshold = 0.65; // current best 0.65
+                this.simThreshold = 0.5; // eval best 0.65 // best overall 0.5
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.similarityAttributes = new int[]{26, 31, 47};
-                this.nullThreshold = 0.25; // best overall 0.25
+                this.nullThreshold = 0.25; // best eval 0.25
                 this.gpdepThreshold = 0.01;
                 this.indThreshold = 0.7;
+                this.maxFDDeterminant = 3;
+                this.maxUCCDeterminant = 5;
                 break;
         }
     }

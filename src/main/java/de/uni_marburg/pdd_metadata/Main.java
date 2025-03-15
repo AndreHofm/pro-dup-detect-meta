@@ -20,28 +20,23 @@ public class Main {
     final static Logger log = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
-        if (false) {
+        if (true) {
             for (Configuration.Dataset dataset : Configuration.Dataset.values()) {
                 log.info("Dataset: {}", dataset);
                 //usingThreshold(dataset);
-                // execute(dataset);
-                maxDet(dataset);
+                execute(dataset);
+                System.out.println("___________________________________________________________");
             }
         }
 
-        execute(Configuration.Dataset.CD);
+        if (false) {
+            var dataset = Configuration.Dataset.NCVOTERS;
 
-        /*
+            log.info("Dataset: {}", dataset);
+            execute(dataset);
 
-        maxDet(Configuration.Dataset.CENSUS);
-        maxDet(Configuration.Dataset.CORA);
-        maxDet(Configuration.Dataset.DBLP_SCHOLAR);
-        /*
-        maxDet(Configuration.Dataset.CD);
-        maxDet(Configuration.Dataset.NCVOTERS);
-        maxDet(Configuration.Dataset.NCVOTERS_SAMPLE);
-
-         */
+            //usingThreshold(dataset);
+        }
     }
 
     private static void execute(Configuration.Dataset dataset) throws Exception {
@@ -103,7 +98,7 @@ public class Main {
             log.info("Starting programme...");
 
             config.setNullThreshold(i);
-            log.info("Current max determinant: {}", config.getMaxDeterminant());
+            log.info("Current threshold: {}", config.getNullThreshold());
 
             String dataPath = "./data/";
             String input = dataPath + config.getFileName();
@@ -168,11 +163,11 @@ public class Main {
 
         log.info("Dataset: {}", dataset);
 
-        for (int i = 1; i <= 7; i++) {
+        for (int i = 1; i <= 4; i++) {
             log.info("Starting programme...");
 
-            config.setMaxDeterminant(i);
-            log.info("Current max determinant: {}", config.getMaxDeterminant());
+            config.setMaxUCCDeterminant(i);
+            log.info("Current max determinant: {}", config.getMaxUCCDeterminant());
 
             String dataPath = "./data/";
             String input = dataPath + config.getFileName();
@@ -212,7 +207,7 @@ public class Main {
 
             resultCollector.logResults();
 
-            maxDet.add(config.getMaxDeterminant());
+            maxDet.add(config.getMaxFDDeterminant());
             precisions.add(resultCollector.getPrecision());
             recalls.add(resultCollector.getRecall());
             f1Scores.add(resultCollector.getF1());
@@ -220,8 +215,8 @@ public class Main {
             log.info("Ending programme");
         }
 
-        String resultPath = "./results/" + config.getALGORITHM() + "/" + config.getDatasetName() + "/fd/";
+        String resultPath = "./results/" + config.getALGORITHM() + "/" + config.getDatasetName() + "/ucc/";
 
-        writeCSVForInteger(resultPath + "fd_max_det_", maxDet, precisions, recalls, f1Scores, numberOfAttributes);
+        writeCSVForInteger(resultPath + "ucc_max_det_aw_", maxDet, precisions, recalls, f1Scores, numberOfAttributes);
     }
 }

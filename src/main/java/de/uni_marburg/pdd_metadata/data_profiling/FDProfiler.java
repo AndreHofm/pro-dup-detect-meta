@@ -10,7 +10,6 @@ import de.metanome.algorithm_integration.results.Result;
 import de.metanome.algorithms.hyfd.HyFD;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.metanome.backend.result_receiver.ResultCache;
-import de.uni_marburg.pdd_metadata.duplicate_detection.SortedNeighbourhood;
 import de.uni_marburg.pdd_metadata.io.DataReader;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
@@ -42,7 +41,6 @@ public class FDProfiler extends DependencyProfiler {
         private static final boolean NULL_EQUALS_NULL = true;
         private static final boolean VALIDATE_PARALLEL = true;
         private static final boolean ENABLE_MEMORY_GUARDIAN = true;
-        private static final int MAX_SEARCH_SPACE_LEVEL = 4;
         private static final int FILE_MAX_ROWS = -1;
     }
 
@@ -75,7 +73,7 @@ public class FDProfiler extends DependencyProfiler {
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.NULL_EQUALS_NULL.name(), Parameters.NULL_EQUALS_NULL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.VALIDATE_PARALLEL.name(), Parameters.VALIDATE_PARALLEL);
         hyFD.setBooleanConfigurationValue(HyFD.Identifier.ENABLE_MEMORY_GUARDIAN.name(), Parameters.ENABLE_MEMORY_GUARDIAN);
-        hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), config.getMaxDeterminant());
+        hyFD.setIntegerConfigurationValue(HyFD.Identifier.MAX_DETERMINANT_SIZE.name(), config.getMaxFDDeterminant());
         hyFD.setIntegerConfigurationValue(HyFD.Identifier.INPUT_ROW_LIMIT.name(), Parameters.FILE_MAX_ROWS);
 
         ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(fileInputGenerator));

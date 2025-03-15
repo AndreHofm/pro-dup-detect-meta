@@ -14,8 +14,10 @@ import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 public class AttributeWeightProfiler {
@@ -28,12 +30,12 @@ public class AttributeWeightProfiler {
     private Configuration config;
     private Logger log = LogManager.getLogger(AttributeWeightProfiler.class);
 
-    public AttributeWeightProfiler(DataReader dataReader, String input, Configuration config) {
+    public AttributeWeightProfiler(DataReader dataReader, String input, Configuration config) throws FileNotFoundException {
         this.dataReader = dataReader;
 
         DefaultFileInputGenerator fileInputGenerator = getInputGenerator(input);
 
-        this.uccProfiler = new UCCProfiler(fileInputGenerator);
+        this.uccProfiler = new UCCProfiler(fileInputGenerator, config);
         this.fdProfiler = new FDProfiler(fileInputGenerator, dataReader, config);
         this.indProfiler = new INDProfiler(fileInputGenerator, config);
         this.attributeWeights = new ArrayList<>();
@@ -52,66 +54,64 @@ public class AttributeWeightProfiler {
 
         Map<String, Long> sortedFilteredUCCs = new HashMap<>();
 
-        Set<String> filteredKeys = new HashSet<>();
+        Set<String> primaryKeys = new HashSet<>();
 
-        Set<String> filteredINDs = new HashSet<>();
+        Set<String> dependantINDAttributes = new HashSet<>();
 
-        if (config.isUSE_MISSING_INFORMATION()) {
+        if (config.isFILTER_WITH_MISSING_INFO()) {
             filterAttributesByNullValues.addAll(filterAttributesByNullValues());
 
             this.attributeWeights.removeIf(attributeWeight -> !filterAttributesByNullValues.contains(attributeWeight.getAttribute()));
         }
 
-        if (config.isUSE_IND_INFORMATION()) {
+        if (config.isFILTER_WITH_IND_INFO()) {
             indProfiler.executePartialINDProfiler();
             indProfiler.executeFullINDProfiler();
-            Set<InclusionDependency> partialINDs = indProfiler.getPartialINDS();
-            Set<InclusionDependency> fullINDS = removeIdenticalINDs(indProfiler.getInds());
-            partialINDs.addAll(fullINDS);
-            filteredINDs.addAll(filteringINDSs(partialINDs));
+            Set<InclusionDependency> simINDs = indProfiler.getSimINDs();
+            Set<InclusionDependency> fullINDS = removeIdenticalINDs(indProfiler.getFullINDs());
+            simINDs.addAll(fullINDS);
+            dependantINDAttributes.addAll(getDependantINDAttributes(simINDs));
 
-            this.log.info("Number of INDs: {}", partialINDs.size());
-            this.log.info("INDs: {}", filteredINDs);
+            this.log.info("Number of INDs: {}", simINDs.size());
+            this.log.info("INDs: {}", dependantINDAttributes);
 
-            this.attributeWeights.removeIf(attributeWeight -> filteredINDs.contains(attributeWeight.getAttribute()));
+            this.attributeWeights.removeIf(attributeWeight -> dependantINDAttributes.contains(attributeWeight.getAttribute()));
         }
 
-        if (config.isUSE_UCC_INFORMATION()) {
-            uccProfiler.executeFullUCCProfiler();
-            Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
-
-            Map<String, Long> filteredUCCs = filteringUCCs(fullUCCs, filterAttributesByNullValues, filteredKeys, filteredINDs);
-            sortedFilteredUCCs = sortDependencyMap(filteredUCCs);
-
-            this.log.info("Number of UCCs: {}", fullUCCs.size());
-            this.log.info("UCCs: {}", sortedFilteredUCCs);
-        }
-
-        if (config.isUSE_PK_INFORMATION()) {
+        if (config.isFILTER_WITH_PK()) {
             uccProfiler.executeKeyProfiler();
             Set<UniqueColumnCombination> keys = uccProfiler.getKeys();
-            filteredKeys.addAll(filteringKeys(keys));
+            primaryKeys.addAll(getPKs(keys));
 
-            this.log.info("Keys: {}", filteredKeys);
-            this.attributeWeights.removeIf(attributeWeight -> filteredKeys.contains(attributeWeight.getAttribute()));
+            this.log.info("Keys: {}", primaryKeys);
+            this.attributeWeights.removeIf(attributeWeight -> primaryKeys.contains(attributeWeight.getAttribute()));
         }
 
-        if (config.isUSE_FD_INFORMATION()) {
+        if (config.isUSE_FD_INFO()) {
             fdProfiler.executeFullFDProfiler();
             List<FunctionalDependency> fullFDs = fdProfiler.getFullFDs();
 
-            Set<String> dependants = getDependant(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs).keySet();
-
-            Map<String, Long> filteredFDs = filteringFDs(fullFDs, filterAttributesByNullValues, filteredKeys, filteredINDs);
+            Map<String, Long> filteredFDs = filteringFDs(fullFDs, filterAttributesByNullValues, primaryKeys, dependantINDAttributes);
             sortedFilteredFDs = sortDependencyMap(filteredFDs);
 
+            this.log.info("Number of FDs: {}", fullFDs.size());
             this.log.info("FDs: {}", sortedFilteredFDs);
 
-            this.attributeWeights.removeIf(attributeWeight -> (!new HashSet<>(filteredFDs.keySet()).contains(attributeWeight.getAttribute())));
-                    //&& new HashSet<>(dependants).contains(attributeWeight.getAttribute())));
+            if (config.isFILTER_WITH_FD_INFO()) {
+                this.attributeWeights.removeIf(attributeWeight -> (!new HashSet<>(filteredFDs.keySet()).contains(attributeWeight.getAttribute())));
+            }
         }
 
-        this.attributeWeights.removeIf(attributeWeight -> attributeWeight.getAttribute().equals("dataset"));
+        if (config.isUSE_UCC_INFO()) {
+            uccProfiler.executeFullUCCProfiler();
+            Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
+
+            Map<String, Long> filteredUCCs = filteringUCCs(fullUCCs, filterAttributesByNullValues, primaryKeys, dependantINDAttributes);
+            sortedFilteredUCCs = sortDependencyMap(filteredUCCs);
+
+            this.log.info("Number of UCCs: {}", fullUCCs.size());
+            //this.log.info("UCCs: {}", sortedFilteredUCCs);
+        }
 
         if (config.isUSE_WEIGHTS()) {
             this.weightAttributes(sortedFilteredFDs, sortedFilteredUCCs);
@@ -145,16 +145,17 @@ public class AttributeWeightProfiler {
             sumUCC = sumUCC + value.intValue();
         }
 
-        HashMap<String, Double> nameWeightFD = calculateAttributeDependencyWeight(fds, sortedFDAttributes, sumFD);
-        ;
+        int sum = sumFD + sumUCC;
 
-        HashMap<String, Double> nameWeightUCC = calculateAttributeDependencyWeight(uccs, sortedUCCAttributes, sumUCC);
+        HashMap<String, Double> nameWeightFD = calculateAttributeDependencyWeight(fds, sortedFDAttributes, sum);
+
+        HashMap<String, Double> nameWeightUCC = calculateAttributeDependencyWeight(uccs, sortedUCCAttributes, sum);
 
         for (AttributeWeight attributeWeight : this.attributeWeights) {
             String attribute = attributeWeight.getAttribute();
             double weight = 0;
             if (nameWeightFD.containsKey(attribute) && nameWeightUCC.containsKey(attribute)) {
-                weight = (nameWeightFD.get(attribute) + nameWeightUCC.get(attribute)) / 2.0;
+                weight = nameWeightFD.get(attribute) + nameWeightUCC.get(attribute);
             } else if (nameWeightFD.containsKey(attribute) && !nameWeightUCC.containsKey(attribute)) {
                 weight = nameWeightFD.get(attribute) / (nameWeightUCC.isEmpty() ? 1.0 : 2.0);
             } else if (!nameWeightFD.containsKey(attribute) && nameWeightUCC.containsKey(attribute)) {
@@ -186,51 +187,53 @@ public class AttributeWeightProfiler {
                 .collect(Collectors.toSet());
     }
 
-    private Map<String, Long> filteringFDs(List<FunctionalDependency> fds, Set<String> filterAttributesByNullValues, Set<String> filteredUCCs, Set<String> filteredINDs) {
-        return fds.stream()
-                /*
-                .filter(fd -> fd.getDeterminant().getColumnIdentifiers()
-                        .stream()
-                        .noneMatch(s -> filteredUCCs.contains(s.getColumnIdentifier())))
-                .filter(fd -> fd.getDeterminant().getColumnIdentifiers()
-                        .stream()
-                        .noneMatch(s -> filteredINDs.contains(s.getColumnIdentifier())))
-                .filter(fd -> fd.getDeterminant().getColumnIdentifiers()
-                        .stream()
-                        .allMatch(s -> filterAttributesByNullValues.contains(s.getColumnIdentifier())))
-
-                 */
+    private Map<String, Long> filteringFDs(List<FunctionalDependency> fds, Set<String> filterAttributesByNullValues, Set<String> primaryKeys, Set<String> dependantINDAttributes) {
+        Stream<String> fdStream = fds.stream()
                 .flatMap(fd -> fd.getDeterminant().getColumnIdentifiers().stream())
-                .map(ColumnIdentifier::getColumnIdentifier)
-                .filter(filterAttributesByNullValues::contains)
-                .filter(column -> !filteredINDs.contains(column) && !filteredUCCs.contains(column))
-                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+                .map(ColumnIdentifier::getColumnIdentifier);
+
+        return filterDependencies(filterAttributesByNullValues, primaryKeys, dependantINDAttributes, fdStream);
     }
 
-    private Set<String> filteringKeys(Set<UniqueColumnCombination> uccs) {
+    private Set<String> getPKs(Set<UniqueColumnCombination> uccs) {
         return uccs.stream()
                 .flatMap(x -> x.getColumnCombination().getColumnIdentifiers().stream())
                 .map(x -> x.toString().replace(datasetName + ".csv.", ""))
                 .collect(Collectors.toSet());
     }
 
-    private Map<String, Long> filteringUCCs(Set<UniqueColumnCombination> uccs, Set<String> filterAttributesByNullValues, Set<String> filteredKeys, Set<String> filteredINDs) {
-        return uccs.stream()
+    private Map<String, Long> filteringUCCs(Set<UniqueColumnCombination> uccs, Set<String> filterAttributesByNullValues, Set<String> primaryKeys, Set<String> dependantINDAttributes) {
+        Stream<String> uccStream = uccs.stream()
                 .flatMap(x -> x.getColumnCombination().getColumnIdentifiers().stream())
-                .map(x -> x.toString().replace(datasetName + ".csv.", ""))
-                .filter(filterAttributesByNullValues::contains)
-                .filter(column -> !filteredINDs.contains(column) && !filteredKeys.contains(column))
-                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+                .map(x -> x.toString().replace(datasetName + ".csv.", ""));
+
+        return filterDependencies(filterAttributesByNullValues, primaryKeys, dependantINDAttributes, uccStream);
     }
 
-    private Set<String> filteringINDSs(Set<InclusionDependency> inds) {
+    private Map<String, Long> filterDependencies(Set<String> filterAttributesByNullValues, Set<String> primaryKeys, Set<String> dependantINDAttributes, Stream<String> uccStream) {
+        if (config.isFILTER_WITH_MISSING_INFO()) {
+            uccStream = uccStream.filter(filterAttributesByNullValues::contains);
+        }
+
+        if (config.isFILTER_WITH_PK()) {
+            uccStream = uccStream.filter(column -> !primaryKeys.contains(column));
+        }
+
+        if (config.isFILTER_WITH_IND_INFO()) {
+            uccStream = uccStream.filter(column -> !dependantINDAttributes.contains(column));
+        }
+
+        return uccStream.collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+    }
+
+    private Set<String> getDependantINDAttributes(Set<InclusionDependency> inds) {
         return inds.stream()
                 .flatMap(x -> x.getDependant().getColumnIdentifiers().stream())
                 .map(x -> x.toString().replace(datasetName + ".csv.", ""))
                 .collect(Collectors.toSet());
     }
 
-    private Map<String, Long> getDependant(List<FunctionalDependency> fds, Set<String> filterAttributesByNullValues, Set<String> filteredUCCs, Set<String> filteredINDs) {
+    private Map<String, Long> getDependantFDAttributes(List<FunctionalDependency> fds, Set<String> filterAttributesByNullValues, Set<String> filteredUCCs, Set<String> filteredINDs) {
         return fds.stream()
                 .map(fd -> fd.getDependant().getColumnIdentifier())
                 .filter(filterAttributesByNullValues::contains)

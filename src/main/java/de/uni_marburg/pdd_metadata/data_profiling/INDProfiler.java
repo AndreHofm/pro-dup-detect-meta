@@ -24,15 +24,15 @@ import java.util.stream.Collectors;
 @Getter
 public class INDProfiler extends DependencyProfiler {
     private BINDERFile binder;
-    private Set<InclusionDependency> inds = new HashSet<>();
-    private Set<InclusionDependency> partialINDS = new HashSet<>();
+    private Set<InclusionDependency> fullINDs = new HashSet<>();
+    private Set<InclusionDependency> simINDs = new HashSet<>();
     private DefaultFileInputGenerator fileInputGenerator;
     private SawfishInterface sawfish;
     private RelationalInputGenerator[] inputs;
     private Logger log = LogManager.getLogger(INDProfiler.class);
     private Configuration config;
 
-    public INDProfiler(DefaultFileInputGenerator fileInputGenerator, Configuration config) {
+    public INDProfiler(DefaultFileInputGenerator fileInputGenerator, Configuration config) throws FileNotFoundException {
         this.fileInputGenerator = fileInputGenerator;
         this.binder = new BINDERFile();
         this.sawfish = new SawfishInterface();
@@ -49,8 +49,9 @@ public class INDProfiler extends DependencyProfiler {
     public void executePartialINDProfiler() throws Exception {
         ResultCache resultReceiver = this.getResultReceiver(inputs);
 
+        this.sawfish = new SawfishInterface();
         sawfish.setRelationalInputConfigurationValue(SawfishInterface.Identifier.INPUT_FILES.name(), inputs);
-        sawfish.setStringConfigurationValue(SawfishInterface.Identifier.similarityThreshold.name(), String.valueOf(config.getIndThreshold()));
+        sawfish.setStringConfigurationValue(SawfishInterface.Identifier.similarityThreshold.name(), "0.75");
         sawfish.setBooleanConfigurationValue(SawfishInterface.Identifier.ignoreShortStrings.name(), false);
         sawfish.setBooleanConfigurationValue(SawfishInterface.Identifier.measureTime.name(), false);
         sawfish.setBooleanConfigurationValue(SawfishInterface.Identifier.ignoreNumericColumns.name(), false);
@@ -66,7 +67,7 @@ public class INDProfiler extends DependencyProfiler {
         });
 
         List<Result> results = resultReceiver.fetchNewResults();
-        partialINDS = results.stream().map(x -> (InclusionDependency) x)
+        simINDs = results.stream().map(x -> (InclusionDependency) x)
                 .filter(x -> !x.getDependant().toString().equals(x.getReferenced().toString()))
                 .collect(Collectors.toSet());
     }
@@ -89,7 +90,7 @@ public class INDProfiler extends DependencyProfiler {
         });
 
         List<Result> results = resultReceiver.fetchNewResults();
-        inds = results.stream().map(x -> (InclusionDependency) x)
+        fullINDs = results.stream().map(x -> (InclusionDependency) x)
                 .filter(x -> !x.getDependant().toString().equals(x.getReferenced().toString()))
                 .collect(Collectors.toSet());
     }

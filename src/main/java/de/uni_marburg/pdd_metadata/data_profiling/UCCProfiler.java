@@ -9,6 +9,7 @@ import de.metanome.algorithm_integration.results.UniqueColumnCombination;
 import de.metanome.algorithms.hyucc.HyUCC;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.metanome.backend.result_receiver.ResultCache;
+import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,16 +26,17 @@ public class UCCProfiler extends DependencyProfiler {
     private Set<UniqueColumnCombination> fullUCCs = new HashSet<>();
     private Set<UniqueColumnCombination> keys = new HashSet<>();
     private Logger log = LogManager.getLogger(UCCProfiler.class);
+    private Configuration config;
 
-    public UCCProfiler(DefaultFileInputGenerator fileInputGenerator) {
+    public UCCProfiler(DefaultFileInputGenerator fileInputGenerator, Configuration config) {
         this.fileInputGenerator = fileInputGenerator;
+        this.config = config;
     }
 
     static class Parameters {
         private static final boolean NULL_EQUALS_NULL = true;
         private static final boolean VALIDATE_PARALLEL = true;
         private static final boolean ENABLE_MEMORY_GUARDIAN = true;
-        private static final int MAX_SEARCH_SPACE_LEVEL = 2;
         private static final int FILE_MAX_ROWS = -1;
     }
 
@@ -63,8 +65,6 @@ public class UCCProfiler extends DependencyProfiler {
                 .map(PartialKey::toMetanomeUniqueColumnCobination)
                 .filter(keys -> keys.getColumnCombination().getColumnIdentifiers().size() == 1)
                 .collect(Collectors.toSet());
-
-        System.out.println(partialKeys);
     }
 
     public void executeFullUCCProfiler() throws Exception {
@@ -72,7 +72,7 @@ public class UCCProfiler extends DependencyProfiler {
         hyUCC.setBooleanConfigurationValue(HyUCC.Identifier.NULL_EQUALS_NULL.name(), Parameters.NULL_EQUALS_NULL);
         hyUCC.setBooleanConfigurationValue(HyUCC.Identifier.VALIDATE_PARALLEL.name(), Parameters.VALIDATE_PARALLEL);
         hyUCC.setBooleanConfigurationValue(HyUCC.Identifier.ENABLE_MEMORY_GUARDIAN.name(), Parameters.ENABLE_MEMORY_GUARDIAN);
-        hyUCC.setIntegerConfigurationValue(HyUCC.Identifier.MAX_UCC_SIZE.name(), Parameters.MAX_SEARCH_SPACE_LEVEL);
+        hyUCC.setIntegerConfigurationValue(HyUCC.Identifier.MAX_UCC_SIZE.name(), config.getMaxUCCDeterminant());
         hyUCC.setIntegerConfigurationValue(HyUCC.Identifier.INPUT_ROW_LIMIT.name(), Parameters.FILE_MAX_ROWS);
 
         ResultCache resultReceiver = new ResultCache("MetanomeMock", getAcceptedColumns(fileInputGenerator));
