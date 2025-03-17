@@ -20,7 +20,7 @@ public class Main {
     final static Logger log = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
-        if (true) {
+        if (false) {
             for (Configuration.Dataset dataset : Configuration.Dataset.values()) {
                 log.info("Dataset: {}", dataset);
                 //usingThreshold(dataset);
@@ -29,13 +29,13 @@ public class Main {
             }
         }
 
-        if (false) {
-            var dataset = Configuration.Dataset.NCVOTERS;
+        if (true) {
+            var dataset = Configuration.Dataset.CD;
 
             log.info("Dataset: {}", dataset);
             execute(dataset);
 
-            //usingThreshold(dataset);
+            System.out.println("___________________________________________________________");
         }
     }
 
@@ -64,6 +64,8 @@ public class Main {
                 attributeScoreHashMap.put(attributeWeight.getIndex(), attributeWeight);
             }
 
+            attributeWeights.sort(Comparator.comparingDouble(AttributWeight -> -AttributWeight.getWeight()));
+
             int[] attributeIndex = attributeWeights.stream().mapToInt(AttributeWeight::getIndex).toArray();
 
             sortedNeighbourhood.getLevenshtein().setSimilarityAttributes(attributeIndex);
@@ -80,7 +82,7 @@ public class Main {
         }
 
         resultCollector.logResults();
-
+        resultCollector.logTimestemp();
         log.info("Ending programme");
     }
 

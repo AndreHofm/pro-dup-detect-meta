@@ -44,6 +44,12 @@ public class DataWriter {
 
     private static CSVWriter buildFileWriter(String filePath, char attributeSeparator) throws IOException {
         File file = new File(filePath);
+
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
         if (!file.exists()) {
             file.createNewFile();
         }

@@ -41,8 +41,14 @@ public class SortedNeighbourhood extends DuplicateDetector {
     }
 
     public void findDuplicatesUsingSingleKey() throws IOException {
+        this.log.info("Starting SNM...");
+        var starTime = System.currentTimeMillis();
+
         int[] order = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, new int[]{8, 2, 3}, this.dataReader, this.partitionSize, null, this);
         this.runWindowLinearIncreasingWithLookahead(order);
+
+        var endTime = System.currentTimeMillis() - starTime;
+        this.log.info("Ending SNM - (Runtime: {}ms)", endTime);
     }
 
     public void findDuplicatesUsingMultipleKeysSequential() throws IOException {
@@ -60,6 +66,7 @@ public class SortedNeighbourhood extends DuplicateDetector {
     }
 
     public void findDuplicatesUsingMultipleKeysConcurrently() throws IOException {
+        this.log.info("Starting SNM...");
         var starTime = System.currentTimeMillis();
         if (this.windowSize >= 2) {
             int numAttributes = this.levenshtein.getSimilarityAttributes().length;
@@ -83,7 +90,7 @@ public class SortedNeighbourhood extends DuplicateDetector {
         }
 
         var endTime = System.currentTimeMillis() - starTime;
-        System.out.println(endTime / 1000);
+        this.log.info("Ending SNM - (Runtime: {}ms)", endTime);
     }
 
     private void detectDuplicates(HashMap<Integer, Record> records, int[] order, int indexPivot, int indexPartner) {

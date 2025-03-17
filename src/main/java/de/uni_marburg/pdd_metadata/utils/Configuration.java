@@ -9,14 +9,14 @@ import java.nio.charset.StandardCharsets;
 @Getter
 public class Configuration {
     private final PairSelectionAlgorithm ALGORITHM = PairSelectionAlgorithm.SNM;
-    private final boolean USE_PROFILER = true;
+    private final boolean USE_PROFILER = false;
 
     private final boolean FILTER_WITH_MISSING_INFO = true;
     private final boolean FILTER_WITH_FD_INFO = true;
     private final boolean FILTER_WITH_PK = true;
-    private final boolean FILTER_WITH_IND_INFO = false;
+    private final boolean FILTER_WITH_IND_INFO = true;
 
-    private final boolean USE_WEIGHTS = true;
+    private final boolean USE_WEIGHTS = false;
     private final boolean USE_FD_INFO = true;
     private final boolean USE_UCC_INFO = true;
 
@@ -55,6 +55,9 @@ public class Configuration {
     private final int levenshteinMaxAttributeLength = 200;
 
     private final int interlacedKeyMaxLength = 100;
+
+    private long resultMeasurementIntervalInMs = 50;
+    public int qualityTimeInMs = 3000;
 
     public enum Dataset {
         CD,
@@ -170,7 +173,7 @@ public class Configuration {
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.similarityAttributes = new int[]{26, 31, 47};
                 this.nullThreshold = 0.15; // best overall 0.15
-                this.gpdepThreshold = 0.01;
+                this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
                 this.maxFDDeterminant = 3;
                 break;
@@ -190,7 +193,7 @@ public class Configuration {
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.similarityAttributes = new int[]{26, 31, 47};
                 this.nullThreshold = 0.25; // best eval 0.25
-                this.gpdepThreshold = 0.01;
+                this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
                 this.maxFDDeterminant = 3;
                 this.maxUCCDeterminant = 5;

@@ -32,7 +32,7 @@ public class Levenshtein {
         this.twoInOneDataset = config.isTwoInOneDataset();
         this.threshold = config.getSimThreshold();
         this.resultCollector = resultCollector;
-        this.similarityAttributes = config.getSimilarityAttributes();
+        this.similarityAttributes = new int[]{2, 3, 8, 9};
         this.useWeights = config.isUSE_WEIGHTS();
     }
 

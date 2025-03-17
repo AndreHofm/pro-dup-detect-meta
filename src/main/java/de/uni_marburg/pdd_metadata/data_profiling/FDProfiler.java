@@ -92,12 +92,12 @@ public class FDProfiler extends DependencyProfiler {
                 .map(x -> (FunctionalDependency) x)
                 .toList();
 
-        log.info("Number of FDs: {}", fullFDs.size());
+        if  (false) {
+            Map<String, List<String>> columnValues = dataReader.getAllColumnValues();
 
-        Map<String, List<String>> columnValues = dataReader.getAllColumnValues();
-
-        fullFDs = fullFDs.stream()
-                .filter(fd -> MetaUtils.getPdep(fd, columnValues).gpdep >= config.getGpdepThreshold()).
-                toList();
+            fullFDs = fullFDs.stream()
+                    .filter(fd -> MetaUtils.getPdep(fd, columnValues).gpdep >= config.getGpdepThreshold()).
+                    toList();
+        }
     }
 }
