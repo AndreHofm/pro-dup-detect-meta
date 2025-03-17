@@ -57,7 +57,7 @@ public class Configuration {
     private final int interlacedKeyMaxLength = 100;
 
     private long resultMeasurementIntervalInMs = 50;
-    public int qualityTimeInMs = 3000;
+    public int qualityTimeInMs = 2000;
 
     public enum Dataset {
         CD,

@@ -39,6 +39,16 @@ public class Duplicate implements Comparable<Duplicate> {
     }
 
     @Override
+    public int compareTo(Duplicate otherDuplicate) {
+        if (this.timestamp < otherDuplicate.getTimestamp()) {
+            return -1;
+        } else {
+            return this.timestamp > otherDuplicate.getTimestamp() ? 1 : 0;
+        }
+    }
+
+    /*
+    @Override
     public int compareTo(Duplicate o) {
         int[] thisValues = {this.index1, this.index2};
         int[] otherValues = {o.index1, o.index2};
@@ -63,4 +73,6 @@ public class Duplicate implements Comparable<Duplicate> {
         }
         return 0;
     }
+
+     */
 }
