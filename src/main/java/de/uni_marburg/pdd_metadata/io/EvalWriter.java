@@ -1,5 +1,8 @@
 package de.uni_marburg.pdd_metadata.io;
 
+import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
+import de.uni_marburg.pdd_metadata.utils.Configuration;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -8,7 +11,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class EvalWriter {
     final static Logger log = LogManager.getLogger(EvalWriter.class);
@@ -27,13 +33,49 @@ public class EvalWriter {
         writeCSVNumberOfAttributesForInteger(filePath, maxDet, numberOfAttributes);
     }
 
+    public static void writeDuplicatesPerTime(String filePath, LinkedBlockingQueue<Triple<Long, Integer, Integer>> duplicateMeasurements, long endTime, Configuration config) {
+        String output = filePath + ".csv";
+        Path parentDir = Path.of(output).getParent();
+
+        try {
+            if (parentDir != null) {
+                Files.createDirectories(parentDir);
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(output))) {
+                String header = "Time," + "Number of duplicates";
+                writer.write(header);
+                writer.newLine();
+
+                writer.write("(0,0)");
+                writer.newLine();
+
+                for (Triple<Long, Integer, Integer> duplicateMeasurement : duplicateMeasurements) {
+                    if (duplicateMeasurement.getLeft() > endTime) {
+                        break;
+                    }
+
+                    if (config.getDatasetName().equals("cd") || config.getDatasetName().equals("cora") || config.getDatasetName().equals("dblp_scholar")) {
+                        writer.write("("+ ((double) duplicateMeasurement.getLeft() / 1000) + "," + duplicateMeasurement.getMiddle() + ")");
+                    } else {
+                        writer.write(duplicateMeasurement.getLeft() + "," + duplicateMeasurement.getMiddle());
+                    }
+                    writer.newLine();
+                }
+                log.info("CSV-Datei wurde erfolgreich erstellt: {}", output);
+            }
+        } catch (IOException e) {
+            log.error("Fehler beim Schreiben der CSV-Datei: {}", e.getMessage());
+        }
+    }
+
     private static void writeCSV(String filePath, List<Double> threshold, List<Double> metric, String metricName) {
         String output = filePath + metricName + ".csv";
         Path parentDir = Path.of(output).getParent();
 
         try {
             if (parentDir != null) {
-                Files.createDirectories(parentDir); // Erstellt das Verzeichnis, falls es nicht existiert
+                Files.createDirectories(parentDir);
             }
 
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(output))) {

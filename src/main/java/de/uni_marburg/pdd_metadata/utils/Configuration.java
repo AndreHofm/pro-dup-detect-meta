@@ -9,14 +9,14 @@ import java.nio.charset.StandardCharsets;
 @Getter
 public class Configuration {
     private final PairSelectionAlgorithm ALGORITHM = PairSelectionAlgorithm.SNM;
-    private final boolean USE_PROFILER = false;
+    private final boolean USE_PROFILER = true;
 
     private final boolean FILTER_WITH_MISSING_INFO = true;
     private final boolean FILTER_WITH_FD_INFO = true;
     private final boolean FILTER_WITH_PK = true;
     private final boolean FILTER_WITH_IND_INFO = true;
 
-    private final boolean USE_WEIGHTS = false;
+    private final boolean USE_WEIGHTS = true;
     private final boolean USE_FD_INFO = true;
     private final boolean USE_UCC_INFO = true;
 
@@ -56,8 +56,8 @@ public class Configuration {
 
     private final int interlacedKeyMaxLength = 100;
 
-    private long resultMeasurementIntervalInMs = 50;
-    public int qualityTimeInMs = 2000;
+    private long resultMeasurementIntervalInMs;
+    public int qualityTimeInMs;
 
     public enum Dataset {
         CD,
@@ -95,6 +95,8 @@ public class Configuration {
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
                 this.maxFDDeterminant = 2; // evaluation 3 // over all 2
+                this.resultMeasurementIntervalInMs = 50;
+                this.qualityTimeInMs = 2000;
                 break;
 
             case CENSUS:
@@ -115,6 +117,8 @@ public class Configuration {
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
                 this.maxFDDeterminant = 3;
+                this.resultMeasurementIntervalInMs = 1;
+                this.qualityTimeInMs = 15;
                 break;
 
             case CORA:
@@ -131,10 +135,12 @@ public class Configuration {
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.similarityAttributes = new int[]{3, 15};
-                this.nullThreshold = 0.1; // best overall 0.05 // PB 0.1 // PSNM 0.35
+                this.nullThreshold = 0.1; // best overall 0.05 // evaluate 0.35
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
                 this.maxFDDeterminant = 5; // eval 3 // best overall 5
+                this.resultMeasurementIntervalInMs = 50;
+                this.qualityTimeInMs = 3000;
                 break;
 
             case DBLP_SCHOLAR:
@@ -156,6 +162,8 @@ public class Configuration {
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
                 this.maxFDDeterminant = 3;
+                this.resultMeasurementIntervalInMs = 50;
+                this.qualityTimeInMs = 1800;
                 break;
 
             case NCVOTERS:
@@ -176,6 +184,8 @@ public class Configuration {
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
                 this.maxFDDeterminant = 3;
+                this.resultMeasurementIntervalInMs = 20;
+                this.qualityTimeInMs = 800;
                 break;
 
             case NCVOTERS_SAMPLE:
@@ -197,6 +207,8 @@ public class Configuration {
                 this.indThreshold = 0.7;
                 this.maxFDDeterminant = 3;
                 this.maxUCCDeterminant = 5;
+                this.resultMeasurementIntervalInMs = 1;
+                this.qualityTimeInMs = 60;
                 break;
         }
     }

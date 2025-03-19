@@ -23,14 +23,13 @@ public class Main {
         if (false) {
             for (Configuration.Dataset dataset : Configuration.Dataset.values()) {
                 log.info("Dataset: {}", dataset);
-                //usingThreshold(dataset);
                 execute(dataset);
                 System.out.println("___________________________________________________________");
             }
         }
 
         if (true) {
-            var dataset = Configuration.Dataset.CD;
+            var dataset = Configuration.Dataset.NCVOTERS_SAMPLE;
 
             log.info("Dataset: {}", dataset);
             execute(dataset);
@@ -54,7 +53,7 @@ public class Main {
         SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, resultCollector, config);
 
         if (config.isUSE_PROFILER()) {
-            AttributeWeightProfiler profiler = new AttributeWeightProfiler(dataReader, input, config);
+            AttributeWeightProfiler profiler = new AttributeWeightProfiler(dataReader, input, config, resultCollector);
             profiler.execute();
 
             List<AttributeWeight> attributeWeights = profiler.getAttributeWeights();
@@ -82,7 +81,6 @@ public class Main {
         }
 
         resultCollector.logResults();
-        resultCollector.logTimestemp();
         log.info("Ending programme");
     }
 
@@ -99,8 +97,8 @@ public class Main {
         for (double i = 0; i <= 1; i = Math.round((i + 0.05) * 100.0) / 100.0) {
             log.info("Starting programme...");
 
-            config.setNullThreshold(i);
-            log.info("Current threshold: {}", config.getNullThreshold());
+            config.setGpdepThreshold(i);
+            log.info("Current threshold: {}", config.getGpdepThreshold());
 
             String dataPath = "./data/";
             String input = dataPath + config.getFileName();
@@ -111,7 +109,7 @@ public class Main {
             SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, resultCollector, config);
 
             if (config.isUSE_PROFILER()) {
-                AttributeWeightProfiler profiler = new AttributeWeightProfiler(dataReader, input, config);
+                AttributeWeightProfiler profiler = new AttributeWeightProfiler(dataReader, input, config, resultCollector);
                 profiler.execute();
 
                 List<AttributeWeight> attributeWeights = profiler.getAttributeWeights();
@@ -140,7 +138,7 @@ public class Main {
 
             resultCollector.logResults();
 
-            thresholds.add(config.getNullThreshold());
+            thresholds.add(config.getGpdepThreshold());
             precisions.add(resultCollector.getPrecision());
             recalls.add(resultCollector.getRecall());
             f1Scores.add(resultCollector.getF1());
@@ -148,9 +146,9 @@ public class Main {
             log.info("Ending programme");
         }
 
-        String resultPath = "./results/" + config.getALGORITHM() + "/" + config.getDatasetName() + "/missing_values/";
+        String resultPath = "./results/" + config.getALGORITHM() + "/" + config.getDatasetName() + "/gpdep/";
 
-        writeCSV(resultPath + "missing_values_", thresholds, precisions, recalls, f1Scores, numberOfAttributes);
+        writeCSV(resultPath + "gpdep_", thresholds, precisions, recalls, f1Scores, numberOfAttributes);
     }
 
     private static void maxDet(Configuration.Dataset dataset) throws Exception {
@@ -165,11 +163,11 @@ public class Main {
 
         log.info("Dataset: {}", dataset);
 
-        for (int i = 1; i <= 4; i++) {
+        for (int i = 1; i <= 7; i++) {
             log.info("Starting programme...");
 
-            config.setMaxUCCDeterminant(i);
-            log.info("Current max determinant: {}", config.getMaxUCCDeterminant());
+            config.setMaxFDDeterminant(i);
+            log.info("Current max determinant: {}", config.getMaxFDDeterminant());
 
             String dataPath = "./data/";
             String input = dataPath + config.getFileName();
@@ -180,7 +178,7 @@ public class Main {
             SortedNeighbourhood sortedNeighbourhood = new SortedNeighbourhood(dataReader, resultCollector, config);
 
             if (config.isUSE_PROFILER()) {
-                AttributeWeightProfiler profiler = new AttributeWeightProfiler(dataReader, input, config);
+                AttributeWeightProfiler profiler = new AttributeWeightProfiler(dataReader, input, config, resultCollector);
                 profiler.execute();
 
                 List<AttributeWeight> attributeWeights = profiler.getAttributeWeights();
@@ -217,8 +215,8 @@ public class Main {
             log.info("Ending programme");
         }
 
-        String resultPath = "./results/" + config.getALGORITHM() + "/" + config.getDatasetName() + "/ucc/";
+        String resultPath = "./results/" + config.getALGORITHM() + "/" + config.getDatasetName() + "/fd/";
 
-        writeCSVForInteger(resultPath + "ucc_max_det_aw_", maxDet, precisions, recalls, f1Scores, numberOfAttributes);
+        writeCSVForInteger(resultPath + "fd_max_det_", maxDet, precisions, recalls, f1Scores, numberOfAttributes);
     }
 }

@@ -3,7 +3,6 @@ package de.uni_marburg.pdd_metadata.duplicate_detection.structures;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 @Getter
@@ -18,8 +17,8 @@ public class Duplicate implements Comparable<Duplicate> {
     public Duplicate(String recordId1, String recordId2, long timestamp) {
         this.index1 = -1;
         this.index2 = -1;
-        this.recordId1 = recordId1.compareTo(recordId2) <= 0 ? recordId1 : recordId2;
-        this.recordId2 = recordId1.compareTo(recordId2) > 0 ? recordId1 : recordId2;
+        this.recordId1 = recordId1;
+        this.recordId2 = recordId2;
         this.timestamp = timestamp;
     }
 
@@ -47,7 +46,7 @@ public class Duplicate implements Comparable<Duplicate> {
         }
     }
 
-    /*
+/*
     @Override
     public int compareTo(Duplicate o) {
         int[] thisValues = {this.index1, this.index2};
@@ -73,6 +72,5 @@ public class Duplicate implements Comparable<Duplicate> {
         }
         return 0;
     }
-
-     */
+    */
 }

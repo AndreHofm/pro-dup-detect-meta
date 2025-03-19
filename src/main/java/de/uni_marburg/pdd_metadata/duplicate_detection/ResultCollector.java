@@ -4,6 +4,7 @@ import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Record;
 import de.uni_marburg.pdd_metadata.io.DataReader;
 import de.uni_marburg.pdd_metadata.io.DataWriter;
+import de.uni_marburg.pdd_metadata.io.EvalWriter;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +21,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class ResultCollector {
     private Configuration config;
     private DataReader dataReader;
-    private DataWriter dataWriter;
     @Setter
     private long startTime;
     private final Logger log = LogManager.getLogger(ResultCollector.class);
@@ -33,18 +33,10 @@ public class ResultCollector {
     private LinkedBlockingQueue<Triple<Long, Integer, Integer>> duplicateMeasurements;
     private LinkedBlockingQueue<Integer> comparisonMeasurements = new LinkedBlockingQueue<>();
 
-    public ResultCollector(DataReader dataReader, DataWriter dataWriter, Configuration config) {
-        this.config = config;
-        this.dataReader = dataReader;
-        this.dataWriter = dataWriter;
-        this.startTime = System.currentTimeMillis();
-        this.lastComparisonMeasurement = this.startTime;
-    }
 
     public ResultCollector(DataReader dataReader, Configuration config) {
         this.config = config;
         this.dataReader = dataReader;
-        this.dataWriter = null;
         this.startTime = System.currentTimeMillis();
         this.lastComparisonMeasurement = this.startTime;
     }
@@ -52,11 +44,7 @@ public class ResultCollector {
     public void collectDuplicate(Record record1, Record record2) {
         Duplicate duplicate = new Duplicate(record1.index, record2.index, record1.values[0], record2.values[0], System.currentTimeMillis() - this.startTime);
 
-        boolean newDuplicate = !this.duplicates.contains(duplicate);
-
-        if (newDuplicate) {
-            this.duplicates.add(duplicate);
-        }
+        this.duplicates.add(duplicate);
     }
 
     public void collectGoldResult() {
@@ -68,15 +56,16 @@ public class ResultCollector {
     public void logResults() {
         collectGoldResult();
 
-        Set<Duplicate> results = this.getDuplicates();
-
         Set<Duplicate> fn = new HashSet<>(goldResults);
-        fn.removeAll(results);
+        fn.removeAll(duplicates);
 
-        Set<Duplicate> fp = new HashSet<>(results);
+        Set<Duplicate> fp = new HashSet<>(duplicates);
         fp.removeAll(goldResults);
 
-        int tpSize = results.size() - fp.size();
+        Set<Duplicate> tp = new HashSet<>(duplicates);
+        tp.removeAll(fp);
+
+        int tpSize = tp.size();
         int fpSize = fp.size();
         int fnSize = fn.size();
 
@@ -84,25 +73,26 @@ public class ResultCollector {
         this.recall = (double) tpSize / (double) (tpSize + fnSize);
         this.f1 = (double) (2 * tpSize) / (double) (2 * tpSize + fnSize + fpSize);
 
-        log.info("Number of Duplicates: {}", this.getDuplicates().size());
-        log.info("Number of actual Duplicates: {}", this.goldResults.size());
+        log.info("Number of Duplicates: {}", duplicates.size());
+        log.info("Number of actual Duplicates: {}", goldResults.size());
+        log.info("Number of True Positives: {}", tpSize);
         log.info("Precession: {}", this.precision);
         log.info("Recall: {}", this.recall);
         log.info("F1-Score: {}", this.f1);
 
 
-        calculateDuplicateMeasurements();
-        float integralQuali = this.calculateIntegralQuality(this.duplicateMeasurements,299, config.getQualityTimeInMs());
+        calculateDuplicateMeasurements(tp);
+        float integralQuali = this.calculateIntegralQuality(this.duplicateMeasurements, goldResults.size(), config.getQualityTimeInMs());
         log.info("Integral Quality: {}", integralQuali);
+
+        String resultPath = "./results/" + config.getALGORITHM() + "/" + config.getDatasetName() + "/progressive_quality_measure_with_pf/";
+
+        EvalWriter.writeDuplicatesPerTime(resultPath + "duplicates_per_time",  this.duplicateMeasurements, config.getQualityTimeInMs(), config);
     }
 
-    public void logTimestemp(){
-        System.out.println(this.getDuplicates().stream().filter(duplicate -> duplicate.getTimestamp() > 500L).toList().size());
-    }
-
-    private void calculateDuplicateMeasurements() {
+    private void calculateDuplicateMeasurements(Set<Duplicate> tp) {
         this.duplicateMeasurements = new LinkedBlockingQueue<>();
-        List<Duplicate> sortedDuplicates = new ArrayList<>(this.duplicates);
+        List<Duplicate> sortedDuplicates = new ArrayList<>(tp);
         Collections.sort(sortedDuplicates);
         LinkedBlockingQueue<Integer> tempComparisonMeasurements = clone(this.comparisonMeasurements);
         long measurementIntervalLength = this.config.getResultMeasurementIntervalInMs();

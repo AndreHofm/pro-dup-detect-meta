@@ -14,11 +14,6 @@ import java.util.stream.IntStream;
 @Getter
 @Setter
 public class Levenshtein {
-    // Best for cd {2, 3, 8, 9}
-    // Best for dblp_scholar {1, 4}
-    // Best for cora {3, 15}
-    // Best for Census {1, 5}
-    // Best for NCVoters {26, 31, 47}
     private int[] similarityAttributes;
     private int maxAttributeLength;
     private boolean twoInOneDataset;
@@ -32,7 +27,7 @@ public class Levenshtein {
         this.twoInOneDataset = config.isTwoInOneDataset();
         this.threshold = config.getSimThreshold();
         this.resultCollector = resultCollector;
-        this.similarityAttributes = new int[]{2, 3, 8, 9};
+        this.similarityAttributes = config.getSimilarityAttributes();
         this.useWeights = config.isUSE_WEIGHTS();
     }
 

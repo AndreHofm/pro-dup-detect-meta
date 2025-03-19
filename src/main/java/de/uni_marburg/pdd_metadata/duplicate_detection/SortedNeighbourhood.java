@@ -80,7 +80,7 @@ public class SortedNeighbourhood extends DuplicateDetector {
                 orders[i] = this.sorter.calculateOrderMagpieProgressive(this.keyElementFactory, keyAttributeNumbers, this.dataReader, this.partitionSize, null, this);
                 ;
                 keysLastWindowSize[i] = 2;
-                keysLastResultCount[i] = this.duplicates.size();
+                keysLastResultCount[i] = resultCollector.getDuplicates().size();
             }
 
             int bestNextKey;

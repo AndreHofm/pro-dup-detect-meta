@@ -8,6 +8,7 @@ import de.metanome.algorithm_integration.results.InclusionDependency;
 import de.metanome.algorithm_integration.results.UniqueColumnCombination;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import de.uni_marburg.pdd_metadata.data_profiling.structures.AttributeWeight;
+import de.uni_marburg.pdd_metadata.duplicate_detection.ResultCollector;
 import de.uni_marburg.pdd_metadata.io.DataReader;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
@@ -29,8 +30,9 @@ public class AttributeWeightProfiler {
     private String datasetName;
     private Configuration config;
     private Logger log = LogManager.getLogger(AttributeWeightProfiler.class);
+    private ResultCollector resultCollector;
 
-    public AttributeWeightProfiler(DataReader dataReader, String input, Configuration config) throws FileNotFoundException {
+    public AttributeWeightProfiler(DataReader dataReader, String input, Configuration config, ResultCollector resultCollector) throws FileNotFoundException {
         this.dataReader = dataReader;
 
         DefaultFileInputGenerator fileInputGenerator = getInputGenerator(input);
@@ -41,6 +43,7 @@ public class AttributeWeightProfiler {
         this.attributeWeights = new ArrayList<>();
         this.datasetName = config.getDatasetName();
         this.config = config;
+        this.resultCollector = resultCollector;
     }
 
     public void execute() throws Exception {
@@ -48,7 +51,7 @@ public class AttributeWeightProfiler {
         var starTime = System.currentTimeMillis();
         initializeAttributeScoreList();
 
-        Set<String> filterAttributesByNullValues = new HashSet<>();
+        Set<String> filterAttributesByNullValues = new HashSet<>(filterAttributesByNullValues());
 
         Map<String, Long> sortedFilteredFDs = new HashMap<>();
 
@@ -58,15 +61,15 @@ public class AttributeWeightProfiler {
 
         Set<String> dependantINDAttributes = new HashSet<>();
 
-        if (config.isFILTER_WITH_MISSING_INFO()) {
-            filterAttributesByNullValues.addAll(filterAttributesByNullValues());
+        executeProfiler();
 
+        this.resultCollector.setStartTime(System.currentTimeMillis());
+
+        if (config.isFILTER_WITH_MISSING_INFO()) {
             this.attributeWeights.removeIf(attributeWeight -> !filterAttributesByNullValues.contains(attributeWeight.getAttribute()));
         }
 
         if (config.isFILTER_WITH_IND_INFO()) {
-            indProfiler.executePartialINDProfiler();
-            indProfiler.executeFullINDProfiler();
             Set<InclusionDependency> simINDs = indProfiler.getSimINDs();
             Set<InclusionDependency> fullINDS = removeIdenticalINDs(indProfiler.getFullINDs());
             simINDs.addAll(fullINDS);
@@ -79,7 +82,6 @@ public class AttributeWeightProfiler {
         }
 
         if (config.isFILTER_WITH_PK()) {
-            uccProfiler.executeKeyProfiler();
             Set<UniqueColumnCombination> keys = uccProfiler.getKeys();
             primaryKeys.addAll(getPKs(keys));
 
@@ -88,7 +90,6 @@ public class AttributeWeightProfiler {
         }
 
         if (config.isUSE_FD_INFO()) {
-            fdProfiler.executeFullFDProfiler();
             List<FunctionalDependency> fullFDs = fdProfiler.getFullFDs();
 
             Map<String, Long> filteredFDs = filteringFDs(fullFDs, filterAttributesByNullValues, primaryKeys, dependantINDAttributes);
@@ -103,7 +104,6 @@ public class AttributeWeightProfiler {
         }
 
         if (config.isUSE_UCC_INFO()) {
-            uccProfiler.executeFullUCCProfiler();
             Set<UniqueColumnCombination> fullUCCs = uccProfiler.getFullUCCs();
 
             Map<String, Long> filteredUCCs = filteringUCCs(fullUCCs, filterAttributesByNullValues, primaryKeys, dependantINDAttributes);
@@ -120,6 +120,17 @@ public class AttributeWeightProfiler {
         var endTime = System.currentTimeMillis() - starTime;
         this.log.info("Number of Attributes: {}", this.attributeWeights.size());
         this.log.info("Ending Attribute Weight Profiler - (Runtime: {}ms)", endTime);
+    }
+
+    private void executeProfiler() throws Exception {
+        indProfiler.executePartialINDProfiler();
+        indProfiler.executeFullINDProfiler();
+
+        uccProfiler.executeKeyProfiler();
+
+        fdProfiler.executeFullFDProfiler();
+
+        uccProfiler.executeFullUCCProfiler();
     }
 
     private void weightAttributes(Map<String, Long> fds, Map<String, Long> uccs) {
