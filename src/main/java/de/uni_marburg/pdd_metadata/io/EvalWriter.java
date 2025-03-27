@@ -1,6 +1,5 @@
 package de.uni_marburg.pdd_metadata.io;
 
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
@@ -11,9 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class EvalWriter {

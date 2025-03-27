@@ -14,10 +14,10 @@ import java.util.HashSet;
 
 @Getter
 public class SortedNeighbourhood extends DuplicateDetector {
-    private int windowSize;
-    private int windowInterval;
-    private ResultCollector resultCollector;
-    private Logger log = LogManager.getLogger(SortedNeighbourhood.class);
+    private final int windowSize;
+    private final int windowInterval;
+    private final ResultCollector resultCollector;
+    private final Logger log = LogManager.getLogger(SortedNeighbourhood.class);
 
     public SortedNeighbourhood(DataReader dataReader, ResultCollector resultCollector, Configuration config) {
         super(dataReader, resultCollector, config);

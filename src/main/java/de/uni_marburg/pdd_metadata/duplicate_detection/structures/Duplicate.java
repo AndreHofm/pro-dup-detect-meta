@@ -45,32 +45,4 @@ public class Duplicate implements Comparable<Duplicate> {
             return this.timestamp > otherDuplicate.getTimestamp() ? 1 : 0;
         }
     }
-
-/*
-    @Override
-    public int compareTo(Duplicate o) {
-        int[] thisValues = {this.index1, this.index2};
-        int[] otherValues = {o.index1, o.index2};
-        Arrays.sort(thisValues);
-        Arrays.sort(otherValues);
-
-        String[] thisValuesString = {this.recordId1, this.recordId2};
-        String[] otherValuesString = {o.recordId1, o.recordId2};
-
-        for (int i = 0; i < 2; i++) {
-            int comp = Integer.compare(thisValues[i], otherValues[i]);
-            if (comp != 0) {
-                return comp;
-            }
-        }
-
-        for (int i = 0; i < 2; i++) {
-            int comp = CharSequence.compare(thisValuesString[i], otherValuesString[i]);
-            if (comp != 0) {
-                return comp;
-            }
-        }
-        return 0;
-    }
-    */
 }

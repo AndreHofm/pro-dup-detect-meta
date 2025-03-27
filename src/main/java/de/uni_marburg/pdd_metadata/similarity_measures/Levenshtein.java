@@ -21,6 +21,7 @@ public class Levenshtein {
     private double threshold;
     private ResultCollector resultCollector;
     private boolean useWeights;
+    private boolean profilerActivated;
 
     public Levenshtein(ResultCollector resultCollector, Configuration config) {
         this.maxAttributeLength = config.getLevenshteinMaxAttributeLength();
@@ -29,6 +30,7 @@ public class Levenshtein {
         this.resultCollector = resultCollector;
         this.similarityAttributes = config.getSimilarityAttributes();
         this.useWeights = config.isUSE_WEIGHTS();
+        this.profilerActivated = config.isUSE_PROFILER();
     }
 
     public void compare(Record record1, Record record2) {
@@ -54,7 +56,7 @@ public class Levenshtein {
                             attributeSimilarity = 0;
                         }
 
-                        if (useWeights) {
+                        if (profilerActivated && useWeights) {
                             recordSimilarity += attributeSimilarity * attributeWeights.get(attributeIndex).getWeight();
                         } else {
                             recordSimilarity += attributeSimilarity;
@@ -64,7 +66,7 @@ public class Levenshtein {
                     }
                 }
 
-                if (!useWeights) {
+                if (!useWeights || !profilerActivated) {
                     recordSimilarity = recordSimilarity / numComparisons;
                 }
 

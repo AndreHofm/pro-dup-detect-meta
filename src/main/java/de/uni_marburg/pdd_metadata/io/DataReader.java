@@ -27,10 +27,10 @@ public class DataReader {
     public int numLines;
     public int maxAttributes;
     private int numAttributes;
-    private Charset charset;
+    private final Charset charset;
     private boolean enablePartitionCaching = false;
     private String tempPath;
-    private DataWriter dataWriter = new DataWriter();
+    private final DataWriter dataWriter = new DataWriter();
 
     public DataReader(String filePath, Configuration config) {
         this.filePath = filePath;

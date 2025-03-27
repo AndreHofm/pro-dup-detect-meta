@@ -32,7 +32,7 @@ public class INDProfiler extends DependencyProfiler {
     private Logger log = LogManager.getLogger(INDProfiler.class);
     private Configuration config;
 
-    public INDProfiler(DefaultFileInputGenerator fileInputGenerator, Configuration config) throws FileNotFoundException {
+    public INDProfiler(DefaultFileInputGenerator fileInputGenerator, Configuration config) {
         this.fileInputGenerator = fileInputGenerator;
         this.binder = new BINDERFile();
         this.sawfish = new SawfishInterface();

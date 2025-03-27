@@ -44,6 +44,3 @@ algorithms parameters look into this [conference paper](https://hpi.de/oldsite/f
 - DBLP-Scholar
 - NCVoters
 - A sample of NCVoters
-
-## Documentation
-

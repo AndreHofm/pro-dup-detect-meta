@@ -3,13 +3,11 @@ package de.uni_marburg.pdd_metadata.duplicate_detection;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Record;
 import de.uni_marburg.pdd_metadata.io.DataReader;
-import de.uni_marburg.pdd_metadata.io.DataWriter;
 import de.uni_marburg.pdd_metadata.io.EvalWriter;
 import de.uni_marburg.pdd_metadata.utils.Configuration;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,19 +17,19 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 @Getter
 public class ResultCollector {
-    private Configuration config;
-    private DataReader dataReader;
+    private final Configuration config;
+    private final DataReader dataReader;
     @Setter
     private long startTime;
     private final Logger log = LogManager.getLogger(ResultCollector.class);
-    private long lastComparisonMeasurement;
-    private Set<Duplicate> duplicates = new HashSet<>();
+    private final long lastComparisonMeasurement;
+    private final Set<Duplicate> duplicates = new HashSet<>();
     private Set<Duplicate> goldResults = new HashSet<>();
     private double precision;
     private double recall;
     private double f1;
     private LinkedBlockingQueue<Triple<Long, Integer, Integer>> duplicateMeasurements;
-    private LinkedBlockingQueue<Integer> comparisonMeasurements = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<Integer> comparisonMeasurements = new LinkedBlockingQueue<>();
 
 
     public ResultCollector(DataReader dataReader, Configuration config) {
@@ -85,9 +83,11 @@ public class ResultCollector {
         float integralQuali = this.calculateIntegralQuality(this.duplicateMeasurements, goldResults.size(), config.getQualityTimeInMs());
         log.info("Integral Quality: {}", integralQuali);
 
-        String resultPath = "./results/" + config.getALGORITHM() + "/" + config.getDatasetName() + "/progressive_quality_measure_with_pf/";
+        if (config.isWRITE_INTEGRAL_QUALI()) {
+            String resultPath = "./results/" + config.getALGORITHM() + "/" + config.getDatasetName() + "/progressive_quality_measure_with_pf/";
 
-        EvalWriter.writeDuplicatesPerTime(resultPath + "duplicates_per_time",  this.duplicateMeasurements, config.getQualityTimeInMs(), config);
+            EvalWriter.writeDuplicatesPerTime(resultPath + "duplicates_per_time", this.duplicateMeasurements, config.getQualityTimeInMs(), config);
+        }
     }
 
     private void calculateDuplicateMeasurements(Set<Duplicate> tp) {
@@ -99,13 +99,13 @@ public class ResultCollector {
         long measurementInterval = 1L;
         int numDuplicates = 0;
 
-        for(Iterator<Duplicate> var9 = sortedDuplicates.iterator(); var9.hasNext(); ++numDuplicates) {
-            for(Duplicate duplicate = var9.next(); duplicate.getTimestamp() > measurementInterval * measurementIntervalLength; ++measurementInterval) {
+        for (Iterator<Duplicate> duplicateIterator = sortedDuplicates.iterator(); duplicateIterator.hasNext(); ++numDuplicates) {
+            for (Duplicate duplicate = duplicateIterator.next(); duplicate.getTimestamp() > measurementInterval * measurementIntervalLength; ++measurementInterval) {
                 this.duplicateMeasurements.add(new ImmutableTriple<>(measurementInterval * measurementIntervalLength, numDuplicates, tempComparisonMeasurements.poll()));
             }
         }
 
-        while(!tempComparisonMeasurements.isEmpty()) {
+        while (!tempComparisonMeasurements.isEmpty()) {
             this.duplicateMeasurements.add(new ImmutableTriple<>(measurementInterval * measurementIntervalLength, numDuplicates, tempComparisonMeasurements.poll()));
             ++measurementInterval;
         }
@@ -117,18 +117,18 @@ public class ResultCollector {
         Long previousTime = 0L;
         Integer previousCount = 0;
 
-        for(Triple<Long, Integer, Integer> duplicateMeasurement : duplicateMeasurements) {
+        for (Triple<Long, Integer, Integer> duplicateMeasurement : duplicateMeasurements) {
             if (duplicateMeasurement.getLeft() > endTime) {
                 break;
             }
 
-            integral += (float)(duplicateMeasurement.getLeft() - previousTime) * ((float)previousCount / (float)numDuplicatesGold);
+            integral += (float) (duplicateMeasurement.getLeft() - previousTime) * ((float) previousCount / (float) numDuplicatesGold);
             previousTime = duplicateMeasurement.getLeft();
             previousCount = duplicateMeasurement.getMiddle();
         }
 
-        integral += (float)(endTime - previousTime) * ((float)previousCount / (float)numDuplicatesGold);
-        return integral / (float)endTime;
+        integral += (float) (endTime - previousTime) * ((float) previousCount / (float) numDuplicatesGold);
+        return integral / (float) endTime;
     }
 
     public static LinkedBlockingQueue<Integer> clone(LinkedBlockingQueue<Integer> queue) {
@@ -141,9 +141,5 @@ public class ResultCollector {
 
             return clone;
         }
-    }
-
-    public void clearDuplicates() {
-        this.duplicates.clear();
     }
 }

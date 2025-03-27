@@ -9,16 +9,18 @@ import java.nio.charset.StandardCharsets;
 @Getter
 public class Configuration {
     private final PairSelectionAlgorithm ALGORITHM = PairSelectionAlgorithm.PSNM;
-    private final boolean USE_PROFILER = true;
+    private final boolean USE_PROFILER = false;
 
-    private final boolean FILTER_WITH_MISSING_INFO = false;
-    private final boolean FILTER_WITH_FD_INFO = false;
-    private final boolean FILTER_WITH_PK = false;
-    private final boolean FILTER_WITH_IND_INFO = false;
+    private final boolean FILTER_WITH_MISSING_INFO = true;
+    private final boolean FILTER_WITH_FD_INFO = true;
+    private final boolean FILTER_WITH_PK = true;
+    private final boolean FILTER_WITH_IND_INFO = true;
 
-    private final boolean USE_WEIGHTS = true;
+    private final boolean USE_WEIGHTS = false;
     private final boolean USE_FD_INFO = true;
     private final boolean USE_UCC_INFO = true;
+
+    private final boolean WRITE_INTEGRAL_QUALI = false;
 
     private String datasetName;
     private String fileName;
@@ -94,7 +96,7 @@ public class Configuration {
                 this.nullThreshold = 0.05; // best overall 0.05
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
-                this.maxFDDeterminant = 3; // evaluation 3 // over all 2
+                this.maxFDDeterminant = 2; // evaluation 3 // over all 2
                 this.resultMeasurementIntervalInMs = 50;
                 this.qualityTimeInMs = 2000;
                 break;
@@ -197,7 +199,7 @@ public class Configuration {
                 this.maxBlockRange = 4;
                 this.windowSize = 20;
                 this.windowInterval = 1;
-                this.simThreshold = 0.5; // eval best 0.65 // best overall 0.5
+                this.simThreshold = 0.55; // eval best 0.65 // best overall 0.5
                 this.attributeSeparator = ';';
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;

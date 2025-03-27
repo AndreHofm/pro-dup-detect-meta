@@ -92,7 +92,7 @@ public class FDProfiler extends DependencyProfiler {
                 .map(x -> (FunctionalDependency) x)
                 .toList();
 
-        if  (false) {
+        if (config.getGpdepThreshold() > 0) {
             Map<String, List<String>> columnValues = dataReader.getAllColumnValues();
 
             fullFDs = fullFDs.stream()

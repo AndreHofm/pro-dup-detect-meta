@@ -2,7 +2,6 @@ package de.uni_marburg.pdd_metadata.duplicate_detection;
 
 import de.uni_marburg.pdd_metadata.io.DataReader;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Block;
-import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Duplicate;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.BlockResult;
 import de.uni_marburg.pdd_metadata.duplicate_detection.structures.Record;
 
@@ -21,10 +20,10 @@ import org.apache.logging.log4j.Logger;
 @Getter
 public class Blocking extends DuplicateDetector {
     public HashMap<Integer, Block> blocks;
-    private int maxBlockRange;
-    private int numLoadableBlocks;
-    private int blockSize;
-    private Logger log = LogManager.getLogger(Blocking.class);
+    private final int maxBlockRange;
+    private final int numLoadableBlocks;
+    private final int blockSize;
+    private final Logger log = LogManager.getLogger(Blocking.class);
 
     public Blocking(DataReader dataReader, ResultCollector resultCollector, Configuration config) {
         super(dataReader, resultCollector, config);

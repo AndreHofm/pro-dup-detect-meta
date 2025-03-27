@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.util.Set;
 
 public class Sorter {
-    private int numRecentDuplicates;
-    private Set<BlockResult> recentBlockResults;
     private int magpieNumDiscardKeys = 100;
 
     public int[] calculateOrderMagpieProgressive(KeyElementFactory keyElementFactory, int[] keyAttributeNumbers, DataReader dataReader, int partitionSize, Blocking blocking, SortedNeighbourhood sortedNeighbourhood) throws IOException {
@@ -28,8 +26,6 @@ public class Sorter {
 
         } while (!magpie.isFull());
 
-        this.numRecentDuplicates = magpie.getNumDuplicates();
-        this.recentBlockResults = magpie.getBlockResults();
         return magpie.getOrder();
     }
 }

@@ -76,7 +76,7 @@ public class AttributeWeightProfiler {
             dependantINDAttributes.addAll(getDependantINDAttributes(simINDs));
 
             this.log.info("Number of INDs: {}", simINDs.size());
-            this.log.info("INDs: {}", dependantINDAttributes);
+            //this.log.info("INDs: {}", dependantINDAttributes);
 
             this.attributeWeights.removeIf(attributeWeight -> dependantINDAttributes.contains(attributeWeight.getAttribute()));
         }
@@ -96,7 +96,7 @@ public class AttributeWeightProfiler {
             sortedFilteredFDs = sortDependencyMap(filteredFDs);
 
             this.log.info("Number of FDs: {}", fullFDs.size());
-            this.log.info("FDs: {}", sortedFilteredFDs);
+            //this.log.info("FDs: {}", sortedFilteredFDs);
 
             if (config.isFILTER_WITH_FD_INFO()) {
                 this.attributeWeights.removeIf(attributeWeight -> (!new HashSet<>(filteredFDs.keySet()).contains(attributeWeight.getAttribute())));
@@ -158,30 +158,32 @@ public class AttributeWeightProfiler {
 
         int sum = sumFD + sumUCC;
 
-        HashMap<String, Double> nameWeightFD = calculateAttributeDependencyWeight(fds, sortedFDAttributes, sum);
+        HashMap<String, Double> nameWeightFD = calculateAttributeDependencyWeight(fds, sortedFDAttributes);
 
-        HashMap<String, Double> nameWeightUCC = calculateAttributeDependencyWeight(uccs, sortedUCCAttributes, sum);
+        HashMap<String, Double> nameWeightUCC = calculateAttributeDependencyWeight(uccs, sortedUCCAttributes);
 
         for (AttributeWeight attributeWeight : this.attributeWeights) {
             String attribute = attributeWeight.getAttribute();
             double weight = 0;
             if (nameWeightFD.containsKey(attribute) && nameWeightUCC.containsKey(attribute)) {
-                weight = nameWeightFD.get(attribute) + nameWeightUCC.get(attribute);
+                weight = (nameWeightFD.get(attribute) + nameWeightUCC.get(attribute)) / sum;
             } else if (nameWeightFD.containsKey(attribute) && !nameWeightUCC.containsKey(attribute)) {
-                weight = nameWeightFD.get(attribute) / (nameWeightUCC.isEmpty() ? 1.0 : 2.0);
+                weight = nameWeightFD.get(attribute) / sum;
             } else if (!nameWeightFD.containsKey(attribute) && nameWeightUCC.containsKey(attribute)) {
-                weight = nameWeightUCC.get(attribute) / (nameWeightFD.isEmpty() ? 1.0 : 2.0);
+                weight = nameWeightUCC.get(attribute) / sum;
             }
 
             attributeWeight.setWeight(weight);
         }
+
+        attributeWeights.sort(Comparator.comparingDouble(AttributWeight -> -AttributWeight.getWeight()));
     }
 
-    private HashMap<String, Double> calculateAttributeDependencyWeight(Map<String, Long> dependencies, List<String> sortedFDAttributes, int sumDependency) {
+    private HashMap<String, Double> calculateAttributeDependencyWeight(Map<String, Long> dependencies, List<String> sortedFDAttributes) {
         HashMap<String, Double> nameWeightDependency = new HashMap<>();
         for (int i = 0; i < dependencies.size(); i++) {
             String name = sortedFDAttributes.get(i);
-            double weight = (double) dependencies.get(name) / sumDependency;
+            double weight = (double) dependencies.get(name);
             nameWeightDependency.put(name, weight);
         }
 

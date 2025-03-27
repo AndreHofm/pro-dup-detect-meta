@@ -20,7 +20,7 @@ public class AttributeKeyElement extends KeyElement {
         if (!(obj instanceof AttributeKeyElement)) {
             return false;
         } else {
-            AttributeKeyElement other = (AttributeKeyElement)obj;
+            AttributeKeyElement other = (AttributeKeyElement) obj;
             return this.id == other.getId();
         }
     }
