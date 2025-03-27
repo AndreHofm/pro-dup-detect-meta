@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e13caf14-7c26-4e85-8f27-8b66b1446cfb" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="DEPENDENCY_CHECKER_PROBLEMS_TAB" />
+  </component>
+  <component name="ProjectCodeStyleSettingsMigration">
+    <option name="version" value="2" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="2pvzeavWA3WNWd6ZsdSGS3VMkxb" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Application.de.pdd_metadata.duplicate_detection.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Application.de.pdd_metadata.duplicate_detection.io.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Application.de.uni_marburg.pdd_metadata.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
+    &quot;JAR Application.HyFD-1.2-SNAPSHOT.jar.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.JaccardTest (1).executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.JaccardTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.JaccardTest.testCorrectnessStringsBag.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.LevenshteinTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.PositionListIndexTest.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.pro-dup-detect-meta [clean,install,-U].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.pro-dup-detect-meta [clean,install].executor&quot;: &quot;Run&quot;,
+    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;database.data.extractors.current.export.id&quot;: &quot;CSV-Groovy.csv.groovy&quot;,
+    &quot;database.data.extractors.current.id&quot;: &quot;CSV-Groovy.csv.groovy&quot;,
+    &quot;extract.method.default.visibility&quot;: &quot;private&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/results/BLOCKING/ncvoters_sample&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;database.data.views.appearance&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/results/BLOCKING/ncvoters_sample" />
+      <recent name="$PROJECT_DIR$/results/BLOCKING/ncvoters" />
+      <recent name="$PROJECT_DIR$/results/BLOCKING/dblp_scholar" />
+      <recent name="$PROJECT_DIR$/results/BLOCKING/cora" />
+      <recent name="$PROJECT_DIR$/results/BLOCKING/census" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/results/BLOCKING/ncvoters_sample/missing_values" />
+      <recent name="$PROJECT_DIR$/results/BLOCKING/ncvoters/missing_values" />
+      <recent name="$PROJECT_DIR$/results/BLOCKING/dblp_scholar/missing_values" />
+      <recent name="$PROJECT_DIR$/results/BLOCKING/cora/missing_values" />
+      <recent name="$PROJECT_DIR$/results/BLOCKING/census/missing_values" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="de.uni_marburg.pdd_metadata.duplicate_detection.structures" />
+      <recent name="de.pdd_metadata" />
+      <recent name="de.pdd_metadata.data_profiling" />
+      <recent name="de.pdd_metadata.data_profiling.structures" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="de.pdd_metadata.duplicate_detection" />
+    </key>
+  </component>
+  <component name="RunAnythingCache">
+    <option name="myCommands">
+      <command value="mvn clean install -U" />
+      <command value="mvn clean install" />
+    </option>
+  </component>
+  <component name="RunManager" selected="Application.de.uni_marburg.pdd_metadata.Main">
+    <configuration name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="de.pdd_metadata.Main" />
+      <module name="ProDupDetectMeta" />
+      <option name="VM_PARAMETERS" value="--add-exports java.base/sun.net.util=ALL-UNNAMED" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="de.pdd_metadata.similarity_measures.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="de.uni_marburg.pdd_metadata.Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="de.uni_marburg.pdd_metadata.Main" />
+      <module name="pro-dup-detect-meta" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="de.uni_marburg.pdd_metadata.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JaccardTest (1)" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="ProDupDetectMeta" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="de.uni_marburg.pdd_metadata.duplicate_detection.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="de.uni_marburg.pdd_metadata.duplicate_detection" />
+      <option name="MAIN_CLASS_NAME" value="de.uni_marburg.pdd_metadata.duplicate_detection.JaccardTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JaccardTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="ProDupDetectMeta" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="de.pdd_metadata.similarity_measures.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="de.pdd_metadata.duplicate_detection" />
+      <option name="MAIN_CLASS_NAME" value="de.pdd_metadata.duplicate_detection.JaccardTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JaccardTest.testCorrectnessStringsBag" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="ProDupDetectMeta" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="de.pdd_metadata.similarity_measures.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="de.pdd_metadata.duplicate_detection" />
+      <option name="MAIN_CLASS_NAME" value="de.pdd_metadata.duplicate_detection.JaccardTest" />
+      <option name="METHOD_NAME" value="testCorrectnessStringsBag" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LevenshteinTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="ProDupDetectMeta" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="de.pdd_metadata.similarity_measures.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="de.pdd_metadata.duplicate_detection" />
+      <option name="MAIN_CLASS_NAME" value="de.pdd_metadata.duplicate_detection.LevenshteinTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="ProMetaDupDetect" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="ProMetaDupDetect" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.Main" />
+      <item itemvalue="Application.de.uni_marburg.pdd_metadata.Main" />
+      <item itemvalue="JUnit.JaccardTest (1)" />
+      <item itemvalue="JUnit.JaccardTest" />
+      <item itemvalue="JUnit.JaccardTest.testCorrectnessStringsBag" />
+      <item itemvalue="JUnit.LevenshteinTest" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.de.uni_marburg.pdd_metadata.Main" />
+        <item itemvalue="JUnit.JaccardTest (1)" />
+        <item itemvalue="JUnit.LevenshteinTest" />
+        <item itemvalue="JUnit.JaccardTest.testCorrectnessStringsBag" />
+        <item itemvalue="JUnit.JaccardTest" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.26053.27" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.26053.27" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e13caf14-7c26-4e85-8f27-8b66b1446cfb" name="Changes" comment="" />
+      <created>1733661432527</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1733661432527</updated>
+      <workItem from="1733661433690" duration="222000" />
+      <workItem from="1733661660854" duration="79000" />
+      <workItem from="1733661745855" duration="37000" />
+      <workItem from="1733661789728" duration="2498000" />
+      <workItem from="1733670790743" duration="6182000" />
+      <workItem from="1733758763929" duration="74000" />
+      <workItem from="1733758844674" duration="50000" />
+      <workItem from="1733758901355" duration="28000" />
+      <workItem from="1733758944863" duration="1486000" />
+      <workItem from="1733827163432" duration="7723000" />
+      <workItem from="1733841027677" duration="7732000" />
+      <workItem from="1734010209261" duration="9751000" />
+      <workItem from="1734265109282" duration="7259000" />
+      <workItem from="1734439837741" duration="8183000" />
+      <workItem from="1734605381694" duration="7620000" />
+      <workItem from="1734689425740" duration="4206000" />
+      <workItem from="1734948619417" duration="10931000" />
+      <workItem from="1735297556796" duration="5026000" />
+      <workItem from="1735815588496" duration="12134000" />
+      <workItem from="1735834814398" duration="12162000" />
+      <workItem from="1735899169906" duration="16360000" />
+      <workItem from="1735989256389" duration="30245000" />
+      <workItem from="1736108150651" duration="37000" />
+      <workItem from="1736181683242" duration="598000" />
+      <workItem from="1736243482184" duration="20236000" />
+      <workItem from="1736350510266" duration="763000" />
+      <workItem from="1736420745059" duration="16631000" />
+      <workItem from="1736505290992" duration="42336000" />
+      <workItem from="1736851215857" duration="15099000" />
+      <workItem from="1736869111291" duration="102000" />
+      <workItem from="1736869809630" duration="612000" />
+      <workItem from="1736870427506" duration="660000" />
+      <workItem from="1737037225025" duration="6207000" />
+      <workItem from="1737106162794" duration="4847000" />
+      <workItem from="1737111968397" duration="64000" />
+      <workItem from="1737112049668" duration="1169000" />
+      <workItem from="1737113224955" duration="7119000" />
+      <workItem from="1737123690205" duration="341000" />
+      <workItem from="1737124036441" duration="148000" />
+      <workItem from="1737124191143" duration="3103000" />
+      <workItem from="1737200046809" duration="9598000" />
+      <workItem from="1737286487734" duration="14713000" />
+      <workItem from="1737453353514" duration="17668000" />
+      <workItem from="1737636800572" duration="15925000" />
+      <workItem from="1737713719561" duration="6524000" />
+      <workItem from="1737805892861" duration="380000" />
+      <workItem from="1737813783550" duration="6379000" />
+      <workItem from="1737887781597" duration="14928000" />
+      <workItem from="1738068316890" duration="1727000" />
+      <workItem from="1738070053105" duration="17776000" />
+      <workItem from="1738318578538" duration="15163000" />
+      <workItem from="1738405331100" duration="14868000" />
+      <workItem from="1738669369143" duration="11756000" />
+      <workItem from="1738760804007" duration="8502000" />
+      <workItem from="1738770490878" duration="7764000" />
+      <workItem from="1738831505327" duration="2879000" />
+      <workItem from="1738834746456" duration="3401000" />
+      <workItem from="1738931129624" duration="20000" />
+      <workItem from="1738931506647" duration="625000" />
+      <workItem from="1738938945282" duration="3807000" />
+      <workItem from="1739099174839" duration="9338000" />
+      <workItem from="1739356750811" duration="11452000" />
+      <workItem from="1739452357284" duration="1763000" />
+      <workItem from="1739461974260" duration="15000" />
+      <workItem from="1739462117033" duration="4317000" />
+      <workItem from="1739531200545" duration="7116000" />
+      <workItem from="1739549821509" duration="603000" />
+      <workItem from="1739627330234" duration="9017000" />
+      <workItem from="1739727161045" duration="2988000" />
+      <workItem from="1739811243159" duration="2397000" />
+      <workItem from="1739874556078" duration="20271000" />
+      <workItem from="1739960190221" duration="5305000" />
+      <workItem from="1739966926331" duration="141000" />
+      <workItem from="1739967080390" duration="15399000" />
+      <workItem from="1740225185451" duration="4997000" />
+      <workItem from="1740238187254" duration="2787000" />
+      <workItem from="1740494859776" duration="693000" />
+      <workItem from="1740564325737" duration="19339000" />
+      <workItem from="1740742548173" duration="2775000" />
+      <workItem from="1740756684979" duration="1286000" />
+      <workItem from="1741090876899" duration="3979000" />
+      <workItem from="1741103779675" duration="2220000" />
+      <workItem from="1741169888229" duration="9948000" />
+      <workItem from="1741190268448" duration="4216000" />
+      <workItem from="1741197826596" duration="1127000" />
+      <workItem from="1741258874536" duration="2790000" />
+      <workItem from="1741268008656" duration="11280000" />
+      <workItem from="1741343257468" duration="5311000" />
+      <workItem from="1741354460654" duration="2218000" />
+      <workItem from="1741357339944" duration="436000" />
+      <workItem from="1741357793333" duration="134000" />
+      <workItem from="1741357938503" duration="443000" />
+      <workItem from="1741358396998" duration="102000" />
+      <workItem from="1741358519896" duration="308000" />
+      <workItem from="1741358903470" duration="80000" />
+      <workItem from="1741358997995" duration="45000" />
+      <workItem from="1741359056717" duration="92000" />
+      <workItem from="1741359164697" duration="42000" />
+      <workItem from="1741359239698" duration="36000" />
+      <workItem from="1741359287806" duration="33515000" />
+      <workItem from="1741516601522" duration="18528000" />
+      <workItem from="1741600287768" duration="21660000" />
+      <workItem from="1741691273421" duration="12962000" />
+      <workItem from="1741775150380" duration="19379000" />
+      <workItem from="1741860115456" duration="15680000" />
+      <workItem from="1741946213581" duration="9560000" />
+      <workItem from="1741978592927" duration="891000" />
+      <workItem from="1742034413879" duration="1778000" />
+      <workItem from="1742045050299" duration="12857000" />
+      <workItem from="1742123761757" duration="16858000" />
+      <workItem from="1742215452650" duration="17019000" />
+      <workItem from="1742238063296" duration="7032000" />
+      <workItem from="1742296484877" duration="7716000" />
+      <workItem from="1742378876091" duration="1846000" />
+      <workItem from="1742380978497" duration="181000" />
+      <workItem from="1742382155206" duration="1175000" />
+      <workItem from="1742383373040" duration="10095000" />
+      <workItem from="1742396337964" duration="11842000" />
+      <workItem from="1742468221097" duration="4284000" />
+      <workItem from="1742556453484" duration="1323000" />
+      <workItem from="1742835758402" duration="642000" />
+      <workItem from="1742908715821" duration="1251000" />
+      <workItem from="1742914166732" duration="1699000" />
+      <workItem from="1743071161915" duration="2399000" />
+      <workItem from="1743073580575" duration="8870000" />
+      <workItem from="1743092212305" duration="7000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
