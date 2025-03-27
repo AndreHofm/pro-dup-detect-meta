@@ -8,13 +8,13 @@ import java.nio.charset.StandardCharsets;
 
 @Getter
 public class Configuration {
-    private final PairSelectionAlgorithm ALGORITHM = PairSelectionAlgorithm.SNM;
+    private final PairSelectionAlgorithm ALGORITHM = PairSelectionAlgorithm.PSNM;
     private final boolean USE_PROFILER = true;
 
-    private final boolean FILTER_WITH_MISSING_INFO = true;
-    private final boolean FILTER_WITH_FD_INFO = true;
-    private final boolean FILTER_WITH_PK = true;
-    private final boolean FILTER_WITH_IND_INFO = true;
+    private final boolean FILTER_WITH_MISSING_INFO = false;
+    private final boolean FILTER_WITH_FD_INFO = false;
+    private final boolean FILTER_WITH_PK = false;
+    private final boolean FILTER_WITH_IND_INFO = false;
 
     private final boolean USE_WEIGHTS = true;
     private final boolean USE_FD_INFO = true;
@@ -69,8 +69,8 @@ public class Configuration {
     }
 
     public enum PairSelectionAlgorithm {
-        SNM,
-        BLOCKING,
+        PSNM,
+        PB,
         NONE,
     }
 
@@ -94,7 +94,7 @@ public class Configuration {
                 this.nullThreshold = 0.05; // best overall 0.05
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
-                this.maxFDDeterminant = 2; // evaluation 3 // over all 2
+                this.maxFDDeterminant = 3; // evaluation 3 // over all 2
                 this.resultMeasurementIntervalInMs = 50;
                 this.qualityTimeInMs = 2000;
                 break;
@@ -135,7 +135,7 @@ public class Configuration {
                 this.hasHeadline = true;
                 this.charset = StandardCharsets.ISO_8859_1;
                 this.similarityAttributes = new int[]{3, 15};
-                this.nullThreshold = 0.1; // best overall 0.05 // evaluate 0.35
+                this.nullThreshold = 0.1; // best overall 0.1 // evaluate 0.35
                 this.gpdepThreshold = 0;
                 this.indThreshold = 0.7;
                 this.maxFDDeterminant = 5; // eval 3 // best overall 5

@@ -55,11 +55,8 @@ public class EvalWriter {
                         break;
                     }
 
-                    if (config.getDatasetName().equals("cd") || config.getDatasetName().equals("cora") || config.getDatasetName().equals("dblp_scholar")) {
-                        writer.write("("+ ((double) duplicateMeasurement.getLeft() / 1000) + "," + duplicateMeasurement.getMiddle() + ")");
-                    } else {
-                        writer.write(duplicateMeasurement.getLeft() + "," + duplicateMeasurement.getMiddle());
-                    }
+                    writer.write(duplicateMeasurement.getLeft() + "," + duplicateMeasurement.getMiddle());
+
                     writer.newLine();
                 }
                 log.info("CSV-Datei wurde erfolgreich erstellt: {}", output);

@@ -29,7 +29,7 @@ public class Main {
         }
 
         if (true) {
-            var dataset = Configuration.Dataset.NCVOTERS_SAMPLE;
+            var dataset = Configuration.Dataset.CENSUS;
 
             log.info("Dataset: {}", dataset);
             execute(dataset);
@@ -74,9 +74,9 @@ public class Main {
             blocking.getLevenshtein().setAttributeWeights(attributeScoreHashMap);
         }
 
-        if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.SNM) {
+        if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.PSNM) {
             sortedNeighbourhood.findDuplicatesUsingMultipleKeysSequential();
-        } else if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.BLOCKING) {
+        } else if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.PB) {
             blocking.findDuplicatesUsingMultipleKeysSequential();
         }
 
@@ -130,9 +130,9 @@ public class Main {
                 numberOfAttributes.add(attributeWeights.size());
             }
 
-            if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.SNM) {
+            if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.PSNM) {
                 sortedNeighbourhood.findDuplicatesUsingMultipleKeysSequential();
-            } else if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.BLOCKING) {
+            } else if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.PB) {
                 blocking.findDuplicatesUsingMultipleKeysSequential();
             }
 
@@ -199,9 +199,9 @@ public class Main {
                 numberOfAttributes.add(attributeWeights.size());
             }
 
-            if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.SNM) {
+            if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.PSNM) {
                 sortedNeighbourhood.findDuplicatesUsingMultipleKeysSequential();
-            } else if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.BLOCKING) {
+            } else if (config.getALGORITHM() == Configuration.PairSelectionAlgorithm.PB) {
                 blocking.findDuplicatesUsingMultipleKeysSequential();
             }
 
