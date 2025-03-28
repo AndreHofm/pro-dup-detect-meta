@@ -9,20 +9,29 @@ import java.nio.charset.StandardCharsets;
 @Getter
 public class Configuration {
     private final PairSelectionAlgorithm ALGORITHM = PairSelectionAlgorithm.PSNM;
-    private final boolean USE_PROFILER = false;
+    private final boolean USE_PROFILER = true;
 
-    private final boolean FILTER_WITH_MISSING_INFO = true;
-    private final boolean FILTER_WITH_FD_INFO = true;
-    private final boolean FILTER_WITH_PK = true;
-    private final boolean FILTER_WITH_IND_INFO = true;
+    @Setter
+    private boolean FILTER_WITH_MISSING_INFO = true;
+    @Setter
+    private boolean FILTER_WITH_FD_INFO = true;
+    @Setter
+    private boolean FILTER_WITH_PK = true;
+    @Setter
+    private boolean FILTER_WITH_IND_INFO = true;
 
-    private final boolean USE_WEIGHTS = false;
-    private final boolean USE_FD_INFO = true;
-    private final boolean USE_UCC_INFO = true;
+    @Setter
+    private boolean USE_WEIGHTS = true;
+    @Setter
+    private boolean USE_FD_INFO = true;
+    @Setter
+    private boolean USE_UCC_INFO = true;
 
     private final boolean WRITE_INTEGRAL_QUALI = false;
 
+    @Setter
     private String datasetName;
+    @Setter
     private String fileName;
     private String goldStandardDatasetName;
     private String goldStandardFileName;
@@ -48,9 +57,12 @@ public class Configuration {
     @Setter
     private int maxUCCDeterminant = 3;
 
+    @Setter
     private char attributeSeparator;
+    @Setter
     private boolean hasHeadline;
     private final int maxAttributes = 100;
+    @Setter
     private Charset charset;
     private final int numLines = 0;
 

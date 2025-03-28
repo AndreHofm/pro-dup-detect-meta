@@ -22,17 +22,17 @@ import java.util.stream.Stream;
 
 @Getter
 public class AttributeWeightProfiler {
-    private FDProfiler fdProfiler;
-    private INDProfiler indProfiler;
-    private UCCProfiler uccProfiler;
-    private DataReader dataReader;
-    private List<AttributeWeight> attributeWeights;
-    private String datasetName;
-    private Configuration config;
-    private Logger log = LogManager.getLogger(AttributeWeightProfiler.class);
-    private ResultCollector resultCollector;
+    private final FDProfiler fdProfiler;
+    private final INDProfiler indProfiler;
+    private final UCCProfiler uccProfiler;
+    private final DataReader dataReader;
+    private final List<AttributeWeight> attributeWeights;
+    private final String datasetName;
+    private final Configuration config;
+    private final Logger log = LogManager.getLogger(AttributeWeightProfiler.class);
+    private final ResultCollector resultCollector;
 
-    public AttributeWeightProfiler(DataReader dataReader, String input, Configuration config, ResultCollector resultCollector) throws FileNotFoundException {
+    public AttributeWeightProfiler(DataReader dataReader, String input, Configuration config, ResultCollector resultCollector) {
         this.dataReader = dataReader;
 
         DefaultFileInputGenerator fileInputGenerator = getInputGenerator(input);
@@ -85,7 +85,8 @@ public class AttributeWeightProfiler {
             Set<UniqueColumnCombination> keys = uccProfiler.getKeys();
             primaryKeys.addAll(getPKs(keys));
 
-            this.log.info("Keys: {}", primaryKeys);
+            this.log.info("Number of PKs: {}", primaryKeys.size());
+            //this.log.info("Keys: {}", primaryKeys);
             this.attributeWeights.removeIf(attributeWeight -> primaryKeys.contains(attributeWeight.getAttribute()));
         }
 
@@ -223,20 +224,20 @@ public class AttributeWeightProfiler {
         return filterDependencies(filterAttributesByNullValues, primaryKeys, dependantINDAttributes, uccStream);
     }
 
-    private Map<String, Long> filterDependencies(Set<String> filterAttributesByNullValues, Set<String> primaryKeys, Set<String> dependantINDAttributes, Stream<String> uccStream) {
+    private Map<String, Long> filterDependencies(Set<String> filterAttributesByNullValues, Set<String> primaryKeys, Set<String> dependantINDAttributes, Stream<String> dependencyStream) {
         if (config.isFILTER_WITH_MISSING_INFO()) {
-            uccStream = uccStream.filter(filterAttributesByNullValues::contains);
+            dependencyStream = dependencyStream.filter(filterAttributesByNullValues::contains);
         }
 
         if (config.isFILTER_WITH_PK()) {
-            uccStream = uccStream.filter(column -> !primaryKeys.contains(column));
+            dependencyStream = dependencyStream.filter(column -> !primaryKeys.contains(column));
         }
 
         if (config.isFILTER_WITH_IND_INFO()) {
-            uccStream = uccStream.filter(column -> !dependantINDAttributes.contains(column));
+            dependencyStream = dependencyStream.filter(column -> !dependantINDAttributes.contains(column));
         }
 
-        return uccStream.collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+        return dependencyStream.collect(Collectors.groupingBy(x -> x, Collectors.counting()));
     }
 
     private Set<String> getDependantINDAttributes(Set<InclusionDependency> inds) {

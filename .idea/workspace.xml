@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e13caf14-7c26-4e85-8f27-8b66b1446cfb" name="Changes" comment="" />
+    <list default="true" id="e13caf14-7c26-4e85-8f27-8b66b1446cfb" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/de/uni_marburg/pdd_metadata/data_profiling/AttributeWeightProfiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/de/uni_marburg/pdd_metadata/data_profiling/AttributeWeightProfiler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/de/uni_marburg/pdd_metadata/data_profiling/structures/AttributeWeight.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/de/uni_marburg/pdd_metadata/data_profiling/structures/AttributeWeight.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/de/uni_marburg/pdd_metadata/utils/Configuration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/de/uni_marburg/pdd_metadata/utils/Configuration.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -36,44 +41,48 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
-    &quot;Application.de.pdd_metadata.duplicate_detection.Main.executor&quot;: &quot;Run&quot;,
-    &quot;Application.de.pdd_metadata.duplicate_detection.io.Main.executor&quot;: &quot;Run&quot;,
-    &quot;Application.de.uni_marburg.pdd_metadata.Main.executor&quot;: &quot;Run&quot;,
-    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
-    &quot;JAR Application.HyFD-1.2-SNAPSHOT.jar.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.JaccardTest (1).executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.JaccardTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.JaccardTest.testCorrectnessStringsBag.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.LevenshteinTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.PositionListIndexTest.executor&quot;: &quot;Run&quot;,
-    &quot;Maven.pro-dup-detect-meta [clean,install,-U].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.pro-dup-detect-meta [clean,install].executor&quot;: &quot;Run&quot;,
-    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;database.data.extractors.current.export.id&quot;: &quot;CSV-Groovy.csv.groovy&quot;,
-    &quot;database.data.extractors.current.id&quot;: &quot;CSV-Groovy.csv.groovy&quot;,
-    &quot;extract.method.default.visibility&quot;: &quot;private&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/results/BLOCKING/ncvoters_sample&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;database.data.views.appearance&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "Application.de.pdd_metadata.duplicate_detection.Main.executor": "Run",
+    "Application.de.pdd_metadata.duplicate_detection.io.Main.executor": "Run",
+    "Application.de.uni_marburg.pdd_metadata.Main.executor": "Run",
+    "Downloaded.Files.Path.Enabled": "false",
+    "JAR Application.HyFD-1.2-SNAPSHOT.jar.executor": "Run",
+    "JUnit.AttributeWeightProfilerTest.executor": "Run",
+    "JUnit.AttributeWeightProfilerTest.testDataReaderWithCsvSource.executor": "Run",
+    "JUnit.AttributeWeightProfilerTest.testInitializeAttributeScoreList.executor": "Run",
+    "JUnit.JaccardTest (1).executor": "Run",
+    "JUnit.JaccardTest.executor": "Run",
+    "JUnit.JaccardTest.testCorrectnessStringsBag.executor": "Run",
+    "JUnit.LevenshteinTest.executor": "Run",
+    "JUnit.PositionListIndexTest.executor": "Run",
+    "Maven.pro-dup-detect-meta [clean,install,-U].executor": "Run",
+    "Maven.pro-dup-detect-meta [clean,install].executor": "Run",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "database.data.extractors.current.export.id": "CSV-Groovy.csv.groovy",
+    "database.data.extractors.current.id": "CSV-Groovy.csv.groovy",
+    "extract.method.default.visibility": "private",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/andrehofmann/Documents/Uni/Bachelorarbeit/Code/pro-dup-detect-meta/results/BLOCKING/ncvoters_sample",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "database.data.views.appearance",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/results/BLOCKING/ncvoters_sample" />
@@ -88,6 +97,9 @@
       <recent name="$PROJECT_DIR$/results/BLOCKING/dblp_scholar/missing_values" />
       <recent name="$PROJECT_DIR$/results/BLOCKING/cora/missing_values" />
       <recent name="$PROJECT_DIR$/results/BLOCKING/census/missing_values" />
+    </key>
+    <key name="ExtractSuperBase.RECENT_KEYS">
+      <recent name="de.uni_marburg.pdd_metadata.data_profiling.structures" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="de.uni_marburg.pdd_metadata.duplicate_detection.structures" />
@@ -105,7 +117,7 @@
       <command value="mvn clean install" />
     </option>
   </component>
-  <component name="RunManager" selected="Application.de.uni_marburg.pdd_metadata.Main">
+  <component name="RunManager" selected="JUnit.AttributeWeightProfilerTest">
     <configuration name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="de.pdd_metadata.Main" />
       <module name="ProDupDetectMeta" />
@@ -133,6 +145,53 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="AttributeWeightProfilerTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="pro-dup-detect-meta" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="de.uni_marburg.pdd.metadata.data_profiling.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="de.uni_marburg.pdd.metadata.data_profiling" />
+      <option name="MAIN_CLASS_NAME" value="de.uni_marburg.pdd.metadata.data_profiling.AttributeWeightProfilerTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AttributeWeightProfilerTest.testDataReaderWithCsvSource" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="pro-dup-detect-meta" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="de.uni_marburg.pdd.metadata.data_profiling.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="de.uni_marburg.pdd.metadata.data_profiling" />
+      <option name="MAIN_CLASS_NAME" value="de.uni_marburg.pdd.metadata.data_profiling.AttributeWeightProfilerTest" />
+      <option name="METHOD_NAME" value="testDataReaderWithCsvSource(java.lang.String)" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AttributeWeightProfilerTest.testInitializeAttributeScoreList" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="pro-dup-detect-meta" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="de.uni_marburg.pdd.metadata.data_profiling.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="de.uni_marburg.pdd.metadata.data_profiling" />
+      <option name="MAIN_CLASS_NAME" value="de.uni_marburg.pdd.metadata.data_profiling.AttributeWeightProfilerTest" />
+      <option name="METHOD_NAME" value="testInitializeAttributeScoreList" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="JaccardTest (1)" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="ProDupDetectMeta" />
       <extension name="coverage">
@@ -143,52 +202,6 @@
       </extension>
       <option name="PACKAGE_NAME" value="de.uni_marburg.pdd_metadata.duplicate_detection" />
       <option name="MAIN_CLASS_NAME" value="de.uni_marburg.pdd_metadata.duplicate_detection.JaccardTest" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="JaccardTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="ProDupDetectMeta" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="de.pdd_metadata.similarity_measures.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="de.pdd_metadata.duplicate_detection" />
-      <option name="MAIN_CLASS_NAME" value="de.pdd_metadata.duplicate_detection.JaccardTest" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="JaccardTest.testCorrectnessStringsBag" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="ProDupDetectMeta" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="de.pdd_metadata.similarity_measures.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="de.pdd_metadata.duplicate_detection" />
-      <option name="MAIN_CLASS_NAME" value="de.pdd_metadata.duplicate_detection.JaccardTest" />
-      <option name="METHOD_NAME" value="testCorrectnessStringsBag" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="LevenshteinTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="ProDupDetectMeta" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="de.pdd_metadata.similarity_measures.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="de.pdd_metadata.duplicate_detection" />
-      <option name="MAIN_CLASS_NAME" value="de.pdd_metadata.duplicate_detection.LevenshteinTest" />
       <option name="TEST_OBJECT" value="class" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -208,18 +221,18 @@
     <list>
       <item itemvalue="Application.Main" />
       <item itemvalue="Application.de.uni_marburg.pdd_metadata.Main" />
+      <item itemvalue="JUnit.AttributeWeightProfilerTest" />
+      <item itemvalue="JUnit.AttributeWeightProfilerTest.testDataReaderWithCsvSource" />
+      <item itemvalue="JUnit.AttributeWeightProfilerTest.testInitializeAttributeScoreList" />
       <item itemvalue="JUnit.JaccardTest (1)" />
-      <item itemvalue="JUnit.JaccardTest" />
-      <item itemvalue="JUnit.JaccardTest.testCorrectnessStringsBag" />
-      <item itemvalue="JUnit.LevenshteinTest" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.AttributeWeightProfilerTest" />
+        <item itemvalue="JUnit.AttributeWeightProfilerTest.testInitializeAttributeScoreList" />
+        <item itemvalue="JUnit.AttributeWeightProfilerTest.testDataReaderWithCsvSource" />
         <item itemvalue="Application.de.uni_marburg.pdd_metadata.Main" />
         <item itemvalue="JUnit.JaccardTest (1)" />
-        <item itemvalue="JUnit.LevenshteinTest" />
-        <item itemvalue="JUnit.JaccardTest.testCorrectnessStringsBag" />
-        <item itemvalue="JUnit.JaccardTest" />
       </list>
     </recent_temporary>
   </component>
@@ -365,6 +378,8 @@
       <workItem from="1743071161915" duration="2399000" />
       <workItem from="1743073580575" duration="8870000" />
       <workItem from="1743092212305" duration="7000" />
+      <workItem from="1743094387475" duration="612000" />
+      <workItem from="1743154190602" duration="8188000" />
     </task>
     <servers />
   </component>
