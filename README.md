@@ -1,14 +1,14 @@
 # Progressive Duplicate Detection with Metadata
 
-This project implements the **Progressive Duplicate Detection Algorithms** by Papenborck et al., as described in this [conference paper](https://hpi.de/oldsite/fileadmin/user_upload/fachgebiete/naumann/publications/PDFs/2015_papenbrock_progressive.pdf).
+This project implements the **Progressive Duplicate Detection Algorithms** by Papenbrock et al., as described in this [conference paper](https://hpi.de/oldsite/fileadmin/user_upload/fachgebiete/naumann/publications/PDFs/2015_papenbrock_progressive.pdf).
 
 ## Enhancements for Bachelor Thesis
 
-In the context of my Bachelor Thesis, *"Progressive Duplicate Detection with Metadata"*, additional methods were developed to integrate metadata information and (functional dependencies, unique column combinations & inclusion dependencies) into the progressive algorithms. These enhancements aim select suitable sorting keys by suing metadata.
+In the context of my Bachelor's Thesis, "Progressive Duplicate Detection with Metadata," additional methods were developed to integrate metadata information(missing values, primary keys, functional dependencies, unique column combinations, and inclusion dependencies) into the progressive algorithms. These enhancements aim to select suitable sorting keys by using metadata.
 
 ## Usage
 
-To use the enhanced methods described in the thesis, you can change the parameters of configuration file:
+To use the enhanced methods described in the thesis, you can change the parameters of the configuration file:
 
 ```Java
     // Can be PairSelectionAlgorithm.PSNM or PairSelectionAlgorithm.PB for using 
@@ -33,7 +33,7 @@ To use the enhanced methods described in the thesis, you can change the paramete
     // Activates or deactivates the use of unique column combinations info for weights
     boolean USE_UCC_INFO = true;
 ```
-There are more parameters that can be changed for the different datasets. For more information about the progressive 
+More parameters can be changed for the different datasets. For more information about the progressive 
 algorithms parameters look into this [conference paper](https://hpi.de/oldsite/fileadmin/user_upload/fachgebiete/naumann/publications/PDFs/2015_papenbrock_progressive.pdf).
 
 ## [Datasets](https://hpi.de/naumann/projects/repeatability/duplicate-detection/mdedup.html) used in Thesis Examples 
